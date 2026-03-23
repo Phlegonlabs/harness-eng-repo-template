@@ -38,7 +38,7 @@ jobs:
 
       - name: Create issue if warnings found
         if: ${{ contains(steps.entropy.outputs.output, 'WARN') }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const output = `${{ steps.entropy.outputs.output }}`;
