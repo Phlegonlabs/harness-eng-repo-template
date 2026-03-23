@@ -17,7 +17,7 @@ Add new terms as they emerge; update definitions when meaning shifts.
 | **Structural Test** | A Bun/TypeScript harness command that verifies architectural compliance, not functional behavior | Pillar 2 |
 | **Drift** | When two documents that should be consistent have diverged from each other | Pillar 3 |
 | **Entropy Scan** | A Bun/TypeScript harness command that detects drift, orphans, or inconsistency | Pillar 3 |
-| **Bootstrap** | Running `bun run harness:bootstrap -- <name>` to initialize the template for a specific project | Setup |
+| **Init** | Running `bun run harness:init -- <name>` to personalize the engineer template for a specific project | Setup |
 | **Validate** | Running `bun run harness:validate` — the full CI contract | CI |
 | **ADR** | Architecture Decision Record — a document capturing a significant architectural choice and its rationale | docs/decisions/ |
 | **Three-Tier Boundary** | The ALWAYS / ASK FIRST / NEVER model for defining what agents may do without approval | AGENTS.md |

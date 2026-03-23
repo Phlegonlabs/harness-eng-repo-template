@@ -5,19 +5,26 @@
 ```bash
 git clone <repo> my-project && cd my-project
 bun install
-bun run harness:bootstrap -- my-project
+bun run harness:init -- my-project
 bun run harness:doctor
 ```
 
 ## Start a Project
 
 ```bash
-bun run harness:discover
 bun run harness:plan
 ```
 
-Use discovery first.
-Use planning only after PRD + architecture are ready.
+The repository starts in a ready-to-customize state.
+Use planning after you have reviewed or edited the baseline product and architecture docs.
+
+Optional guided path:
+
+```bash
+bun run harness:discover --reset
+```
+
+Run discovery only when you want an interview-style PRD and architecture flow.
 
 ## Day-to-Day
 
@@ -42,6 +49,6 @@ bun run harness:parallel-dispatch -- --apply
 
 ## Template Expectations
 
-- Blank template state is valid
-- `project_name: "harness-template"` is the expected pre-bootstrap default
-- `bun run harness:plan` should block until discovery has completed enough PRD + architecture content
+- The template validates before and after `harness:init`
+- `project_name: "harness-template"` is the expected pre-init default
+- `bun run harness:plan` should work immediately after initialization because the baseline docs are already valid

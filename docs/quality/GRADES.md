@@ -1,9 +1,8 @@
 # Quality Grades
 
-Tracks the quality of each product domain and architectural layer.
-Update this after significant changes or as part of periodic cleanup passes.
+Tracks the quality of the engineer template itself. Replace these entries with product-specific grades as the repository is adopted.
 
-**Last updated:** [date] | **Updated by:** [name/agent]
+**Last updated:** 2026-03-23 | **Updated by:** Project leads
 
 ---
 
@@ -23,7 +22,9 @@ Update this after significant changes or as part of periodic cleanup passes.
 
 | Domain | Code Quality | Test Coverage | Documentation | Overall | Notes |
 |--------|-------------|---------------|---------------|---------|-------|
-| *(add your domains)* | - | - | - | - | |
+| Harness runtime | A | B | A | A- | Validation and orchestration flows are live and repo-owned |
+| Workspace scaffold | B | B | B | B | Apps and packages are intentionally minimal but ready to customize |
+| Documentation surfaces | B | n/a | B | B | Docs are actionable defaults and should be replaced with project context after initialization |
 
 ---
 
@@ -31,12 +32,12 @@ Update this after significant changes or as part of periodic cleanup passes.
 
 | Layer | Grade | Coverage | Notes |
 |-------|-------|----------|-------|
-| Types | - | - | |
-| Config | - | - | |
-| Repo | - | - | |
-| Service | - | - | |
-| Runtime | - | - | |
-| UI | - | - | |
+| Types | B | Minimal scaffold coverage | Shared contracts exist and should be expanded by the first product slice |
+| Config | B | Convention coverage | Environment patterns are documented but product validation is still project-specific |
+| Repo | B | Structural coverage | Repository layer rules exist even when feature-specific repositories are not yet implemented |
+| Service | B | Scaffold tests | Shared service example and rules are present |
+| Runtime | B | Scaffold tests | App runtime workspaces compile and test successfully |
+| UI | B | Scaffold tests | UI workspace is intentionally thin and awaits product-specific components |
 
 ---
 
@@ -44,8 +45,8 @@ Update this after significant changes or as part of periodic cleanup passes.
 
 Items that need to be addressed to improve grades:
 
-- [ ] [Action item 1] — *Owner: [name], Due: [date]*
-- [ ] [Action item 2] — *Owner: [name], Due: [date]*
+- [ ] Replace template-specific goals, milestones, and grades with project-specific ones during adoption.
+- [ ] Add product-specific deployment and runtime checks once target environments are chosen.
 
 ---
 
@@ -53,9 +54,9 @@ Items that need to be addressed to improve grades:
 
 When a domain or layer grade changes:
 
-1. Update the table above
-2. Add specific action items for anything below B
-3. Create ADRs for significant architectural decisions that affected the grade
-4. Run `bun run harness:entropy` to check for pattern drift
+1. Update the table above.
+2. Add specific action items for anything below B.
+3. Create ADRs for significant architectural decisions that affected the grade.
+4. Run `bun run harness:entropy` to check for pattern drift.
 
 Entropy scans run weekly (via `.github/workflows/harness-validate.yml`) and may surface issues to address here.

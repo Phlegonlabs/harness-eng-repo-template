@@ -145,9 +145,9 @@ Update after significant changes.
 
 | Command | Purpose |
 |---------|---------|
-| `bun run harness:bootstrap -- <name>` | Initialize template with project name |
+| `bun run harness:init -- <name>` | Initialize the engineer template for a specific project |
 | `bun run harness:doctor` | Health check |
-| `bun run harness:discover` | Ask and persist PRD/architecture discovery state |
+| `bun run harness:discover --reset` | Re-enter guided PRD/architecture discovery mode |
 | `bun run build` | Run workspace builds through Turbo |
 | `bun run lint` | Run root + workspace lint checks |
 | `bun run typecheck` | Run root + workspace type checks |

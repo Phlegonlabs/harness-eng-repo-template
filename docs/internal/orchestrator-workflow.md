@@ -4,7 +4,7 @@ This repository uses a single orchestration model for Codex and Claude.
 
 The planning and execution sequence is:
 
-1. `bun run harness:discover` selects the next user question and writes incremental PRD/architecture updates.
+1. `bun run harness:init -- <name>` personalizes the engineer-template baseline and leaves the repo ready to customize.
 2. `docs/product.md` captures product intent, success criteria, scope, and proposed milestones.
 3. `docs/architecture.md` captures system shape, constraints, module boundaries, and milestone-splitting constraints.
 4. `bun run harness:plan` validates both docs and synchronizes:
@@ -13,6 +13,10 @@ The planning and execution sequence is:
 5. Milestones become the top-level executable units.
 6. Tasks are executed inside one milestone at a time.
 7. Different milestones may run in parallel through isolated git worktrees.
+
+Optional path:
+
+- `bun run harness:discover --reset` re-enters guided discovery mode and rewrites the PRD/architecture from interview answers.
 
 ---
 
@@ -36,13 +40,11 @@ Backlog generation is blocked until all three conditions are true:
 - `docs/architecture.md` no longer contains template placeholders
 - `docs/product.md` includes a `## Proposed Milestones` section with milestone bullets
 
-`harness:discover` is responsible for:
+Those conditions can be satisfied in two ways:
 
-- selecting the next PRD or architecture question
-- recording answers into `.harness/state.json`
-- edge-writing complete `docs/product.md` and `docs/architecture.md`
-
-When those conditions are met, `harness:plan` generates milestone records and placeholder tasks.
+- `harness:init -- <name>` seeds a ready engineer baseline with valid milestones
+- `harness:discover --reset` walks the team through guided PRD and architecture questions
+When the conditions are met, `harness:plan` generates milestone records and placeholder tasks.
 
 ---
 

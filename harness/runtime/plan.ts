@@ -32,9 +32,9 @@ const tasks = defaultTasks(readiness.milestones);
 state.projectInfo.projectName = config.project_name;
 state.projectInfo.runtime = "bun";
 state.projectInfo.commandSurface = [
-	"bun run harness:bootstrap -- <name>",
+	"bun run harness:init -- <name>",
 	"bun run harness:doctor",
-	"bun run harness:discover",
+	"bun run harness:discover --reset",
 	"bun run harness:validate",
 	"bun run build",
 	"bun run lint",

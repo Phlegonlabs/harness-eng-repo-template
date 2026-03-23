@@ -73,7 +73,7 @@ The harness infrastructure lives in `harness/`:
 - Rules: `harness/rules/*.json` — machine-readable golden rules
 - Runtime: `harness/runtime/*.ts` — canonical Bun/TypeScript harness implementation
 - Git hooks: `harness/hooks/` — enforced at commit/push time
-- Package scripts: `bun run harness:*` — bootstrap, doctor, validate, plan, orchestration
+- Package scripts: `bun run harness:*` — init, doctor, validate, plan, orchestration
 - State: `.harness/state.json` — machine-owned planning and execution state
 
 The full validation suite: `bun run harness:validate`

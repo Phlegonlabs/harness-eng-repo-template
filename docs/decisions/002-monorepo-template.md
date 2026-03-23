@@ -43,8 +43,8 @@ We will make the template default to a Bun workspace monorepo with Turbo orchest
 - Cross-workspace boundaries become explicit earlier.
 
 ### Negative / Trade-offs
-- Bootstrap and validation logic are more complex.
-- More files exist in the blank template state.
+- Initialization and validation logic are more complex.
+- More files exist in the ready template baseline.
 
 ### Risks
 - **Workspace drift:** packages diverge in script conventions — *Mitigation: root scripts and Turbo tasks stay canonical.*

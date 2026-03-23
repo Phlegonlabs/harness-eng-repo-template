@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { hasPlaceholderContent, readJson, writeJson } from "./shared";
+import { baselineDiscoveryAnswers } from "./template-baseline";
 import type {
 	DiscoveryState,
 	HarnessState,
@@ -99,18 +100,19 @@ export function defaultTasks(milestones: MilestoneRecord[]): TaskRecord[] {
 }
 
 export function stateTemplate(projectName: string): HarnessState {
+	const answered = baselineDiscoveryAnswers(projectName);
 	const discovery: DiscoveryState = {
-		stage: "PRD",
-		status: "idle",
+		stage: "COMPLETE",
+		status: "ready_for_plan",
 		currentQuestionIds: [],
-		answered: {},
+		answered,
 		history: [],
 		readiness: {
-			productReady: false,
-			architectureReady: false,
-			planReady: false,
+			productReady: true,
+			architectureReady: true,
+			planReady: true,
 		},
-		lastUpdatedAt: null,
+		lastUpdatedAt: new Date().toISOString(),
 	};
 
 	return {
@@ -125,9 +127,9 @@ export function stateTemplate(projectName: string): HarnessState {
 				progress: "docs/progress.md",
 			},
 			commandSurface: [
-				"bun run harness:bootstrap -- <name>",
+				"bun run harness:init -- <name>",
 				"bun run harness:doctor",
-				"bun run harness:discover",
+				"bun run harness:discover --reset",
 				"bun run harness:validate",
 				"bun run build",
 				"bun run lint",
@@ -140,10 +142,10 @@ export function stateTemplate(projectName: string): HarnessState {
 			],
 		},
 		planning: {
-			phase: "DISCOVERY",
+			phase: "READY",
 			docsReady: {
-				product: false,
-				architecture: false,
+				product: true,
+				architecture: true,
 				backlog: false,
 			},
 			approvals: {
@@ -174,19 +176,9 @@ export function loadState(root: string): HarnessState {
 	if (!state.discovery) {
 		return {
 			...(state as HarnessState),
-			discovery: {
-				stage: "PRD",
-				status: "idle",
-				currentQuestionIds: [],
-				answered: {},
-				history: [],
-				readiness: {
-					productReady: false,
-					architectureReady: false,
-					planReady: false,
-				},
-				lastUpdatedAt: null,
-			},
+			discovery: stateTemplate(
+				state.projectInfo?.projectName ?? "harness-template",
+			).discovery,
 		};
 	}
 	return state as HarnessState;

@@ -115,11 +115,11 @@ for (const hook of ["pre-commit", "commit-msg", "pre-push"]) {
 	}
 }
 
-writeSection("Bootstrap Status");
+writeSection("Init Status");
 if (config.project_name === "harness-template") {
 	check(
 		"WARN",
-		"Project name is still 'harness-template'. Run bun run harness:bootstrap -- <your-project-name>",
+		"Project name is still 'harness-template'. Run bun run harness:init -- <your-project-name>",
 	);
 	warnings += 1;
 } else {

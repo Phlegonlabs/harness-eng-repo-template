@@ -107,7 +107,8 @@ Do not hand off a broken state. If validation fails, fix it.
 - `docs/architecture.md` is the architecture canon
 - `docs/progress.md` is the human-readable milestone/task surface
 - `.harness/state.json` is the machine execution canon
-- `bun run harness:discover` owns PRD/architecture discovery state and next-question selection
+- `bun run harness:init -- <name>` personalizes the ready engineer baseline for a new project
+- `bun run harness:discover --reset` is the optional guided flow for teams that want PRD/architecture interviews
 - Generate milestones/tasks only after PRD + architecture are ready enough to execute
 - Parallel execution is milestone-level only and must use isolated worktrees
 - Skill loading follows `harness/skills/registry.json` with progressive disclosure

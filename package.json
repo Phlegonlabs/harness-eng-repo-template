@@ -20,7 +20,7 @@
 		"harness:parallel-dispatch": "bun run harness/runtime/parallel-dispatch.ts",
 		"harness:merge-milestone": "bun run harness/runtime/merge-milestone.ts",
 		"harness:install-hooks": "bun run harness/runtime/install-hooks.ts",
-		"harness:bootstrap": "bun run harness/runtime/bootstrap.ts",
+		"harness:init": "bun run harness/runtime/init.ts",
 		"build": "turbo run build",
 		"dev": "turbo run dev --parallel",
 		"lint": "bun run lint:root && turbo run lint",

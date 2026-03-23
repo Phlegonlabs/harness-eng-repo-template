@@ -14,6 +14,7 @@ function sectionValue(
 }
 
 export function renderProductDoc(answered: Record<string, string>): string {
+	const footer = `*Last updated: ${new Date().toISOString().slice(0, 10)} | Owner: Project leads*`;
 	return [
 		"# Product Requirements Document",
 		"",
@@ -107,7 +108,7 @@ export function renderProductDoc(answered: Record<string, string>): string {
 		sectionValue(
 			answered,
 			"prd.open-questions",
-			"- [ ] [Question 1] — *Owner: [name], Due: [date]*\n- [ ] [Question 2] — *Owner: [name], Due: [date]*",
+			"- No template-level blockers. Add project-specific open questions here when needed.",
 		),
 		"",
 		"---",
@@ -122,13 +123,14 @@ export function renderProductDoc(answered: Record<string, string>): string {
 		"",
 		"---",
 		"",
-		"*Last updated: [date] | Owner: [name]*",
+		footer,
 	].join("\n");
 }
 
 export function renderArchitectureDoc(
 	answered: Record<string, string>,
 ): string {
+	const footer = `*Last updated: ${new Date().toISOString().slice(0, 10)} | Owner: Project leads*`;
 	return [
 		"# System Architecture",
 		"",
@@ -249,6 +251,6 @@ export function renderArchitectureDoc(
 		"",
 		"---",
 		"",
-		"*Last updated: [date] | Owner: [name]*",
+		footer,
 	].join("\n");
 }

@@ -1,10 +1,11 @@
-# Harness Engineering Monorepo Template
+# Harness Template
 
 A reusable starter for **agent-first development** with:
 
 - Bun workspaces + Turbo
 - TypeScript-ready apps and packages
-- PRD / architecture discovery
+- Ready-to-edit engineering baseline docs
+- Optional PRD / architecture discovery
 - milestone / task planning
 - validation, hooks, and CI
 
@@ -15,9 +16,7 @@ A reusable starter for **agent-first development** with:
 ```bash
 git clone <this-repo> my-project && cd my-project
 bun install
-bun run harness:bootstrap -- my-project
-bun run harness:discover
-bun run harness:plan
+bun run harness:init -- my-project
 bun run build
 bun run test
 bun run harness:validate
@@ -25,10 +24,10 @@ bun run harness:validate
 
 Use the runtime in this order:
 
-1. `harness:discover` fills `docs/product.md` and `docs/architecture.md`
-2. `harness:plan` turns them into milestones/tasks in `docs/progress.md`
-3. `harness:orchestrate` / `harness:parallel-dispatch` help execution
-4. `harness:validate` is the quality gate
+1. `harness:init` personalizes the template for your project name and seeds ready-to-edit docs
+2. Edit `docs/product.md` and `docs/architecture.md` as your repository becomes product-specific
+3. `harness:plan` turns the docs into milestones/tasks in `docs/progress.md`
+4. `harness:validate` remains the quality gate
 
 ---
 
@@ -67,9 +66,9 @@ The dependency layer model applies **inside each workspace**. Cross-workspace sh
 ## Commands
 
 ```bash
-bun run harness:bootstrap -- <name>
+bun run harness:init -- <name>
 bun run harness:doctor
-bun run harness:discover
+bun run harness:discover --reset
 bun run harness:plan
 bun run build
 bun run lint
@@ -85,9 +84,9 @@ bun run harness:merge-milestone -- M1
 
 ## Template Notes
 
-- This repo is expected to validate in blank template state.
-- The only intentional doctor warning is `project_name === "harness-template"` before bootstrap.
-- `harness:plan` is expected to block until discovery has filled PRD + architecture.
+- This repo is expected to validate before and after `harness:init`.
+- The only intentional doctor warning is `project_name === "harness-template"` before initialization.
+- `harness:discover --reset` is optional and re-enters guided discovery mode when a team wants PRD/architecture interviews.
 - The default scaffold is a monorepo with `apps/web`, `apps/api`, and `packages/shared`.
 
 Template ADRs:

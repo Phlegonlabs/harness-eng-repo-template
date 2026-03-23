@@ -75,7 +75,7 @@ export function readJson<T>(target: string): T {
 
 export function writeJson(target: string, value: unknown): void {
 	mkdirSync(path.dirname(target), { recursive: true });
-	writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`);
+	writeFileSync(target, `${JSON.stringify(value, null, "\t")}\n`);
 }
 
 export function writeSection(label: string): void {
