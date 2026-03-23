@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "level": 2,
+  "project_name": "harness-template",
+  "layers": ["types", "config", "repo", "service", "runtime", "ui"],
+  "validation": {
+    "structural_tests": true,
+    "linters": true,
+    "entropy_scans": true,
+    "doc_freshness_days": 30
+  },
+  "commit_format": "conventional",
+  "required_files": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "README.md",
+    "docs/product.md",
+    "docs/architecture.md",
+    "docs/internal/agent-entry.md",
+    "harness/config.json",
+    "harness/rules/dependency-layers.json"
+  ]
+}

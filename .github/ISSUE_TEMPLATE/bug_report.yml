@@ -1,0 +1,44 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing a bug, run `./harness/scripts/doctor.sh` and check the output.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Minimum steps to reproduce the issue
+      placeholder: |
+        1. Run ...
+        2. See ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation-output
+    attributes:
+      label: Validation Output
+      description: Paste the output of `./harness/scripts/validate.sh`
+      render: shell
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, bash version, jq version
+      placeholder: |
+        OS: macOS 14 / Ubuntu 22.04
+        bash: 5.2.15
+        jq: 1.7
