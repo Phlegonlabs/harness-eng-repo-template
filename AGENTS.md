@@ -17,13 +17,16 @@ For **medium tasks** (cross-file, one layer):
 1. This file
 2. `docs/internal/agent-entry.md`
 3. `docs/architecture.md`
+4. `docs/progress.md`
 
 For **large tasks** (new feature, cross-layer):
 1. This file
 2. `docs/internal/agent-entry.md`
 3. `docs/product.md` + `docs/architecture.md`
-4. `docs/internal/dependency-layers.md`
-5. `docs/internal/boundaries.md`
+4. `docs/progress.md`
+5. `docs/internal/orchestrator-workflow.md`
+6. `docs/internal/dependency-layers.md`
+7. `docs/internal/boundaries.md`
 
 ---
 
@@ -33,6 +36,7 @@ For **large tasks** (new feature, cross-layer):
 |----------|---------|
 | `docs/product.md` | What we're building and why |
 | `docs/architecture.md` | How the system is structured |
+| `docs/progress.md` | Milestones, tasks, and worktree dispatch status |
 | `docs/glossary.md` | Shared terminology |
 | `docs/decisions/` | Architecture Decision Records (ADRs) |
 
@@ -49,7 +53,7 @@ Full rules live in `docs/internal/agent-entry.md`. These 6 are non-negotiable:
 2. **Keep files under 500 lines** — see `harness/rules/file-size-limits.json`
    Split files that approach this limit into focused modules.
 
-3. **Run validation before handing off** — `./harness/scripts/validate.sh`
+3. **Run validation before handing off** — `bun run harness:validate`
    If it fails, fix it. Do not leave the harness in a broken state.
 
 4. **Use conventional commits** — `type(scope): description`
@@ -66,7 +70,7 @@ Full rules live in `docs/internal/agent-entry.md`. These 6 are non-negotiable:
 ## Three-Tier Boundaries
 
 ### ALWAYS DO
-- Run `./harness/scripts/validate.sh` before any handoff
+- Run `bun run harness:validate` before any handoff
 - Follow the dependency layer order in all new code
 - Update `docs/` when making architectural decisions
 - Use conventional commit format
@@ -89,7 +93,7 @@ Full rules live in `docs/internal/agent-entry.md`. These 6 are non-negotiable:
 ## Validation
 
 ```bash
-./harness/scripts/validate.sh
+bun run harness:validate
 ```
 
 This runs: health check → linters → structural tests → entropy scans.
@@ -97,17 +101,17 @@ All must pass before a PR is ready.
 
 Quick individual checks:
 ```bash
-./harness/scripts/doctor.sh          # health check only
-./harness/linters/lint-all.sh        # linters only
-./harness/structural-tests/test-all.sh  # structural tests only
-./harness/entropy/scan-all.sh        # entropy scans only
+bun run harness:doctor
+bun run harness:lint
+bun run harness:structural
+bun run harness:entropy
 ```
 
 ---
 
 ## Skills (Load on Demand)
 
-Skills provide detailed guidance for specific task types. Load them when you need them — don't read all of them upfront.
+Skills provide detailed guidance for specific task types. Load them when you need them — don't read all of them upfront. The runtime chooses candidates from `harness/skills/registry.json`, then loads only the minimal skill set needed for the current phase/task.
 
 | Skill | Load When |
 |-------|----------|
@@ -125,6 +129,9 @@ For complex multi-phase features, create an execution plan before coding:
 - Template: `docs/execution-plans/TEMPLATE.md`
 - Place plans in: `docs/execution-plans/<feature-name>.md`
 
+Milestones and tasks live in `docs/progress.md` and `.harness/state.json`.
+Different milestones may run in parallel in isolated worktrees.
+
 ---
 
 ## Quality
@@ -138,14 +145,19 @@ Update after significant changes.
 
 | Command | Purpose |
 |---------|---------|
-| `./harness/scripts/bootstrap.sh <name>` | Initialize template with project name |
-| `./harness/scripts/doctor.sh` | Health check — verify harness is intact |
-| `./harness/scripts/validate.sh` | Full validation suite |
-| `./harness/scripts/install-hooks.sh` | Install git hooks |
-| `./evals/run.sh <task>` | Run an agent eval task |
+| `bun run harness:bootstrap -- <name>` | Initialize template with project name |
+| `bun run harness:doctor` | Health check |
+| `bun run harness:discover` | Ask and persist PRD/architecture discovery state |
+| `bun run harness:validate` | Full validation suite |
+| `bun run harness:plan` | Sync milestones/tasks from PRD + architecture |
+| `bun run harness:orchestrate` | Show next task and suggested skills |
+| `bun run harness:parallel-dispatch -- --apply` | Preview or allocate milestone worktrees |
+| `bun run harness:merge-milestone -- M1` | Merge one completed milestone |
+| `bun run harness:install-hooks` | Install git hooks |
 
 ---
 
 *Full canonical rules: `docs/internal/agent-entry.md`*
 *Boundaries detail: `docs/internal/boundaries.md`*
 *Layer model detail: `docs/internal/dependency-layers.md`*
+*Orchestration detail: `docs/internal/orchestrator-workflow.md`*

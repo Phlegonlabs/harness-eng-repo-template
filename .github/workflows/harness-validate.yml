@@ -19,22 +19,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Make scripts executable
-        run: find harness -name "*.sh" -type f -exec chmod +x {} \;
+      - name: Install dependencies
+        run: bun install
 
       - name: Run entropy scans
         id: entropy
         run: |
-          ./harness/entropy/scan-all.sh 2>&1 | tee /tmp/entropy-output.txt
+          bun run harness:entropy 2>&1 | tee /tmp/entropy-output.txt
           echo "output<<EOF" >> $GITHUB_OUTPUT
           cat /tmp/entropy-output.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Run doc freshness check
-        run: ./harness/linters/lint-docs-freshness.sh || true
+        run: bun run harness/runtime/lint-docs-freshness.ts
 
       - name: Create issue if warnings found
         if: ${{ contains(steps.entropy.outputs.output, 'WARN') }}

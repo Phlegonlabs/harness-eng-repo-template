@@ -1,23 +1,15 @@
 #!/usr/bin/env bash
-# pre-push — Run structural tests before every push.
-# Installed to .git/hooks/pre-push by harness/scripts/install-hooks.sh
-#
-# Structural tests are heavier than linters and run here (not pre-commit)
-# to avoid slowing down every commit.
-
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-
 echo "harness: running pre-push structural tests..."
 echo ""
 
-if bash "$REPO_ROOT/harness/structural-tests/test-all.sh"; then
+if bun run harness:structural; then
   echo ""
   echo "harness: pre-push checks passed."
 else
   echo ""
   echo "harness: pre-push checks FAILED."
-  echo "Fix the issues above before pushing."
   exit 1
 fi

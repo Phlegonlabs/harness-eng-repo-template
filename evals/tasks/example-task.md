@@ -20,7 +20,7 @@ Example:
 - [ ] No type errors (`typecheck` passes)
 - [ ] No lint errors (`lint` passes)
 - [ ] Tests pass
-- [ ] Harness validation passes (`./harness/scripts/validate.sh`)
+- [ ] Harness validation passes (`bun run harness:validate`)
 - [ ] No layer boundary violations
 
 ### Should Pass (Model-Graded — reviewed manually)
@@ -52,7 +52,7 @@ fail() { echo "❌ $1"; ((TOTAL++)); }
 # [ -f src/service/your-feature.test.ts ] && pass "Test file exists" || fail "Test file missing"
 
 # Quality checks
-./harness/scripts/validate.sh 2>/dev/null && pass "Harness validation" || fail "Harness validation"
+bun run harness:validate 2>/dev/null && pass "Harness validation" || fail "Harness validation"
 
 # Add your project-specific checks:
 # bun run typecheck 2>/dev/null && pass "TypeScript compiles" || fail "TypeScript compiles"

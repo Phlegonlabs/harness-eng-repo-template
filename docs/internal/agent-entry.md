@@ -17,7 +17,7 @@ Types → Config → Repo → Service → Runtime → UI
 ```
 
 - Each layer may only import from layers *below* (to the left of) it.
-- Layer violations are caught by `harness/linters/lint-layers.sh` on every commit.
+- Layer violations are caught by `bun run harness:lint`.
 - The machine-readable rules live in `harness/rules/dependency-layers.json`.
 
 ### 2. Keep Files Under 500 Lines
@@ -63,7 +63,7 @@ Types: feat, fix, docs, refactor, test, chore, harness
 Run the full validation suite before every handoff:
 
 ```bash
-./harness/scripts/validate.sh
+bun run harness:validate
 ```
 
 Do not hand off a broken state. If validation fails, fix it.
@@ -76,9 +76,10 @@ Do not hand off a broken state. If validation fails, fix it.
 
 1. Read `AGENTS.md` or `CLAUDE.md` (your entry point)
 2. Read this document (agent-entry.md)
-3. Read `docs/product.md` and `docs/architecture.md` for context
-4. Identify the specific task and its scope
-5. Check which layers will be touched (review `docs/internal/dependency-layers.md`)
+3. Read `docs/product.md`, `docs/architecture.md`, and `docs/progress.md`
+4. Read `docs/internal/orchestrator-workflow.md` for the planning/execution model
+5. Identify the specific task and its scope
+6. Check which layers will be touched (review `docs/internal/dependency-layers.md`)
 
 ### During Work
 
@@ -90,11 +91,22 @@ Do not hand off a broken state. If validation fails, fix it.
 
 ### Ending a Work Session / Handoff
 
-1. Run `./harness/scripts/validate.sh`
+1. Run `bun run harness:validate`
 2. Fix any failures
 3. Stage specific files (not `git add -A`)
 4. Write a conventional commit message
 5. Note any open questions or blockers in `docs/` if relevant
+
+### Planning and Execution
+
+- `docs/product.md` is the PRD canon
+- `docs/architecture.md` is the architecture canon
+- `docs/progress.md` is the human-readable milestone/task surface
+- `.harness/state.json` is the machine execution canon
+- `bun run harness:discover` owns PRD/architecture discovery state and next-question selection
+- Generate milestones/tasks only after PRD + architecture are ready enough to execute
+- Parallel execution is milestone-level only and must use isolated worktrees
+- Skill loading follows `harness/skills/registry.json` with progressive disclosure
 
 ---
 

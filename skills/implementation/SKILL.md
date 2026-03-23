@@ -6,8 +6,9 @@ Use this skill when implementing new features or making significant code changes
 
 1. Read `docs/architecture.md` to understand module boundaries
 2. Check `docs/decisions/` for relevant ADRs
-3. If the change spans multiple domains or layers, create an execution plan: `docs/execution-plans/`
-4. Use the Research skill first if the area is unfamiliar
+3. Check `docs/progress.md` for the current milestone and task
+4. If the change spans multiple domains or layers, create an execution plan: `docs/execution-plans/`
+5. Use the Research skill first if the area is unfamiliar
 
 ## Implementation Checklist
 
@@ -51,7 +52,7 @@ Use the project's error pattern — propagate errors as values, don't throw insi
 1. Run typecheck — fix all type errors
 2. Run linter — fix all warnings
 3. Run tests — ensure all pass
-4. Run `./harness/scripts/validate.sh` — full harness check
+4. Run `bun run harness:validate` — full harness check
 
 ## When to Create an ADR
 

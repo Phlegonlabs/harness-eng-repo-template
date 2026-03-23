@@ -66,7 +66,7 @@ run_check() {
 }
 
 # Core harness checks (always run)
-run_check "Harness validation passes"       "./harness/scripts/validate.sh"
+run_check "Harness validation passes"       "bun run harness:validate"
 
 # Add project-specific checks here:
 # run_check "TypeScript compiles"           "bun run typecheck"

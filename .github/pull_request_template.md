@@ -10,7 +10,7 @@
 
 ## Validation
 
-- [ ] `./harness/scripts/validate.sh` passed locally
+- [ ] `bun run harness:validate` passed locally
 - [ ] No layer boundary violations
 - [ ] All new files follow naming conventions and size limits
 - [ ] Documentation updated if architectural decisions were made

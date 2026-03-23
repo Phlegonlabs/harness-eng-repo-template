@@ -51,6 +51,10 @@ temp/
 
 # Harness generated state
 .repo-state/
+.worktrees/
+.harness/launches/
+.harness/logs/
+.harness/cache/
 
 # OS
 Thumbs.db

@@ -9,8 +9,13 @@
 
 Same order as `AGENTS.md` — for large tasks also read:
 - `docs/internal/agent-entry.md` (canonical rules)
+- `docs/internal/orchestrator-workflow.md` (planning + execution model)
 - `docs/internal/boundaries.md` (what requires approval)
 - `docs/internal/dependency-layers.md` (layer model)
+- `docs/progress.md` (milestones + tasks)
+
+Codex and Claude share the same architecture, state model, and command surface.
+This file is only a thin Claude-specific tool adapter.
 
 ---
 
@@ -58,7 +63,7 @@ When committing:
 
 ## Skills (Progressive Disclosure)
 
-Load a skill when you need detailed guidance on a specific task type. They live in `skills/` and are loaded on demand — not pre-loaded into every session.
+Load a skill when you need detailed guidance on a specific task type. They live in `skills/` and are loaded on demand — not pre-loaded into every session. The repo-owned trigger map lives in `harness/skills/registry.json`.
 
 | Skill | When to Load |
 |-------|-------------|
@@ -74,16 +79,20 @@ Load a skill when you need detailed guidance on a specific task type. They live 
 
 | Script | Purpose |
 |--------|---------|
-| `./harness/scripts/bootstrap.sh <name>` | Initialize with project name |
-| `./harness/scripts/doctor.sh` | Health check |
-| `./harness/scripts/validate.sh` | Full validation (run before handoff) |
-| `./harness/scripts/install-hooks.sh` | Install git hooks |
+| `bun run harness:bootstrap -- <name>` | Initialize with project name |
+| `bun run harness:doctor` | Health check |
+| `bun run harness:discover` | Ask and persist PRD/architecture discovery state |
+| `bun run harness:validate` | Full validation |
+| `bun run harness:plan` | Sync milestones/tasks from PRD + architecture |
+| `bun run harness:orchestrate` | Show next task and suggested skills |
+| `bun run harness:parallel-dispatch -- --apply` | Preview or allocate milestone worktrees |
+| `bun run harness:install-hooks` | Install git hooks |
 
 ---
 
 ## Hooks (Back-Pressure)
 
-`hooks/pre-stop.sh` runs automatically before the agent session ends (configured in `.claude/settings.json`). It enforces quality: harness validation + project-specific checks (typecheck, lint, tests, coverage). If it exits 2, the agent is re-engaged to fix the issue.
+`hooks/pre-stop.sh` runs automatically before the agent session ends (configured in `.claude/settings.json`). It should enforce the same validation policy as Codex-side handoff: health + linters + structural tests + entropy review.
 
 **Do not bypass hooks. Fix the underlying issue.**
 
@@ -93,17 +102,19 @@ Load a skill when you need detailed guidance on a specific task type. They live 
 
 1. Read the relevant ADR in `docs/decisions/` — the decision may already be made
 2. Check `docs/architecture.md` for module boundaries
-3. Load `skills/research/SKILL.md` and delegate research to a sub-agent
-4. If a pattern isn't documented, **document it before implementing**
-5. If scope is unclear, do less and ask
+3. Check `docs/progress.md` for the current milestone and task
+4. Load `skills/research/SKILL.md` if the area is unfamiliar
+5. If a pattern isn't documented, **document it before implementing**
+6. If scope is unclear, do less and ask
 
 ---
 
 ## Validation Requirement
 
-Run `./harness/scripts/validate.sh` before every handoff.
+Run `bun run harness:validate` before every handoff.
 If it fails, fix the issue — do not hand off a broken state.
 
 ---
 
 *Canonical rules: `docs/internal/agent-entry.md`*
+*Orchestration detail: `docs/internal/orchestrator-workflow.md`*

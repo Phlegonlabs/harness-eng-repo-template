@@ -1,6 +1,11 @@
 {
   "_comment": "Dependency layer model. Each layer may only import from layers with lower index.",
   "_doc": "docs/internal/dependency-layers.md",
+  "internal_import_roots": ["src", "pkg", "cmd"],
+  "internal_import_aliases": {
+    "@": "src",
+    "~": "src"
+  },
   "layers": [
     {
       "name": "types",

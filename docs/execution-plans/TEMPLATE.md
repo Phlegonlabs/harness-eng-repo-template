@@ -56,11 +56,12 @@ Follow the dependency layer order — bottom to top:
 
 Before marking this plan complete:
 
-- [ ] `./harness/scripts/validate.sh` passes
+- [ ] `bun run harness:validate` passes
 - [ ] All new code has corresponding tests
 - [ ] Coverage has not decreased
-- [ ] Structural tests pass: `./harness/structural-tests/test-all.sh`
+- [ ] Structural tests pass: `bun run harness:structural`
 - [ ] `docs/architecture.md` updated if architecture changed
+- [ ] `docs/progress.md` updated if milestone/task structure changed
 - [ ] ADRs created for significant decisions
 
 ---

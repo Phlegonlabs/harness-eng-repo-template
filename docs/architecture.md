@@ -1,6 +1,5 @@
 # System Architecture
 
-> **Template** — Replace all placeholder text with your project's actual architecture.
 > This document describes *how* the system is structured, not *what* it does (that's `product.md`).
 > Agents read this to understand constraints before implementing.
 
@@ -8,30 +7,28 @@
 
 ## Architecture Overview
 
-<!-- High-level description of the system. Include an ASCII diagram if helpful. -->
-
 ```
 [User / Client]
        │
        ▼
   ┌─────────┐
-  │   UI    │  ← Runtime layer
+  │   UI    │
   └────┬────┘
        │
   ┌────▼────┐
-  │ Service │  ← Business logic layer
+  │ Service │
   └────┬────┘
        │
   ┌────▼────┐
-  │  Repo   │  ← Data access layer
+  │  Repo   │
   └────┬────┘
        │
   ┌────▼────┐
-  │ Config  │  ← Configuration layer
+  │ Config  │
   └────┬────┘
        │
   ┌────▼────┐
-  │  Types  │  ← Type definitions layer
+  │  Types  │
   └─────────┘
 ```
 
@@ -46,7 +43,7 @@ Types → Config → Repo → Service → Runtime → UI
 ```
 
 **Rule:** Each layer may only import from layers below (to the left) of it.
-**Enforcement:** `harness/linters/lint-layers.sh` checks this on every commit.
+**Enforcement:** `bun run harness:lint` checks this on every commit.
 
 | Layer | Directory | Allowed Imports |
 |-------|-----------|-----------------|
@@ -61,8 +58,6 @@ Types → Config → Repo → Service → Runtime → UI
 
 ## System Boundaries
 
-<!-- What are the external systems this service interacts with? -->
-
 | System | Direction | Protocol | Notes |
 |--------|-----------|----------|-------|
 | [External system 1] | inbound | [HTTP/gRPC/etc] | [notes] |
@@ -72,13 +67,18 @@ Types → Config → Repo → Service → Runtime → UI
 
 ## Interfaces & Contracts
 
-<!-- Key APIs, schemas, or protocols that cross system boundaries.
-     These are the most stable contracts — change them carefully. -->
-
 ### [Interface 1]
 ```
 [Schema or API signature]
 ```
+
+---
+
+## Execution Constraints
+
+| Constraint | Impact on Milestones | Notes |
+|-----------|----------------------|-------|
+| [Shared migration / external dependency / lock] | [Why it blocks or serializes work] | [notes] |
 
 ---
 
@@ -94,8 +94,6 @@ Types → Config → Repo → Service → Runtime → UI
 ---
 
 ## Build / Distribution / Deployment
-
-<!-- How is the system built and deployed? -->
 
 ```bash
 # Build
@@ -120,11 +118,19 @@ Types → Config → Repo → Service → Runtime → UI
 
 ## Validation Plan
 
-How to verify the architecture is correctly implemented:
+1. `bun run harness:structural` — structural compliance
+2. `bun run harness:lint` — linting and rule checks
+3. `bun run harness:validate` — full harness validation
 
-1. `./harness/structural-tests/test-architecture.sh` — layer boundary compliance
-2. `./harness/structural-tests/test-required-files.sh` — required structure exists
-3. `./harness/scripts/validate.sh` — full harness validation
+---
+
+## Architecture Readiness Checklist
+
+- [ ] System boundaries are explicit
+- [ ] Dependency direction is explicit
+- [ ] Interfaces/contracts are explicit enough to implement
+- [ ] Execution constraints for milestone splitting are explicit
+- [ ] No critical architecture unknown blocks backlog generation
 
 ---
 

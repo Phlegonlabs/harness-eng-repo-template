@@ -29,6 +29,7 @@
       "pattern": "TODO(?!.*\\b(#|issue|ticket|ISSUE|TICKET)\\b)",
       "description": "TODO without issue reference",
       "apply_to": ["src/**", "harness/**"],
+      "exclude": ["harness/rules/**"],
       "message": "TODO without issue reference. Either fix it inline or add a reference: TODO(#123): description. Untracked TODOs disappear from view and confuse future agents."
     },
     {

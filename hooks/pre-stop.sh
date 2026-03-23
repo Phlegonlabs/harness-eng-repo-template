@@ -24,7 +24,7 @@ cd "$PROJECT_ROOT"
 echo "Running pre-stop checks..." >&2
 
 # ─── Step 1: Harness validation (always runs) ────────────────────────────────
-HARNESS_OUTPUT=$(bash harness/scripts/validate.sh 2>&1) || {
+HARNESS_OUTPUT=$(bun run harness:validate 2>&1) || {
   echo "❌ Harness validation failed:" >&2
   echo "$HARNESS_OUTPUT" >&2
   exit 2

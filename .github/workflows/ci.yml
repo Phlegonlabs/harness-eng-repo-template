@@ -22,11 +22,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Make scripts executable
-        run: find harness -name "*.sh" -type f -exec chmod +x {} \;
+      - name: Install dependencies
+        run: bun install
 
       - name: Run full validation
-        run: ./harness/scripts/validate.sh
+        run: bun run harness:validate

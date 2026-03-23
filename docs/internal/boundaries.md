@@ -12,7 +12,7 @@ These actions are expected on every work session. No approval needed.
 
 | Action | Why |
 |--------|-----|
-| Run `./harness/scripts/validate.sh` before handoff | Validation is the quality gate. Never skip it. |
+| Run `bun run harness:validate` before handoff | Validation is the quality gate. Never skip it. |
 | Follow the dependency layer order | Layer violations compound quickly across agent runs. |
 | Use conventional commit format | Commit history must be machine-parseable for changelog generation and blame. |
 | Update `docs/` when making architectural decisions | Undocumented decisions are invisible to the next agent. |
@@ -61,7 +61,7 @@ These actions are prohibited regardless of context. They represent risks too hig
 |------|-----------------------|
 | ALWAYS DO | `harness/hooks/pre-commit`, CI validation |
 | ASK FIRST | PR review process, `harness/hooks/commit-msg` checks |
-| NEVER DO | `harness/linters/lint-forbidden.sh`, `harness/hooks/pre-commit`, CI |
+| NEVER DO | `bun run harness:lint`, `harness/hooks/pre-commit`, CI |
 
 Boundary violations are caught at multiple levels:
 1. **Pre-commit hook** — blocks the commit
@@ -76,6 +76,6 @@ If you believe a boundary rule needs to change:
 1. Understand why the current rule exists (check the "Why" column above)
 2. Create an ADR in `docs/decisions/` explaining the change and its impact
 3. Update this document after the ADR is approved
-4. Update `harness/linters/lint-forbidden.sh` if the change affects forbidden patterns
+4. Update the Bun/TS lint runtime if the change affects forbidden patterns
 
 *Never change boundaries unilaterally. They exist to protect all future agent runs.*

@@ -56,6 +56,6 @@ When a domain or layer grade changes:
 1. Update the table above
 2. Add specific action items for anything below B
 3. Create ADRs for significant architectural decisions that affected the grade
-4. Run `./harness/entropy/scan-consistency.sh` to check for pattern drift
+4. Run `bun run harness:entropy` to check for pattern drift
 
 Entropy scans run weekly (via `.github/workflows/harness-validate.yml`) and may surface issues to address here.

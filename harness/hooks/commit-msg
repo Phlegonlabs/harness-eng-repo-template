@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # commit-msg — Validate commit message format (Conventional Commits).
-# Installed to .git/hooks/commit-msg by harness/scripts/install-hooks.sh
+# Installed to .git/hooks/commit-msg by bun run harness:install-hooks
 
 set -euo pipefail
 
@@ -14,8 +14,8 @@ fi
 
 # Conventional commit pattern:
 # type(scope): description
-# Types: feat, fix, docs, refactor, test, chore, harness, ci, build, perf, style
-PATTERN='^(feat|fix|docs|refactor|test|chore|harness|ci|build|perf|style)(\([a-z0-9\-]+\))?: .{1,100}$'
+# Types: feat, fix, docs, refactor, test, chore, harness
+PATTERN='^(feat|fix|docs|refactor|test|chore|harness)(\([a-z0-9\-]+\))?: .{1,100}$'
 
 FIRST_LINE=$(echo "$COMMIT_MSG" | head -1)
 
@@ -25,7 +25,7 @@ if ! echo "$FIRST_LINE" | grep -qP "$PATTERN"; then
   echo ""
   echo "Expected format: type(scope): description"
   echo ""
-  echo "Valid types: feat, fix, docs, refactor, test, chore, harness, ci, build, perf, style"
+  echo "Valid types: feat, fix, docs, refactor, test, chore, harness"
   echo ""
   echo "Examples:"
   echo "  feat(auth): add JWT validation"

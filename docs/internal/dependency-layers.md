@@ -78,13 +78,18 @@ Each layer may only import from layers *below* (earlier in the sequence) it.
 ## Enforcement
 
 ### At Commit Time
-The `harness/hooks/pre-commit` hook runs `harness/linters/lint-layers.sh` before every commit.
+The `harness/hooks/pre-commit` hook runs `bun run harness:lint` before every commit.
 
 ### In CI
-`.github/workflows/ci.yml` runs `harness/scripts/validate.sh` which includes layer linting.
+`.github/workflows/ci.yml` runs `bun run harness:validate` which includes layer linting.
 
 ### Machine-Readable Rules
 `harness/rules/dependency-layers.json` defines the layer model in a format both linters and agents can consume.
+
+The rules also define:
+
+- `internal_import_roots` for repo-absolute imports like `src/service/foo`
+- `internal_import_aliases` for aliases like `@/service/foo`
 
 ---
 
@@ -137,4 +142,4 @@ Update `harness/rules/dependency-layers.json` with your actual directory mapping
 ---
 
 *Machine-readable rules: `harness/rules/dependency-layers.json`*
-*Linter: `harness/linters/lint-layers.sh`*
+*Linter: `bun run harness:lint`*

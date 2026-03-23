@@ -1,27 +1,16 @@
 #!/usr/bin/env bash
-# pre-commit — Run linters on staged files before every commit.
-# Installed to .git/hooks/pre-commit by harness/scripts/install-hooks.sh
-#
-# If this hook blocks your commit, READ the error messages.
-# They contain specific remediation instructions.
-# Do NOT use --no-verify to bypass. Fix the underlying issue.
-
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-
 echo "harness: running pre-commit checks..."
 echo ""
 
-# Run all linters (they check staged files via git ls-files)
-if bash "$REPO_ROOT/harness/linters/lint-all.sh"; then
+if bun run harness:lint; then
   echo ""
   echo "harness: pre-commit checks passed."
 else
   echo ""
   echo "harness: pre-commit checks FAILED."
-  echo "Fix the issues above, then re-stage and commit."
-  echo ""
   echo "Do NOT use --no-verify. Fix the root cause."
   exit 1
 fi

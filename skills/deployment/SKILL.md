@@ -8,7 +8,7 @@ Before opening a PR:
 
 1. **Validation passes**
    ```bash
-   ./harness/scripts/validate.sh
+   bun run harness:validate
    ```
 
 2. **Branch is up to date with main**
@@ -56,7 +56,7 @@ gh pr create \
 - **NEVER** force-push to main or master
 - **NEVER** merge without CI passing
 - **NEVER** run database migrations without human operator confirmation
-- **NEVER** skip `./harness/scripts/validate.sh`
+- **NEVER** skip `bun run harness:validate`
 
 ## See Also
 

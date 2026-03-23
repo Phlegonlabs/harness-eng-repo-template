@@ -24,6 +24,11 @@
       "reason": "Harness scripts should be focused and composable."
     },
     {
+      "pattern": "harness/runtime/*.ts",
+      "limit": 450,
+      "reason": "Harness TypeScript runtime files may be larger but should stay modular."
+    },
+    {
       "pattern": "**/*.json",
       "limit": 200,
       "reason": "Large JSON config files should be split into smaller focused files."

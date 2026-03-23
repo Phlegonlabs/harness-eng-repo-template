@@ -44,10 +44,10 @@ If coverage drops below threshold, the hook re-engages the agent to add tests.
 
 ## Structural Tests
 
-Architecture compliance tests live in `tests/architecture/` (or `harness/structural-tests/`). These enforce the dependency layer rules:
+Architecture compliance tests live in `tests/architecture/` (or the Bun harness runtime). These enforce the dependency layer rules:
 
 ```bash
-./harness/structural-tests/test-all.sh
+bun run harness:structural
 ```
 
 These are NOT functional tests — they test the architecture itself.
@@ -77,6 +77,6 @@ it('should return error when user not found', async () => {
 
 ## See Also
 
-- `harness/structural-tests/` — Architecture compliance tests
+- `harness/runtime/` — Architecture compliance runtime
 - `harness/rules/file-size-limits.json` — Test file size limits (300 lines)
 - `hooks/pre-stop.sh` — Coverage enforcement

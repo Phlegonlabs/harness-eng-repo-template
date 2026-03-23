@@ -1,6 +1,5 @@
 # Product Requirements Document
 
-> **Template** — Replace all placeholder text below with your project's actual requirements.
 > This document is a living spec. Update it when requirements change.
 > Agents read this to understand *what* is being built and *why*.
 
@@ -8,16 +7,11 @@
 
 ## Executive Summary
 
-<!-- One paragraph: what is this product, who is it for, what problem does it solve? -->
-
 **[PROJECT_NAME]** is a [type of product] that helps [target users] to [accomplish goal] by [core mechanism].
 
 ---
 
 ## Problem Statement
-
-<!-- What specific pain point or opportunity is this addressing?
-     Be concrete: describe the current state, the gap, and the impact. -->
 
 **Current state:** [Describe the status quo]
 
@@ -29,8 +23,6 @@
 
 ## Target Audience
 
-<!-- Who are the primary users? Be specific about roles, technical sophistication, and context. -->
-
 | Persona | Description | Primary Goal |
 |---------|-------------|--------------|
 | [Persona 1] | [Description] | [Goal] |
@@ -39,8 +31,6 @@
 ---
 
 ## Core Capabilities
-
-<!-- What must this product do? Prioritize by MoSCoW: Must / Should / Could / Won't -->
 
 ### Must Have (v1)
 - [ ] [Capability 1]
@@ -54,6 +44,13 @@
 
 ### Won't Have (out of scope)
 - [Explicitly excluded thing]
+
+---
+
+## Proposed Milestones
+
+- [ ] [Milestone 1] — [Goal / shipped outcome]
+- [ ] [Milestone 2] — [Goal / shipped outcome]
 
 ---
 
@@ -93,6 +90,16 @@
 
 - [ ] [Question 1] — *Owner: [name], Due: [date]*
 - [ ] [Question 2] — *Owner: [name], Due: [date]*
+
+---
+
+## Planning Readiness Checklist
+
+- [ ] Product goals are explicit
+- [ ] In-scope vs out-of-scope is explicit
+- [ ] Success metrics are explicit
+- [ ] Proposed milestones are listed
+- [ ] No critical unknown blocks architecture work
 
 ---
 

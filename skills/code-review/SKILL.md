@@ -7,7 +7,7 @@ Use this skill when reviewing PRs or validating code changes before merging.
 - [ ] Dependencies flow downward only: Types → Config → Repo → Service → Runtime → UI
 - [ ] No circular dependencies introduced
 - [ ] Domain boundaries respected — no cross-domain direct imports
-- [ ] Layer violations: `./harness/linters/lint-layers.sh` passes
+- [ ] Layer violations: `bun run harness:lint` passes
 
 ## Code Quality Checklist
 
@@ -25,7 +25,7 @@ Use this skill when reviewing PRs or validating code changes before merging.
 - [ ] Edge cases and error paths covered
 - [ ] Coverage has not decreased
 - [ ] Tests are deterministic (no flakiness)
-- [ ] Structural tests still pass: `./harness/structural-tests/test-all.sh`
+- [ ] Structural tests still pass: `bun run harness:structural`
 
 ## Documentation Checklist
 
@@ -37,7 +37,7 @@ Use this skill when reviewing PRs or validating code changes before merging.
 ## How to Run All Checks
 
 ```bash
-./harness/scripts/validate.sh
+bun run harness:validate
 ```
 
 This runs: health check + linters + structural tests + entropy scans.
@@ -62,6 +62,6 @@ Provide review feedback as:
 
 ## See Also
 
-- `harness/linters/lint-all.sh` — Run all linters
-- `harness/structural-tests/test-all.sh` — Run structural tests
+- `bun run harness:lint` — Run all linters
+- `bun run harness:structural` — Run structural tests
 - `docs/internal/boundaries.md` — What agents may/may not do

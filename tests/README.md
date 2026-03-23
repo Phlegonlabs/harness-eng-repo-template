@@ -30,13 +30,13 @@ tests/
 
 ## Harness Structural Tests
 
-The harness itself has structural tests in `harness/structural-tests/`. These test the repository structure, not application behavior:
+The harness itself has structural checks in `harness/runtime/`. These test the repository structure, not application behavior:
 
 ```bash
-./harness/structural-tests/test-all.sh
+bun run harness:structural
 ```
 
 ## See Also
 
 - [Agent Entry — Testing conventions](../docs/internal/agent-entry.md)
-- [Validation](../harness/scripts/validate.sh)
+- [Validation](../package.json)

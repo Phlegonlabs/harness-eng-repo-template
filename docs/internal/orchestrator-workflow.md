@@ -1,0 +1,102 @@
+# Orchestrator Workflow
+
+This repository uses a single orchestration model for Codex and Claude.
+
+The planning and execution sequence is:
+
+1. `bun run harness:discover` selects the next user question and writes incremental PRD/architecture updates.
+2. `docs/product.md` captures product intent, success criteria, scope, and proposed milestones.
+3. `docs/architecture.md` captures system shape, constraints, module boundaries, and milestone-splitting constraints.
+4. `bun run harness:plan` validates both docs and synchronizes:
+   - `docs/progress.md`
+   - `.harness/state.json`
+5. Milestones become the top-level executable units.
+6. Tasks are executed inside one milestone at a time.
+7. Different milestones may run in parallel through isolated git worktrees.
+
+---
+
+## Canonical Surfaces
+
+| Surface | Role |
+|--------|------|
+| `docs/product.md` | PRD canon |
+| `docs/architecture.md` | Architecture canon |
+| `docs/progress.md` | Human-readable backlog and execution status |
+| `.harness/state.json` | Machine-owned execution state |
+| `harness/skills/registry.json` | Skill-loading policy and runtime defaults |
+
+---
+
+## Planning Contract
+
+Backlog generation is blocked until all three conditions are true:
+
+- `docs/product.md` no longer contains template placeholders
+- `docs/architecture.md` no longer contains template placeholders
+- `docs/product.md` includes a `## Proposed Milestones` section with milestone bullets
+
+`harness:discover` is responsible for:
+
+- selecting the next PRD or architecture question
+- recording answers into `.harness/state.json`
+- edge-writing complete `docs/product.md` and `docs/architecture.md`
+
+When those conditions are met, `harness:plan` generates milestone records and placeholder tasks.
+
+---
+
+## Milestone and Task Model
+
+Milestones are the unit of parallelism.
+
+Each milestone records:
+
+- `id`
+- `title`
+- `goal`
+- `status`
+- `dependsOn`
+- `parallelEligible`
+- `affectedAreas`
+- `worktreeName`
+
+Each task records:
+
+- `id`
+- `milestoneId`
+- `title`
+- `kind`
+- `status`
+- `dependsOn`
+- `affectedFilesOrAreas`
+- `requiredSkills`
+- `validationChecks`
+
+Tasks inside one milestone are serial by default.
+Only read-only sidecars may overlap inside the same milestone.
+
+---
+
+## Parallel Dispatch
+
+`bun run harness:parallel-dispatch -- --apply` may allocate worktrees for milestones only when:
+
+- the milestone has no unmet dependency
+- `parallelEligible` is true
+- its `affectedAreas` do not overlap with active milestones
+
+The dispatcher records worktree ownership in `.harness/state.json`.
+
+---
+
+## Skill Loading
+
+Skills follow progressive disclosure:
+
+1. The runtime reads `harness/skills/registry.json`
+2. It selects candidate skills from the current phase and task kind
+3. It loads only the skill paths needed for the current task
+4. It records the loaded skills in `.harness/state.json`
+
+Codex and Claude must follow the same registry and triggers.

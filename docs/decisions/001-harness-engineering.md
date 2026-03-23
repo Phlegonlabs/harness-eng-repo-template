@@ -32,7 +32,7 @@ We adopt **Harness Engineering** as the foundational methodology for this projec
 
 **Considered alternatives:**
 
-- **Option A (chosen): Harness Engineering** — Encodes constraints as files in the repo (JSON rules, shell linters, structural tests). Agents read the same rules that enforce them. Works offline and is language-agnostic.
+- **Option A (chosen): Harness Engineering** — Encodes constraints as files in the repo (JSON rules, Bun/TypeScript validators, structural tests). Agents read the same rules that enforce them. Works offline and is language-agnostic.
 
 - **Option B: Style guide document only** — Rejected because it requires agents to interpret prose and self-enforce. Inconsistent and unverifiable.
 
@@ -58,7 +58,7 @@ We adopt **Harness Engineering** as the foundational methodology for this projec
 
 ### Negative / Trade-offs
 - Initial setup cost: ~2-4 hours to configure the harness for a new project
-- Requires `jq` and bash to be available in the development environment
+- Requires `Bun` and `git` in the development environment
 - Golden rules need maintenance as the project evolves
 
 ### Risks
@@ -71,10 +71,9 @@ We adopt **Harness Engineering** as the foundational methodology for this projec
 
 The harness infrastructure lives in `harness/`:
 - Rules: `harness/rules/*.json` — machine-readable golden rules
-- Linters: `harness/linters/*.sh` — enforce rules with teaching error messages
-- Structural tests: `harness/structural-tests/*.sh` — verify architecture
-- Entropy scans: `harness/entropy/*.sh` — detect drift weekly
+- Runtime: `harness/runtime/*.ts` — canonical Bun/TypeScript harness implementation
 - Git hooks: `harness/hooks/` — enforced at commit/push time
-- Scripts: `harness/scripts/` — bootstrap, doctor, validate
+- Package scripts: `bun run harness:*` — bootstrap, doctor, validate, plan, orchestration
+- State: `.harness/state.json` — machine-owned planning and execution state
 
-The full validation suite: `./harness/scripts/validate.sh`
+The full validation suite: `bun run harness:validate`

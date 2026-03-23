@@ -14,10 +14,16 @@
     "AGENTS.md",
     "CLAUDE.md",
     "README.md",
+    "package.json",
+    "tsconfig.json",
     "docs/product.md",
     "docs/architecture.md",
+    "docs/progress.md",
     "docs/internal/agent-entry.md",
+    "docs/internal/orchestrator-workflow.md",
+    ".harness/state.json",
     "harness/config.json",
-    "harness/rules/dependency-layers.json"
+    "harness/rules/dependency-layers.json",
+    "harness/skills/registry.json"
   ]
 }

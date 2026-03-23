@@ -34,6 +34,8 @@
     "CHANGELOG.md",
     "LICENSE",
     "SECURITY.md",
+    "src/README.md",
+    "tests/README.md",
     ".github/**",
     "Makefile",
     "Dockerfile"
