@@ -80,6 +80,57 @@ When a golden rule needs to change:
 
 ---
 
+## Skills
+
+Skills live in `skills/` and provide on-demand guidance. Don't include them in every agent session — reference them only when needed:
+
+```bash
+# Tell the agent to read a skill:
+# "Read skills/implementation/SKILL.md before proceeding."
+```
+
+| Skill | When to Use |
+|-------|------------|
+| `skills/research/SKILL.md` | Agent needs to explore unfamiliar code |
+| `skills/implementation/SKILL.md` | Agent is implementing a feature |
+| `skills/testing/SKILL.md` | Agent is writing tests |
+| `skills/code-review/SKILL.md` | Agent is reviewing a PR |
+| `skills/deployment/SKILL.md` | Agent is preparing to open a PR |
+
+## Execution Plans
+
+For complex features that touch multiple layers, create an execution plan before the agent starts coding:
+
+```bash
+cp docs/execution-plans/TEMPLATE.md docs/execution-plans/your-feature.md
+# Fill in objective, scope, prerequisites, and phases
+# Tell the agent: "Follow docs/execution-plans/your-feature.md"
+```
+
+## Quality Grades
+
+Track domain and layer quality in `docs/quality/GRADES.md`. Update after major changes or when the weekly entropy scan surfaces issues.
+
+## Claude Code Hooks
+
+Two hooks run automatically (configured in `.claude/settings.json`):
+
+- **`hooks/pre-stop.sh`** — Runs before the agent finishes. Validates harness + runs project checks. Exit 2 re-engages the agent to fix issues. Customize for your stack (uncomment the relevant section).
+- **`hooks/post-stop-notify.sh`** — Optional Slack notification. Set `SLACK_WEBHOOK_URL` in your environment.
+
+## Running Evals
+
+Test the agent on a task and score the result:
+
+```bash
+# Run an eval task
+./evals/run.sh example-task
+
+# Create a new eval task
+cp evals/tasks/example-task.md evals/tasks/your-task.md
+# Fill in the prompt and expected behaviors
+```
+
 ## Governance Templates
 
 Use the templates in `docs/templates/` for:

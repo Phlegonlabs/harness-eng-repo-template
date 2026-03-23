@@ -38,24 +38,41 @@ git clone <this-repo> my-project && cd my-project
 
 ```
 .
-├── AGENTS.md              # Universal agent entry point (~100 lines)
-├── CLAUDE.md              # Claude Code specific instructions
-├── docs/                  # Pillar 1: Context Engineering
-│   ├── product.md         # Product requirements (fill this in)
-│   ├── architecture.md    # System architecture (fill this in)
-│   ├── glossary.md        # Project terminology
-│   ├── internal/          # Agent & operator guides
-│   └── decisions/         # Architecture Decision Records (ADRs)
-├── harness/               # Pillar 2+3: Constraints + Entropy
-│   ├── rules/             # Golden rules as machine-readable JSON
-│   ├── linters/           # Custom linters with teaching error messages
-│   ├── structural-tests/  # Architecture compliance tests
-│   ├── entropy/           # Drift & consistency scans
-│   ├── hooks/             # Git hooks (pre-commit, commit-msg, pre-push)
-│   └── scripts/           # bootstrap, doctor, validate, install-hooks
-├── .github/               # CI/CD workflows + PR/issue templates
-├── src/                   # Your source code goes here
-└── tests/                 # Your tests go here
+├── AGENTS.md                  # Universal agent entry point (~100 lines)
+├── CLAUDE.md                  # Claude Code specific instructions
+├── .claude/
+│   └── settings.json          # Agent permissions, hooks, model config
+├── docs/                      # Pillar 1: Context Engineering
+│   ├── product.md             # Product requirements (fill this in)
+│   ├── architecture.md        # System architecture (fill this in)
+│   ├── glossary.md            # Project terminology
+│   ├── internal/              # Agent & operator guides
+│   ├── decisions/             # Architecture Decision Records (ADRs)
+│   ├── execution-plans/       # Step-by-step implementation plans
+│   └── quality/
+│       └── GRADES.md          # Domain & layer quality tracking
+├── skills/                    # On-demand knowledge — loaded when needed
+│   ├── research/SKILL.md      # Codebase research patterns
+│   ├── implementation/SKILL.md # Feature implementation guide
+│   ├── testing/SKILL.md       # Testing patterns & rules
+│   ├── code-review/SKILL.md   # PR review checklist
+│   └── deployment/SKILL.md    # PR & deployment workflow
+├── hooks/                     # Claude Code hooks (back-pressure)
+│   ├── pre-stop.sh            # Runs before agent stops — enforces quality
+│   └── post-stop-notify.sh    # Optional Slack notification
+├── evals/                     # Agent performance evaluation
+│   ├── run.sh                 # Eval runner
+│   └── tasks/                 # Eval task definitions
+├── harness/                   # Pillar 2+3: Constraints + Entropy
+│   ├── rules/                 # Golden rules as machine-readable JSON
+│   ├── linters/               # Custom linters with teaching error messages
+│   ├── structural-tests/      # Architecture compliance tests
+│   ├── entropy/               # Drift & consistency scans
+│   ├── hooks/                 # Git hooks (pre-commit, commit-msg, pre-push)
+│   └── scripts/               # bootstrap, doctor, validate, install-hooks
+├── .github/                   # CI/CD workflows + PR/issue templates
+├── src/                       # Your source code goes here
+└── tests/                     # Your tests go here
 ```
 
 ---
@@ -82,6 +99,26 @@ This is a **Level 2 Harness** (team-level), covering:
 - Governance templates (ADRs, runbooks)
 
 See [docs/internal/operator-guide.md](docs/internal/operator-guide.md) for day-to-day workflow details.
+
+---
+
+## Key Components
+
+| Component | Purpose | Location |
+|-----------|---------|----------|
+| **AGENTS.md / CLAUDE.md** | Agent entry points & project map | Root |
+| **skills/** | On-demand knowledge (loaded when needed) | `skills/` |
+| **hooks/** | Automated quality gates (back-pressure) | `hooks/` |
+| **evals/** | Measure agent effectiveness | `evals/` |
+| **harness/rules/** | Golden rules as machine-readable JSON | `harness/rules/` |
+| **harness/linters/** | Teaching error messages | `harness/linters/` |
+| **harness/structural-tests/** | Enforce architecture mechanically | `harness/structural-tests/` |
+| **harness/entropy/** | Drift & consistency detection | `harness/entropy/` |
+| **docs/decisions/** | ADRs — record decisions for agent context | `docs/decisions/` |
+| **docs/execution-plans/** | Step-by-step guides for complex tasks | `docs/execution-plans/` |
+| **docs/quality/GRADES.md** | Track tech debt per domain/layer | `docs/quality/` |
+
+> When something fails, the fix is almost never "try harder." Ask: *what capability is missing, and how do we make it both legible and enforceable for the agent?*
 
 ---
 

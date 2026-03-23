@@ -105,9 +105,36 @@ Quick individual checks:
 
 ---
 
-## Tool Availability
+## Skills (Load on Demand)
 
-Tools exposed via CLI in this repo:
+Skills provide detailed guidance for specific task types. Load them when you need them — don't read all of them upfront.
+
+| Skill | Load When |
+|-------|----------|
+| `skills/research/SKILL.md` | Before working in an unfamiliar area |
+| `skills/implementation/SKILL.md` | Implementing a feature |
+| `skills/testing/SKILL.md` | Writing or improving tests |
+| `skills/code-review/SKILL.md` | Reviewing a PR |
+| `skills/deployment/SKILL.md` | Before opening a PR |
+
+---
+
+## Execution Plans
+
+For complex multi-phase features, create an execution plan before coding:
+- Template: `docs/execution-plans/TEMPLATE.md`
+- Place plans in: `docs/execution-plans/<feature-name>.md`
+
+---
+
+## Quality
+
+Track domain and layer quality in `docs/quality/GRADES.md`.
+Update after significant changes.
+
+---
+
+## Tool Availability
 
 | Command | Purpose |
 |---------|---------|
@@ -115,6 +142,7 @@ Tools exposed via CLI in this repo:
 | `./harness/scripts/doctor.sh` | Health check — verify harness is intact |
 | `./harness/scripts/validate.sh` | Full validation suite |
 | `./harness/scripts/install-hooks.sh` | Install git hooks |
+| `./evals/run.sh <task>` | Run an agent eval task |
 
 ---
 

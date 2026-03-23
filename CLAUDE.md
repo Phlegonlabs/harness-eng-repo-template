@@ -56,6 +56,20 @@ When committing:
 
 ---
 
+## Skills (Progressive Disclosure)
+
+Load a skill when you need detailed guidance on a specific task type. They live in `skills/` and are loaded on demand — not pre-loaded into every session.
+
+| Skill | When to Load |
+|-------|-------------|
+| `skills/research/SKILL.md` | Before working in an unfamiliar area |
+| `skills/implementation/SKILL.md` | When implementing a new feature |
+| `skills/testing/SKILL.md` | When writing or improving tests |
+| `skills/code-review/SKILL.md` | When reviewing a PR or validating changes |
+| `skills/deployment/SKILL.md` | Before opening a PR or deploying |
+
+---
+
 ## Available Scripts
 
 | Script | Purpose |
@@ -64,6 +78,24 @@ When committing:
 | `./harness/scripts/doctor.sh` | Health check |
 | `./harness/scripts/validate.sh` | Full validation (run before handoff) |
 | `./harness/scripts/install-hooks.sh` | Install git hooks |
+
+---
+
+## Hooks (Back-Pressure)
+
+`hooks/pre-stop.sh` runs automatically before the agent session ends (configured in `.claude/settings.json`). It enforces quality: harness validation + project-specific checks (typecheck, lint, tests, coverage). If it exits 2, the agent is re-engaged to fix the issue.
+
+**Do not bypass hooks. Fix the underlying issue.**
+
+---
+
+## When You're Stuck
+
+1. Read the relevant ADR in `docs/decisions/` — the decision may already be made
+2. Check `docs/architecture.md` for module boundaries
+3. Load `skills/research/SKILL.md` and delegate research to a sub-agent
+4. If a pattern isn't documented, **document it before implementing**
+5. If scope is unclear, do less and ask
 
 ---
 
