@@ -8,10 +8,10 @@ const destination = path.join(root, ".git/hooks");
 
 mkdirSync(destination, { recursive: true });
 for (const file of readdirSync(source)) {
-  const fullPath = path.join(source, file);
-  if (!statSync(fullPath).isFile()) continue;
-  copyFileSync(fullPath, path.join(destination, file));
-  console.log(`  Installed: .git/hooks/${file}`);
+	const fullPath = path.join(source, file);
+	if (!statSync(fullPath).isFile()) continue;
+	copyFileSync(fullPath, path.join(destination, file));
+	console.log(`  Installed: .git/hooks/${file}`);
 }
 
 console.log("");

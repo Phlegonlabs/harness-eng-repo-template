@@ -5,12 +5,14 @@ import type { SkillRegistry } from "./types";
 
 const root = repoRoot();
 const state = loadState(root);
-const registry = readJson<SkillRegistry>(path.join(root, "harness/skills/registry.json"));
+const registry = readJson<SkillRegistry>(
+	path.join(root, "harness/skills/registry.json"),
+);
 const pendingTask = state.tasks.find((task) => task.status === "pending");
 
 if (!pendingTask) {
-  console.log("No pending tasks.");
-  process.exit(0);
+	console.log("No pending tasks.");
+	process.exit(0);
 }
 
 const phaseSkills = registry.phases[state.planning.phase] ?? [];

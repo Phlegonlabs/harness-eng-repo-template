@@ -1,146 +1,209 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirSync } from "node:fs";
+import {
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	statSync,
+	writeFileSync,
+} from "node:fs";
 import path from "node:path";
 
 const textExtensions = new Set([
-  ".md", ".txt", ".json", ".yml", ".yaml", ".ts", ".tsx", ".js", ".jsx",
-  ".css", ".scss", ".html", ".xml", ".toml", ".ini", ".cfg", ".conf", ".env"
+	".md",
+	".txt",
+	".json",
+	".yml",
+	".yaml",
+	".ts",
+	".tsx",
+	".js",
+	".jsx",
+	".css",
+	".scss",
+	".html",
+	".xml",
+	".toml",
+	".ini",
+	".cfg",
+	".conf",
+	".env",
 ]);
 
 export function repoRoot(): string {
-  try {
-    return execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
-  } catch {
-    return process.cwd();
-  }
+	try {
+		return execFileSync("git", ["rev-parse", "--show-toplevel"], {
+			encoding: "utf8",
+		}).trim();
+	} catch {
+		return process.cwd();
+	}
 }
 
 export function repoRelative(root: string, target: string): string {
-  return path.relative(root, target).split(path.sep).join("/");
+	return path.relative(root, target).split(path.sep).join("/");
 }
 
 export function readJson<T>(target: string): T {
-  return JSON.parse(readFileSync(target, "utf8")) as T;
+	return JSON.parse(readFileSync(target, "utf8")) as T;
 }
 
 export function writeJson(target: string, value: unknown): void {
-  mkdirSync(path.dirname(target), { recursive: true });
-  writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`);
+	mkdirSync(path.dirname(target), { recursive: true });
+	writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 export function writeSection(label: string): void {
-  console.log("");
-  console.log("════════════════════════════════════════════");
-  console.log(`  ${label}`);
-  console.log("════════════════════════════════════════════");
+	console.log("");
+	console.log("════════════════════════════════════════════");
+	console.log(`  ${label}`);
+	console.log("════════════════════════════════════════════");
 }
 
-export function check(level: "PASS" | "FAIL" | "WARN" | "INFO", message: string): void {
-  console.log(`  ${level}: ${message}`);
+export function check(
+	level: "PASS" | "FAIL" | "WARN" | "INFO",
+	message: string,
+): void {
+	console.log(`  ${level}: ${message}`);
 }
 
 export function walkFiles(root: string): string[] {
-  const files: string[] = [];
-  for (const entry of readdirSync(root, { withFileTypes: true })) {
-    const fullPath = path.join(root, entry.name);
-    if (entry.name === ".git") continue;
-    if (entry.isDirectory()) {
-      files.push(...walkFiles(fullPath));
-    } else {
-      files.push(fullPath);
-    }
-  }
-  return files;
+	const files: string[] = [];
+	for (const entry of readdirSync(root, { withFileTypes: true })) {
+		const fullPath = path.join(root, entry.name);
+		if (entry.name === ".git") continue;
+		if (entry.isDirectory()) {
+			files.push(...walkFiles(fullPath));
+		} else {
+			files.push(fullPath);
+		}
+	}
+	return files;
 }
 
 export function trackedFiles(root: string): string[] {
-  try {
-    return execFileSync("git", ["-C", root, "ls-files"], { encoding: "utf8" })
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-  } catch {
-    return walkFiles(root).map((file) => repoRelative(root, file));
-  }
+	try {
+		return execFileSync("git", ["-C", root, "ls-files"], { encoding: "utf8" })
+			.split(/\r?\n/)
+			.map((line) => line.trim())
+			.filter(Boolean);
+	} catch {
+		return walkFiles(root).map((file) => repoRelative(root, file));
+	}
 }
 
 export function globToRegex(pattern: string): RegExp {
-  const escaped = pattern
-    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
-    .replace(/\*\*\//g, "(.+/)?")
-    .replace(/\*\*/g, ".*")
-    .replace(/\*/g, "[^/]*")
-    .replace(/\?/g, ".");
-  return new RegExp(`^${escaped}$`);
+	const escaped = pattern
+		.replace(/[.+^${}()|[\]\\]/g, "\\$&")
+		.replace(/\*\*\//g, "(.+/)?")
+		.replace(/\*\*/g, ".*")
+		.replace(/\*/g, "[^/]*")
+		.replace(/\?/g, ".");
+	return new RegExp(`^${escaped}$`);
 }
 
 export function isTextFile(target: string): boolean {
-  const ext = path.extname(target).toLowerCase();
-  if (textExtensions.has(ext)) return true;
-  return ["Dockerfile", "Makefile", "LICENSE", ".gitignore", ".editorconfig"].includes(path.basename(target));
+	const ext = path.extname(target).toLowerCase();
+	if (textExtensions.has(ext)) return true;
+	return [
+		"Dockerfile",
+		"Makefile",
+		"LICENSE",
+		".gitignore",
+		".editorconfig",
+	].includes(path.basename(target));
 }
 
 export function lineCount(target: string): number {
-  if (!existsSync(target)) return 0;
-  return readFileSync(target, "utf8").split(/\r?\n/).length;
+	if (!existsSync(target)) return 0;
+	return readFileSync(target, "utf8").split(/\r?\n/).length;
 }
 
 export function markdownLinks(target: string): string[] {
-  const content = readFileSync(target, "utf8");
-  return [...content.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map((match) => match[1]).filter(Boolean);
+	const content = readFileSync(target, "utf8");
+	return [...content.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)]
+		.map((match) => match[1])
+		.filter(Boolean);
 }
 
 export function hasPlaceholderContent(target: string): boolean {
-  const content = readFileSync(target, "utf8");
-  return [
-    "[PROJECT_NAME]",
-    "[Describe",
-    "[Capability",
-    "[Metric",
-    "[Question",
-    "[External system",
-    "[Interface",
-    "[your build command]",
-    "[date]",
-    "[name]"
-  ].some((needle) => content.includes(needle));
+	const content = readFileSync(target, "utf8");
+	return [
+		"[PROJECT_NAME]",
+		"[Describe",
+		"[Capability",
+		"[Metric",
+		"[Question",
+		"[External system",
+		"[Interface",
+		"[your build command]",
+		"[date]",
+		"[name]",
+	].some((needle) => content.includes(needle));
 }
 
-export function lastCommitUnix(root: string, relativePath: string): number | null {
-  try {
-    return Number(execFileSync("git", ["-C", root, "log", "-1", "--format=%at", "--", relativePath], { encoding: "utf8" }).trim());
-  } catch {
-    return null;
-  }
+export function lastCommitUnix(
+	root: string,
+	relativePath: string,
+): number | null {
+	try {
+		return Number(
+			execFileSync(
+				"git",
+				["-C", root, "log", "-1", "--format=%at", "--", relativePath],
+				{ encoding: "utf8" },
+			).trim(),
+		);
+	} catch {
+		return null;
+	}
 }
 
-export function run(command: string, args: string[], cwd: string = repoRoot()): string {
-  return execFileSync(command, args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+export function run(
+	command: string,
+	args: string[],
+	cwd: string = repoRoot(),
+): string {
+	return execFileSync(command, args, {
+		cwd,
+		encoding: "utf8",
+		stdio: ["ignore", "pipe", "pipe"],
+	}).trim();
 }
 
-export function runPassthrough(command: string, args: string[], cwd: string = repoRoot()): number {
-  try {
-    execFileSync(command, args, { cwd, stdio: "inherit" });
-    return 0;
-  } catch (error) {
-    const status = typeof error === "object" && error && "status" in error ? (error as { status?: number }).status : 1;
-    return status ?? 1;
-  }
+export function runPassthrough(
+	command: string,
+	args: string[],
+	cwd: string = repoRoot(),
+): number {
+	try {
+		execFileSync(command, args, { cwd, stdio: "inherit" });
+		return 0;
+	} catch (error) {
+		const status =
+			typeof error === "object" && error && "status" in error
+				? (error as { status?: number }).status
+				: 1;
+		return status ?? 1;
+	}
 }
 
 export function ensureCleanMainWorktree(root: string): boolean {
-  return run("git", ["-C", root, "status", "--porcelain"]) === "";
+	return run("git", ["-C", root, "status", "--porcelain"]) === "";
 }
 
 export function slugify(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+	return value
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
 }
 
 export function exists(target: string): boolean {
-  return existsSync(target);
+	return existsSync(target);
 }
 
 export function fileMtimeUnix(target: string): number | null {
-  if (!existsSync(target)) return null;
-  return Math.floor(statSync(target).mtimeMs / 1000);
+	if (!existsSync(target)) return null;
+	return Math.floor(statSync(target).mtimeMs / 1000);
 }

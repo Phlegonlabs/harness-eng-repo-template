@@ -1,20 +1,27 @@
 {
-  "name": "harness-engineering-orchestrator-template",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "harness:doctor": "bun run harness/runtime/doctor.ts",
-    "harness:lint": "bun run harness/runtime/lint-all.ts",
-    "harness:structural": "bun run harness/runtime/test-all.ts",
-    "harness:entropy": "bun run harness/runtime/entropy-all.ts",
-    "harness:validate": "bun run harness/runtime/validate.ts",
-    "harness:discover": "bun run harness/runtime/discover.ts",
-    "harness:plan": "bun run harness/runtime/plan.ts",
-    "harness:orchestrate": "bun run harness/runtime/orchestrate.ts",
-    "harness:parallel-dispatch": "bun run harness/runtime/parallel-dispatch.ts",
-    "harness:merge-milestone": "bun run harness/runtime/merge-milestone.ts",
-    "harness:install-hooks": "bun run harness/runtime/install-hooks.ts",
-    "harness:bootstrap": "bun run harness/runtime/bootstrap.ts"
-  }
+	"name": "harness-engineering-orchestrator-template",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"harness:doctor": "bun run harness/runtime/doctor.ts",
+		"harness:lint": "bun run harness/runtime/lint-all.ts",
+		"harness:structural": "bun run harness/runtime/test-all.ts",
+		"harness:entropy": "bun run harness/runtime/entropy-all.ts",
+		"harness:validate": "bun run harness/runtime/validate.ts",
+		"harness:discover": "bun run harness/runtime/discover.ts",
+		"harness:plan": "bun run harness/runtime/plan.ts",
+		"harness:orchestrate": "bun run harness/runtime/orchestrate.ts",
+		"harness:parallel-dispatch": "bun run harness/runtime/parallel-dispatch.ts",
+		"harness:merge-milestone": "bun run harness/runtime/merge-milestone.ts",
+		"harness:install-hooks": "bun run harness/runtime/install-hooks.ts",
+		"harness:bootstrap": "bun run harness/runtime/bootstrap.ts",
+		"format": "biome format --write .",
+		"format:check": "biome check --formatter-enabled=true --linter-enabled=false .",
+		"lint:biome": "biome lint .",
+		"check": "biome check ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.8"
+	}
 }
