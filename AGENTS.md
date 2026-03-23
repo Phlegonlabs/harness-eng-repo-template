@@ -48,7 +48,7 @@ Full rules live in `docs/internal/agent-entry.md`. These 6 are non-negotiable:
 
 1. **Follow the dependency layer order** — see `harness/rules/dependency-layers.json`
    `Types → Config → Repo → Service → Runtime → UI`
-   Each layer may only import from layers below it.
+   Each layer may only import from layers below it inside a workspace.
 
 2. **Keep files under 500 lines** — see `harness/rules/file-size-limits.json`
    Split files that approach this limit into focused modules.
@@ -148,6 +148,10 @@ Update after significant changes.
 | `bun run harness:bootstrap -- <name>` | Initialize template with project name |
 | `bun run harness:doctor` | Health check |
 | `bun run harness:discover` | Ask and persist PRD/architecture discovery state |
+| `bun run build` | Run workspace builds through Turbo |
+| `bun run lint` | Run root + workspace lint checks |
+| `bun run typecheck` | Run root + workspace type checks |
+| `bun run test` | Run workspace test suites |
 | `bun run harness:validate` | Full validation suite |
 | `bun run harness:plan` | Sync milestones/tasks from PRD + architecture |
 | `bun run harness:orchestrate` | Show next task and suggested skills |

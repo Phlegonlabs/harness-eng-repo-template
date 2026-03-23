@@ -29,25 +29,26 @@ One sentence: what does this execution plan achieve?
 Follow the dependency layer order — bottom to top:
 
 ### Phase 1: Types & Config
-- [ ] Define types in `src/types/<domain>.ts`
-- [ ] Add configuration if needed (`src/config/`)
+- [ ] Choose the workspace first (`apps/<app>` or `packages/<pkg>`)
+- [ ] Define types in `<workspace>/src/types/<domain>.ts`
+- [ ] Add configuration if needed (`<workspace>/src/config/`)
 - [ ] Write type-level tests if applicable
 
 ### Phase 2: Data Layer (Repo)
-- [ ] Implement data access in `src/repo/<domain>/`
+- [ ] Implement data access in `<workspace>/src/repo/<domain>/`
 - [ ] Write unit tests for repo functions
 
 ### Phase 3: Business Logic (Service)
-- [ ] Implement service functions in `src/service/<domain>/`
+- [ ] Implement service functions in `<workspace>/src/service/<domain>/`
 - [ ] Write unit tests for service functions
 - [ ] Handle all error cases
 
 ### Phase 4: API / Runtime
-- [ ] Add route handlers in `src/runtime/`
+- [ ] Add route handlers in `<workspace>/src/runtime/`
 - [ ] Write integration tests
 
 ### Phase 5: UI (if applicable)
-- [ ] Build UI components in `src/ui/<domain>/`
+- [ ] Build UI components in `<workspace>/src/ui/<domain>/`
 - [ ] Write component tests
 
 ---

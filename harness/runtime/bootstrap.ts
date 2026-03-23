@@ -18,6 +18,42 @@ config.project_name = projectName;
 writeJson(configPath, config);
 saveState(root, stateTemplate(projectName));
 
+const packageJsonPath = path.join(root, "package.json");
+const packageJson = readJson<Record<string, unknown>>(packageJsonPath);
+packageJson.name = projectName;
+writeJson(packageJsonPath, packageJson);
+
+const templateScope = "@harness-template";
+const projectScope = `@${projectName}`;
+for (const relativePath of [
+	"apps/web/package.json",
+	"apps/api/package.json",
+	"packages/shared/package.json",
+]) {
+	const absolutePath = path.join(root, relativePath);
+	const workspacePackage = readJson<Record<string, unknown>>(absolutePath);
+	if (typeof workspacePackage.name === "string") {
+		workspacePackage.name = workspacePackage.name.replace(
+			templateScope,
+			projectScope,
+		);
+	}
+	for (const field of [
+		"dependencies",
+		"devDependencies",
+		"peerDependencies",
+	] as const) {
+		const dependencies = workspacePackage[field];
+		if (!dependencies || typeof dependencies !== "object") continue;
+		workspacePackage[field] = Object.fromEntries(
+			Object.entries(dependencies as Record<string, string>).map(
+				([key, value]) => [key.replace(templateScope, projectScope), value],
+			),
+		);
+	}
+	writeJson(absolutePath, workspacePackage);
+}
+
 writeFileSync(
 	path.join(root, ".env.example"),
 	readFileSync(path.join(root, ".env.example"), "utf8").replaceAll(

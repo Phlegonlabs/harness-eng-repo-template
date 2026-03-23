@@ -62,7 +62,7 @@ jobs:
         shell: bash
         run: |
           git fetch origin "${{ github.base_ref }}" --depth=1
-          ARCH_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'src/**' 2>/dev/null || true)
+          ARCH_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'apps/**' 'packages/**' 2>/dev/null || true)
           if [ -n "$ARCH_FILES" ]; then
             DOC_CHANGES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'docs/**' 2>/dev/null || true)
             if [ -z "$DOC_CHANGES" ]; then

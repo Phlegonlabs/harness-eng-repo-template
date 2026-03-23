@@ -48,8 +48,8 @@ pass() { echo "✅ $1"; ((SCORE++)) || true; ((TOTAL++)); }
 fail() { echo "❌ $1"; ((TOTAL++)); }
 
 # File existence checks
-# [ -f src/service/your-feature.ts ] && pass "Service file exists" || fail "Service file missing"
-# [ -f src/service/your-feature.test.ts ] && pass "Test file exists" || fail "Test file missing"
+# [ -f apps/api/src/service/your-feature.ts ] && pass "Service file exists" || fail "Service file missing"
+# [ -f tests/unit/apps-api/service/your-feature.test.ts ] && pass "Test file exists" || fail "Test file missing"
 
 # Quality checks
 bun run harness:validate 2>/dev/null && pass "Harness validation" || fail "Harness validation"

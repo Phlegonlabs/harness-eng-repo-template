@@ -15,7 +15,7 @@ tests/
 
 - Test files: use `*.test.*` or `*.spec.*` suffix
 - Max 300 lines per test file — split by concern if needed
-- Test files mirror the `src/` directory structure (e.g., `src/service/auth.ts` → `tests/unit/service/auth.test.ts`)
+- Test files mirror the relevant workspace structure (e.g., `apps/api/src/service/auth.ts` → `tests/unit/apps-api/service/auth.test.ts`)
 - Do not mock database or external services in integration tests — use real dependencies
 
 ## Running Tests

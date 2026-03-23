@@ -9,9 +9,12 @@ import {
 	lastCommitUnix,
 	lineCount,
 	markdownLinks,
+	normalizeRelativePath,
 	readJson,
 	repoRelative,
 	trackedFiles,
+	workspacePrefixForPath,
+	workspaceRelativePath,
 } from "./shared";
 import type {
 	DependencyRules,
@@ -43,11 +46,16 @@ export function validationContext(root: string): ValidationContext {
 }
 
 export function getLayerForPath(relativePath: string, rules: DependencyRules) {
-	const normalized = relativePath.replace(/\\/g, "/").replace(/^\.\//, "");
+	const workspaceRoots = rules.workspace_roots ?? [];
+	const normalized = normalizeRelativePath(relativePath);
+	const workspacePath = workspaceRelativePath(normalized, workspaceRoots);
+	const candidates = workspacePath ? [workspacePath, normalized] : [normalized];
 	return rules.layers.find((layer) =>
-		layer.directories.some(
-			(directory) =>
-				normalized === directory || normalized.startsWith(`${directory}/`),
+		layer.directories.some((directory) =>
+			candidates.some(
+				(candidate) =>
+					candidate === directory || candidate.startsWith(`${directory}/`),
+			),
 		),
 	);
 }
@@ -58,7 +66,12 @@ function resolveImportTarget(
 	root: string,
 	rules: DependencyRules,
 ): string | null {
-	const normalizedImport = importPath.replace(/\\/g, "/");
+	const normalizedImport = normalizeRelativePath(importPath);
+	const workspaceRoots = rules.workspace_roots ?? [];
+	const workspacePrefix = workspacePrefixForPath(
+		fileRelativePath,
+		workspaceRoots,
+	);
 	if (/^\.\.?\//.test(normalizedImport)) {
 		const parent = path.dirname(path.join(root, fileRelativePath));
 		return repoRelative(root, path.resolve(parent, normalizedImport));
@@ -68,10 +81,12 @@ function resolveImportTarget(
 			normalizedImport === alias ||
 			normalizedImport.startsWith(`${alias}/`)
 		) {
-			return `${target}/${normalizedImport.slice(alias.length).replace(/^\/+/, "")}`.replace(
-				/\/$/,
-				"",
-			);
+			const resolved =
+				`${target}/${normalizedImport.slice(alias.length).replace(/^\/+/, "")}`.replace(
+					/\/$/,
+					"",
+				);
+			return workspacePrefix ? `${workspacePrefix}/${resolved}` : resolved;
 		}
 	}
 	if (
@@ -81,7 +96,9 @@ function resolveImportTarget(
 				normalizedImport.startsWith(`${prefix}/`),
 		)
 	) {
-		return normalizedImport;
+		return workspacePrefix
+			? `${workspacePrefix}/${normalizedImport}`
+			: normalizedImport;
 	}
 	return null;
 }
@@ -98,8 +115,10 @@ function importPathsFromFile(target: string): string[] {
 
 export function runLayerLint(context: ValidationContext): number {
 	let errors = 0;
-	const files = trackedFiles(context.repoRoot).filter((file) =>
-		/^(src|pkg|cmd)\//.test(file),
+	const files = trackedFiles(context.repoRoot).filter(
+		(file) =>
+			/\.(ts|tsx|js|jsx|mjs|cjs)$/.test(file) &&
+			Boolean(getLayerForPath(file, context.dependencyRules)),
 	);
 	if (files.length === 0) {
 		check("INFO", "No source files found for layer lint.");

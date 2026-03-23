@@ -39,37 +39,37 @@ Each layer may only import from layers *below* (earlier in the sequence) it.
 
 ### Types
 - **Purpose:** Foundation. Shared type definitions, interfaces, constants, enums.
-- **Typical location:** `src/types/`
+- **Typical location:** `apps/<app>/src/types/` or `packages/<pkg>/src/types/`
 - **Allowed imports:** None (no internal imports)
 - **Examples:** `User`, `OrderStatus`, `ApiResponse<T>`
 
 ### Config
 - **Purpose:** Configuration, environment variables, feature flags.
-- **Typical location:** `src/config/`
+- **Typical location:** `apps/<app>/src/config/` or `packages/<pkg>/src/config/`
 - **Allowed imports:** `types`
 - **Examples:** `DatabaseConfig`, `loadEnv()`, `featureFlags`
 
 ### Repo
 - **Purpose:** Data access. Storage adapters, database queries, external API clients.
-- **Typical location:** `src/repo/`
+- **Typical location:** `apps/<app>/src/repo/` or `packages/<pkg>/src/repo/`
 - **Allowed imports:** `types`, `config`
 - **Examples:** `UserRepository`, `PaymentApiClient`, `CacheAdapter`
 
 ### Service
 - **Purpose:** Business logic. Use cases, workflows, domain operations.
-- **Typical location:** `src/service/`
+- **Typical location:** `apps/<app>/src/service/` or `packages/<pkg>/src/service/`
 - **Allowed imports:** `types`, `config`, `repo`
 - **Examples:** `AuthService`, `OrderService`, `NotificationService`
 
 ### Runtime
 - **Purpose:** Entrypoints. Servers, workers, schedulers, CLI.
-- **Typical location:** `src/runtime/`
+- **Typical location:** `apps/<app>/src/runtime/` or `packages/<pkg>/src/runtime/`
 - **Allowed imports:** `types`, `config`, `repo`, `service`
 - **Examples:** `HttpServer`, `BackgroundWorker`, `main()`
 
 ### UI
 - **Purpose:** User interface. Views, components, pages, client-side code.
-- **Typical location:** `src/ui/`
+- **Typical location:** `apps/<app>/src/ui/` or `packages/<pkg>/src/ui/`
 - **Allowed imports:** all layers
 - **Examples:** React components, templates, CLI output formatters
 
@@ -88,8 +88,11 @@ The `harness/hooks/pre-commit` hook runs `bun run harness:lint` before every com
 
 The rules also define:
 
+- `workspace_roots` for the top-level monorepo containers such as `apps/` and `packages/`
 - `internal_import_roots` for repo-absolute imports like `src/service/foo`
 - `internal_import_aliases` for aliases like `@/service/foo`
+
+Within a workspace, aliases such as `@/service/foo` resolve to that workspace's own `src/` tree. They must not be used to reach into another workspace.
 
 ---
 
@@ -130,12 +133,12 @@ The layer model is language-agnostic. Map it to your conventions:
 
 | Generic Layer | Node.js | Python | Go |
 |---------------|---------|--------|----|
-| types | `src/types/` | `src/models/` | `pkg/domain/` |
-| config | `src/config/` | `src/config/` | `pkg/config/` |
-| repo | `src/repo/` | `src/repositories/` | `pkg/store/` |
-| service | `src/service/` | `src/services/` | `pkg/service/` |
-| runtime | `src/runtime/` | `src/app/` | `cmd/` |
-| ui | `src/ui/` | `src/views/` | `pkg/handler/` |
+| types | `apps/*/src/types/` | `apps/*/src/models/` | `packages/*/pkg/domain/` |
+| config | `apps/*/src/config/` | `apps/*/src/config/` | `packages/*/pkg/config/` |
+| repo | `apps/*/src/repo/` | `apps/*/src/repositories/` | `packages/*/pkg/store/` |
+| service | `apps/*/src/service/` | `apps/*/src/services/` | `packages/*/pkg/service/` |
+| runtime | `apps/*/src/runtime/` | `apps/*/src/app/` | `apps/*/cmd/` |
+| ui | `apps/*/src/ui/` | `apps/*/src/views/` | `packages/*/pkg/handler/` |
 
 Update `harness/rules/dependency-layers.json` with your actual directory mappings.
 

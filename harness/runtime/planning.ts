@@ -129,6 +129,10 @@ export function stateTemplate(projectName: string): HarnessState {
 				"bun run harness:doctor",
 				"bun run harness:discover",
 				"bun run harness:validate",
+				"bun run build",
+				"bun run lint",
+				"bun run typecheck",
+				"bun run test",
 				"bun run harness:plan",
 				"bun run harness:orchestrate",
 				"bun run harness:parallel-dispatch",
@@ -164,10 +168,12 @@ export function stateTemplate(projectName: string): HarnessState {
 }
 
 export function loadState(root: string): HarnessState {
-	const state = readJson<HarnessState>(path.join(root, ".harness/state.json"));
-	if (!("discovery" in state)) {
+	const state = readJson<Partial<HarnessState>>(
+		path.join(root, ".harness/state.json"),
+	);
+	if (!state.discovery) {
 		return {
-			...state,
+			...(state as HarnessState),
 			discovery: {
 				stage: "PRD",
 				status: "idle",
@@ -183,7 +189,7 @@ export function loadState(root: string): HarnessState {
 			},
 		};
 	}
-	return state;
+	return state as HarnessState;
 }
 
 export function saveState(root: string, state: HarnessState): void {

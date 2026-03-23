@@ -35,7 +35,9 @@ try {
 writeSection("Harness Files");
 for (const relativePath of [
 	"package.json",
+	"turbo.json",
 	"tsconfig.json",
+	"tsconfig.base.json",
 	"harness/config.json",
 	"harness/rules/dependency-layers.json",
 	"harness/rules/file-size-limits.json",
@@ -55,6 +57,30 @@ for (const relativePath of [
 		check("PASS", `${relativePath} is valid JSON`);
 	} else {
 		check("PASS", `${relativePath} exists`);
+	}
+}
+
+const config = readJson<{
+	project_name: string;
+	workspace_roots: string[];
+	default_workspaces: string[];
+}>(path.join(root, "harness/config.json"));
+
+writeSection("Workspace Layout");
+for (const workspaceRoot of config.workspace_roots) {
+	if (exists(path.join(root, workspaceRoot))) {
+		check("PASS", `${workspaceRoot}/ exists`);
+	} else {
+		check("FAIL", `${workspaceRoot}/ is missing`);
+		errors += 1;
+	}
+}
+for (const workspace of config.default_workspaces) {
+	if (exists(path.join(root, workspace, "package.json"))) {
+		check("PASS", `${workspace}/package.json exists`);
+	} else {
+		check("FAIL", `${workspace}/package.json is missing`);
+		errors += 1;
 	}
 }
 
@@ -90,9 +116,6 @@ for (const hook of ["pre-commit", "commit-msg", "pre-push"]) {
 }
 
 writeSection("Bootstrap Status");
-const config = readJson<{ project_name: string }>(
-	path.join(root, "harness/config.json"),
-);
 if (config.project_name === "harness-template") {
 	check(
 		"WARN",

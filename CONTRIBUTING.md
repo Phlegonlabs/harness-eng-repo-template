@@ -10,11 +10,22 @@
 ## Commands
 
 ```bash
+bun run build
+bun run lint
+bun run typecheck
+bun run test
 bun run harness:doctor
 bun run harness:discover
 bun run harness:plan
 bun run harness:validate
 ```
+
+## Monorepo Shape
+
+- Put runnable applications in `apps/*`
+- Put shared libraries in `packages/*`
+- Apply the dependency layer model inside each workspace
+- Share code through package exports, not deep imports into another workspace's `src/`
 
 ## Commit Format
 

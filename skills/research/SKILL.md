@@ -45,8 +45,8 @@ Structure research findings as:
 [Concise summary of what was found]
 
 ## Key Files
-- `src/service/auth.ts:42` — Main auth handler
-- `src/repo/users.ts:15` — User lookup
+- `apps/api/src/service/auth.ts:42` — Main auth handler
+- `packages/shared/src/repo/users.ts:15` — Shared lookup logic
 
 ## Patterns Observed
 - [Pattern description]

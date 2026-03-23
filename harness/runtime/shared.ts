@@ -44,6 +44,31 @@ export function repoRelative(root: string, target: string): string {
 	return path.relative(root, target).split(path.sep).join("/");
 }
 
+export function normalizeRelativePath(target: string): string {
+	return target.replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+export function workspacePrefixForPath(
+	relativePath: string,
+	workspaceRoots: string[],
+): string | null {
+	const normalized = normalizeRelativePath(relativePath);
+	const segments = normalized.split("/");
+	if (segments.length < 3) return null;
+	if (!workspaceRoots.includes(segments[0])) return null;
+	return `${segments[0]}/${segments[1]}`;
+}
+
+export function workspaceRelativePath(
+	relativePath: string,
+	workspaceRoots: string[],
+): string | null {
+	const prefix = workspacePrefixForPath(relativePath, workspaceRoots);
+	if (!prefix) return null;
+	const normalized = normalizeRelativePath(relativePath);
+	return normalized.slice(prefix.length + 1);
+}
+
 export function readJson<T>(target: string): T {
 	return JSON.parse(readFileSync(target, "utf8")) as T;
 }
@@ -83,10 +108,20 @@ export function walkFiles(root: string): string[] {
 
 export function trackedFiles(root: string): string[] {
 	try {
-		return execFileSync("git", ["-C", root, "ls-files"], { encoding: "utf8" })
-			.split(/\r?\n/)
+		const tracked = execFileSync("git", ["-C", root, "ls-files"], {
+			encoding: "utf8",
+		});
+		const untracked = execFileSync(
+			"git",
+			["-C", root, "ls-files", "--others", "--exclude-standard"],
+			{
+				encoding: "utf8",
+			},
+		);
+		return [...new Set(`${tracked}\n${untracked}`.split(/\r?\n/))]
 			.map((line) => line.trim())
-			.filter(Boolean);
+			.filter(Boolean)
+			.filter((relativePath) => existsSync(path.join(root, relativePath)));
 	} catch {
 		return walkFiles(root).map((file) => repoRelative(root, file));
 	}

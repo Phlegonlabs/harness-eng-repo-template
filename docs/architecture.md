@@ -8,28 +8,15 @@
 ## Architecture Overview
 
 ```
-[User / Client]
-       │
-       ▼
-  ┌─────────┐
-  │   UI    │
-  └────┬────┘
-       │
-  ┌────▼────┐
-  │ Service │
-  └────┬────┘
-       │
-  ┌────▼────┐
-  │  Repo   │
-  └────┬────┘
-       │
-  ┌────▼────┐
-  │ Config  │
-  └────┬────┘
-       │
-  ┌────▼────┐
-  │  Types  │
-  └─────────┘
+[Monorepo Root]
+  ├── apps/web
+  ├── apps/api
+  ├── packages/shared
+  ├── harness/
+  └── docs/
+
+[Each workspace follows]
+Types → Config → Repo → Service → Runtime → UI
 ```
 
 ---
@@ -47,12 +34,12 @@ Types → Config → Repo → Service → Runtime → UI
 
 | Layer | Directory | Allowed Imports |
 |-------|-----------|-----------------|
-| `types` | `src/types/` | (none — foundational) |
-| `config` | `src/config/` | `types` |
-| `repo` | `src/repo/` | `types`, `config` |
-| `service` | `src/service/` | `types`, `config`, `repo` |
-| `runtime` | `src/runtime/` | `types`, `config`, `repo`, `service` |
-| `ui` | `src/ui/` | all layers |
+| `types` | `apps/*/src/types/`, `packages/*/src/types/` | (none — foundational) |
+| `config` | `apps/*/src/config/`, `packages/*/src/config/` | `types` |
+| `repo` | `apps/*/src/repo/`, `packages/*/src/repo/` | `types`, `config` |
+| `service` | `apps/*/src/service/`, `packages/*/src/service/` | `types`, `config`, `repo` |
+| `runtime` | `apps/*/src/runtime/`, `packages/*/src/runtime/` | `types`, `config`, `repo`, `service` |
+| `ui` | `apps/*/src/ui/`, `packages/*/src/ui/` | all layers |
 
 ---
 
@@ -89,7 +76,7 @@ Types → Config → Repo → Service → Runtime → UI
 | **Logging** | Structured JSON logs, no `console.log` in production |
 | **Error handling** | Errors typed at system boundaries, propagate as values inside |
 | **Authentication** | [Your approach] |
-| **Configuration** | Environment variables via `.env`, validated at startup |
+| **Configuration** | Environment variables via `.env`, validated at startup from the root or workspace entrypoint |
 
 ---
 
@@ -97,10 +84,10 @@ Types → Config → Repo → Service → Runtime → UI
 
 ```bash
 # Build
-[your build command]
+bun run build
 
 # Test
-[your test command]
+bun run test
 
 # Deploy
 [your deploy command]

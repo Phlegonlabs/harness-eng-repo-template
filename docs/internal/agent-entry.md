@@ -17,6 +17,8 @@ Types → Config → Repo → Service → Runtime → UI
 ```
 
 - Each layer may only import from layers *below* (to the left of) it.
+- In a monorepo, apply this rule **within each workspace** under `apps/*` and `packages/*`.
+- Cross-workspace imports must go through package names and exported entrypoints, not another workspace's internal files.
 - Layer violations are caught by `bun run harness:lint`.
 - The machine-readable rules live in `harness/rules/dependency-layers.json`.
 
@@ -80,10 +82,12 @@ Do not hand off a broken state. If validation fails, fix it.
 4. Read `docs/internal/orchestrator-workflow.md` for the planning/execution model
 5. Identify the specific task and its scope
 6. Check which layers will be touched (review `docs/internal/dependency-layers.md`)
+7. Identify which workspace(s) are affected before editing
 
 ### During Work
 
 - Work depth-first: break large goals into small, testable building blocks
+- Keep workspace boundaries explicit: apps consume packages through public exports
 - Commit atomically — one logical change per commit
 - Keep at most one significant change in flight at a time
 - Prefer editing existing files over creating new ones

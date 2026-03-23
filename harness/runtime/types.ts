@@ -2,6 +2,8 @@ export interface HarnessConfig {
 	version: string;
 	level: number;
 	project_name: string;
+	workspace_roots: string[];
+	default_workspaces: string[];
 	layers: string[];
 	validation: {
 		structural_tests: boolean;
@@ -21,6 +23,7 @@ export interface LayerRule {
 }
 
 export interface DependencyRules {
+	workspace_roots?: string[];
 	internal_import_roots: string[];
 	internal_import_aliases: Record<string, string>;
 	layers: LayerRule[];
