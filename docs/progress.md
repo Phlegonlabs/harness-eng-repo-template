@@ -1,7 +1,7 @@
 # Delivery Progress
 
-> This repository starts in a ready-to-customize state.
-> Run `bun run harness:plan` when you want the starter milestones and tasks materialized from the docs.
+> Generated from `bun run harness:plan`. Edit the PRD or architecture first,
+> then re-run planning to resync milestones and placeholder tasks.
 
 ---
 
@@ -9,10 +9,9 @@
 
 | Surface | Status | Notes |
 |--------|--------|-------|
-| `docs/product.md` | Ready | Engineer-template PRD baseline is ready to customize |
-| `docs/architecture.md` | Ready | Monorepo architecture baseline is ready to customize |
-| Discovery | Optional | Run `bun run harness:discover --reset` to enter guided discovery mode |
-| Backlog sync | Ready | Run `bun run harness:plan` to materialize starter milestones and tasks |
+| `docs/product.md` | Ready | PRD is complete enough to execute |
+| `docs/architecture.md` | Ready | Architecture is complete enough to execute |
+| Backlog sync | Ready | Milestones and tasks are synchronized |
 
 ---
 
@@ -20,7 +19,9 @@
 
 | Milestone | Goal | Status | Depends On | Parallel | Worktree |
 |-----------|------|--------|------------|----------|----------|
-| *(run `bun run harness:plan` to generate milestone records)* | - | - | - | - | - |
+| M1 | Customize project identity and ownership surfaces — replace template naming, ownership, and environment defaults for the new repository | planned | - | Yes | - |
+| M2 | Implement the first vertical slice — ship one real cross-workspace feature through `apps/*` and `packages/*` | planned | - | Yes | - |
+| M3 | Harden for team delivery — add product-specific validation, deployment, and operational checks | planned | - | Yes | - |
 
 ---
 
@@ -28,7 +29,23 @@
 
 | Task | Milestone | Kind | Status | Validation | Notes |
 |------|-----------|------|--------|------------|-------|
-| *(run `bun run harness:plan` to generate starter tasks)* | - | - | - | - | - |
+| T101 | M1 | research | pending | - | Skills: skills/research/SKILL.md |
+| T102 | M1 | implementation | pending | bun run harness:validate | Skills: skills/implementation/SKILL.md |
+| T103 | M1 | implementation | pending | bun run harness:validate | Skills: skills/implementation/SKILL.md |
+| T104 | M1 | testing | pending | bun run harness:validate | Skills: skills/testing/SKILL.md, skills/code-review/SKILL.md |
+| T105 | M1 | testing | pending | bun run harness:validate | Skills: skills/testing/SKILL.md, skills/code-review/SKILL.md |
+| T201 | M2 | research | pending | - | Skills: skills/research/SKILL.md |
+| T202 | M2 | implementation | pending | bun run harness:validate | Skills: skills/implementation/SKILL.md |
+| T203 | M2 | implementation | pending | bun run harness:validate | Skills: skills/implementation/SKILL.md |
+| T204 | M2 | implementation | pending | bun run harness:validate | Skills: skills/implementation/SKILL.md |
+| T205 | M2 | testing | pending | bun run harness:validate | Skills: skills/testing/SKILL.md, skills/code-review/SKILL.md |
+| T206 | M2 | testing | pending | bun run harness:validate | Skills: skills/testing/SKILL.md, skills/code-review/SKILL.md |
+| T301 | M3 | research | pending | - | Skills: skills/research/SKILL.md |
+| T302 | M3 | testing | pending | bun run harness:validate | Skills: skills/testing/SKILL.md, skills/code-review/SKILL.md |
+| T303 | M3 | deployment | pending | bun run harness:validate | Skills: skills/deployment/SKILL.md |
+| T304 | M3 | implementation | pending | bun run harness:validate | Skills: skills/implementation/SKILL.md |
+| T305 | M3 | testing | pending | bun run harness:validate | Skills: skills/testing/SKILL.md, skills/code-review/SKILL.md |
+| T306 | M3 | testing | pending | bun run harness:validate | Skills: skills/testing/SKILL.md, skills/code-review/SKILL.md |
 
 ---
 
@@ -42,4 +59,4 @@
 
 ## Activity Log
 
-- Ready template baseline refreshed on 2026-03-23.
+- Planning synchronized on 2026-03-24T08:55:42.301Z.

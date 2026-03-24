@@ -25,11 +25,11 @@
 		]
 	},
 	"planning": {
-		"phase": "READY",
+		"phase": "PLANNING",
 		"docsReady": {
 			"product": true,
 			"architecture": true,
-			"backlog": false
+			"backlog": true
 		},
 		"approvals": {
 			"planApproved": false,
@@ -67,8 +67,347 @@
 		},
 		"lastUpdatedAt": "2026-03-23T17:22:38.478Z"
 	},
-	"milestones": [],
-	"tasks": [],
+	"milestones": [
+		{
+			"id": "M1",
+			"title": "Customize project identity and ownership surfaces — replace template naming, ownership, and environment defaults for the new repository",
+			"goal": "Customize project identity and ownership surfaces — replace template naming, ownership, and environment defaults for the new repository",
+			"status": "planned",
+			"dependsOn": [],
+			"parallelEligible": true,
+			"affectedAreas": [],
+			"worktreeName": null,
+			"taskHints": [
+				"Update harness/config.json with project name and ownership",
+				"Replace template placeholders across docs and configs",
+				"Validate initialization with harness:doctor"
+			]
+		},
+		{
+			"id": "M2",
+			"title": "Implement the first vertical slice — ship one real cross-workspace feature through `apps/*` and `packages/*`",
+			"goal": "Implement the first vertical slice — ship one real cross-workspace feature through `apps/*` and `packages/*`",
+			"status": "planned",
+			"dependsOn": [],
+			"parallelEligible": true,
+			"affectedAreas": [],
+			"worktreeName": null,
+			"taskHints": [
+				"Define shared types and contracts in packages/shared",
+				"Implement API endpoint in apps/api",
+				"Implement UI integration in apps/web",
+				"Add cross-workspace integration tests"
+			]
+		},
+		{
+			"id": "M3",
+			"title": "Harden for team delivery — add product-specific validation, deployment, and operational checks",
+			"goal": "Harden for team delivery — add product-specific validation, deployment, and operational checks",
+			"status": "planned",
+			"dependsOn": [],
+			"parallelEligible": true,
+			"affectedAreas": [],
+			"worktreeName": null,
+			"taskHints": [
+				"Review and tighten validation rules",
+				"Add deployment configuration",
+				"Add operational health checks and monitoring",
+				"Validate end-to-end delivery pipeline"
+			]
+		}
+	],
+	"tasks": [
+		{
+			"id": "T101",
+			"milestoneId": "M1",
+			"title": "Refine milestone design for Customize project identity and ownership surfaces — replace template naming, ownership, and environment defaults for the new repository",
+			"kind": "research",
+			"status": "pending",
+			"dependsOn": [],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/research/SKILL.md"
+			],
+			"validationChecks": []
+		},
+		{
+			"id": "T102",
+			"milestoneId": "M1",
+			"title": "Update harness/config.json with project name and ownership",
+			"kind": "implementation",
+			"status": "pending",
+			"dependsOn": [
+				"T101"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/implementation/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T103",
+			"milestoneId": "M1",
+			"title": "Replace template placeholders across docs and configs",
+			"kind": "implementation",
+			"status": "pending",
+			"dependsOn": [
+				"T102"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/implementation/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T104",
+			"milestoneId": "M1",
+			"title": "Validate initialization with harness:doctor",
+			"kind": "testing",
+			"status": "pending",
+			"dependsOn": [
+				"T103"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T105",
+			"milestoneId": "M1",
+			"title": "Validate Customize project identity and ownership surfaces — replace template naming, ownership, and environment defaults for the new repository",
+			"kind": "testing",
+			"status": "pending",
+			"dependsOn": [
+				"T104"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T201",
+			"milestoneId": "M2",
+			"title": "Refine milestone design for Implement the first vertical slice — ship one real cross-workspace feature through `apps/*` and `packages/*`",
+			"kind": "research",
+			"status": "pending",
+			"dependsOn": [],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/research/SKILL.md"
+			],
+			"validationChecks": []
+		},
+		{
+			"id": "T202",
+			"milestoneId": "M2",
+			"title": "Define shared types and contracts in packages/shared",
+			"kind": "implementation",
+			"status": "pending",
+			"dependsOn": [
+				"T201"
+			],
+			"affectedFilesOrAreas": [
+				"packages/shared"
+			],
+			"requiredSkills": [
+				"skills/implementation/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T203",
+			"milestoneId": "M2",
+			"title": "Implement API endpoint in apps/api",
+			"kind": "implementation",
+			"status": "pending",
+			"dependsOn": [
+				"T202"
+			],
+			"affectedFilesOrAreas": [
+				"apps/api"
+			],
+			"requiredSkills": [
+				"skills/implementation/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T204",
+			"milestoneId": "M2",
+			"title": "Implement UI integration in apps/web",
+			"kind": "implementation",
+			"status": "pending",
+			"dependsOn": [
+				"T203"
+			],
+			"affectedFilesOrAreas": [
+				"apps/web"
+			],
+			"requiredSkills": [
+				"skills/implementation/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T205",
+			"milestoneId": "M2",
+			"title": "Add cross-workspace integration tests",
+			"kind": "testing",
+			"status": "pending",
+			"dependsOn": [
+				"T204"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T206",
+			"milestoneId": "M2",
+			"title": "Validate Implement the first vertical slice — ship one real cross-workspace feature through `apps/*` and `packages/*`",
+			"kind": "testing",
+			"status": "pending",
+			"dependsOn": [
+				"T205"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T301",
+			"milestoneId": "M3",
+			"title": "Refine milestone design for Harden for team delivery — add product-specific validation, deployment, and operational checks",
+			"kind": "research",
+			"status": "pending",
+			"dependsOn": [],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/research/SKILL.md"
+			],
+			"validationChecks": []
+		},
+		{
+			"id": "T302",
+			"milestoneId": "M3",
+			"title": "Review and tighten validation rules",
+			"kind": "testing",
+			"status": "pending",
+			"dependsOn": [
+				"T301"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T303",
+			"milestoneId": "M3",
+			"title": "Add deployment configuration",
+			"kind": "deployment",
+			"status": "pending",
+			"dependsOn": [
+				"T302"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/deployment/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T304",
+			"milestoneId": "M3",
+			"title": "Add operational health checks and monitoring",
+			"kind": "implementation",
+			"status": "pending",
+			"dependsOn": [
+				"T303"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/implementation/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T305",
+			"milestoneId": "M3",
+			"title": "Validate end-to-end delivery pipeline",
+			"kind": "testing",
+			"status": "pending",
+			"dependsOn": [
+				"T304"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		},
+		{
+			"id": "T306",
+			"milestoneId": "M3",
+			"title": "Validate Harden for team delivery — add product-specific validation, deployment, and operational checks",
+			"kind": "testing",
+			"status": "pending",
+			"dependsOn": [
+				"T305"
+			],
+			"affectedFilesOrAreas": [],
+			"requiredSkills": [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md"
+			],
+			"validationChecks": [
+				"bun run harness:validate"
+			]
+		}
+	],
 	"execution": {
 		"activeMilestones": [],
 		"activeWorktrees": [],

@@ -4,6 +4,7 @@ import { hasPlaceholderContent, readJson, writeJson } from "./shared";
 import { baselineDiscoveryAnswers } from "./template-baseline";
 import type {
 	DiscoveryState,
+	HarnessConfig,
 	HarnessState,
 	MilestoneRecord,
 	TaskRecord,
@@ -34,68 +35,187 @@ export function milestonesFromProductDoc(
 
 	const milestones: MilestoneRecord[] = [];
 	let index = 1;
+	let current: MilestoneRecord | null = null;
+
 	for (const line of match[1].split(/\r?\n/)) {
-		const lineMatch = line.match(/^\s*-\s+(?:\[ \]\s+)?(.+?)\s*$/);
-		if (!lineMatch) continue;
-		const title = lineMatch[1].trim();
-		if (!title) continue;
-		milestones.push({
-			id: `M${index}`,
-			title,
-			goal: title,
-			status: "planned",
-			dependsOn: [],
-			parallelEligible: true,
-			affectedAreas: [],
-			worktreeName: null,
-		});
-		index += 1;
+		// Top-level bullet: milestone (no leading whitespace before -)
+		const topMatch = line.match(/^-\s+(?:\[ \]\s+)?(.+?)\s*$/);
+		if (topMatch) {
+			const title = topMatch[1].trim();
+			if (!title) continue;
+			current = {
+				id: `M${index}`,
+				title,
+				goal: title,
+				status: "planned",
+				dependsOn: [],
+				parallelEligible: true,
+				affectedAreas: [],
+				worktreeName: null,
+				taskHints: [],
+			};
+			milestones.push(current);
+			index += 1;
+			continue;
+		}
+
+		// Indented bullet: task hint (2+ spaces before -)
+		const subMatch = line.match(/^\s{2,}-\s+(?:\[ \]\s+)?(.+?)\s*$/);
+		if (subMatch && current) {
+			const hint = subMatch[1].trim();
+			if (hint) {
+				current.taskHints.push(hint);
+			}
+		}
 	}
 
 	return milestones;
 }
 
-export function defaultTasks(milestones: MilestoneRecord[]): TaskRecord[] {
+const KIND_PATTERNS: Array<{ pattern: RegExp; kind: string }> = [
+	{ pattern: /\b(tests?|testing|validat\w+|verify|assert)\b/i, kind: "testing" },
+	{ pattern: /\b(deploy\w*|release|publish)\b/i, kind: "deployment" },
+	{ pattern: /\b(review\w*|audit|inspect)\b/i, kind: "review" },
+	{ pattern: /\b(research|investigat\w+|explor\w+|analyz\w+|design)\b/i, kind: "research" },
+];
+
+function inferKind(hint: string): string {
+	for (const { pattern, kind } of KIND_PATTERNS) {
+		if (pattern.test(hint)) return kind;
+	}
+	return "implementation";
+}
+
+const SKILLS_BY_KIND: Record<string, string[]> = {
+	research: ["skills/research/SKILL.md"],
+	implementation: ["skills/implementation/SKILL.md"],
+	testing: ["skills/testing/SKILL.md", "skills/code-review/SKILL.md"],
+	review: ["skills/code-review/SKILL.md"],
+	deployment: ["skills/deployment/SKILL.md"],
+};
+
+function detectAreas(hint: string, workspaces: string[]): string[] {
+	return workspaces.filter(
+		(ws) => hint.includes(ws) || hint.includes(ws.split("/").pop() ?? ""),
+	);
+}
+
+function tasksFromHints(
+	suffix: string,
+	milestone: MilestoneRecord,
+	hints: string[],
+	workspaces: string[],
+): TaskRecord[] {
+	const tasks: TaskRecord[] = [];
+	let seq = 1;
+
+	// Always start with a research task
+	const researchId = `T${suffix}${String(seq).padStart(2, "0")}`;
+	tasks.push({
+		id: researchId,
+		milestoneId: milestone.id,
+		title: `Refine milestone design for ${milestone.title}`,
+		kind: "research",
+		status: "pending",
+		dependsOn: [],
+		affectedFilesOrAreas: [],
+		requiredSkills: ["skills/research/SKILL.md"],
+		validationChecks: [],
+	});
+	seq += 1;
+
+	// One task per hint
+	for (const hint of hints) {
+		const kind = inferKind(hint);
+		const id = `T${suffix}${String(seq).padStart(2, "0")}`;
+		const prevId = tasks[tasks.length - 1].id;
+		tasks.push({
+			id,
+			milestoneId: milestone.id,
+			title: hint,
+			kind,
+			status: "pending",
+			dependsOn: [prevId],
+			affectedFilesOrAreas: detectAreas(hint, workspaces),
+			requiredSkills: SKILLS_BY_KIND[kind] ?? ["skills/implementation/SKILL.md"],
+			validationChecks: kind === "research" ? [] : ["bun run harness:validate"],
+		});
+		seq += 1;
+	}
+
+	// Always end with a validation task
+	const valId = `T${suffix}${String(seq).padStart(2, "0")}`;
+	const lastId = tasks[tasks.length - 1].id;
+	tasks.push({
+		id: valId,
+		milestoneId: milestone.id,
+		title: `Validate ${milestone.title}`,
+		kind: "testing",
+		status: "pending",
+		dependsOn: [lastId],
+		affectedFilesOrAreas: [],
+		requiredSkills: ["skills/testing/SKILL.md", "skills/code-review/SKILL.md"],
+		validationChecks: ["bun run harness:validate"],
+	});
+
+	return tasks;
+}
+
+function fallbackTasks(
+	suffix: string,
+	milestone: MilestoneRecord,
+): TaskRecord[] {
+	return [
+		{
+			id: `T${suffix}01`,
+			milestoneId: milestone.id,
+			title: `Refine milestone design for ${milestone.title}`,
+			kind: "research",
+			status: "pending",
+			dependsOn: [],
+			affectedFilesOrAreas: [],
+			requiredSkills: ["skills/research/SKILL.md"],
+			validationChecks: [],
+		},
+		{
+			id: `T${suffix}02`,
+			milestoneId: milestone.id,
+			title: `Implement ${milestone.title}`,
+			kind: "implementation",
+			status: "pending",
+			dependsOn: [`T${suffix}01`],
+			affectedFilesOrAreas: [],
+			requiredSkills: ["skills/implementation/SKILL.md"],
+			validationChecks: ["bun run harness:validate"],
+		},
+		{
+			id: `T${suffix}03`,
+			milestoneId: milestone.id,
+			title: `Validate ${milestone.title}`,
+			kind: "testing",
+			status: "pending",
+			dependsOn: [`T${suffix}02`],
+			affectedFilesOrAreas: [],
+			requiredSkills: [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md",
+			],
+			validationChecks: ["bun run harness:validate"],
+		},
+	];
+}
+
+export function defaultTasks(
+	milestones: MilestoneRecord[],
+	config?: HarnessConfig,
+): TaskRecord[] {
+	const workspaces = config?.default_workspaces ?? [];
 	return milestones.flatMap((milestone) => {
 		const suffix = milestone.id.slice(1);
-		return [
-			{
-				id: `T${suffix}01`,
-				milestoneId: milestone.id,
-				title: `Refine milestone design for ${milestone.title}`,
-				kind: "research",
-				status: "pending",
-				dependsOn: [],
-				affectedFilesOrAreas: [],
-				requiredSkills: ["skills/research/SKILL.md"],
-				validationChecks: [],
-			},
-			{
-				id: `T${suffix}02`,
-				milestoneId: milestone.id,
-				title: `Implement ${milestone.title}`,
-				kind: "implementation",
-				status: "pending",
-				dependsOn: [`T${suffix}01`],
-				affectedFilesOrAreas: [],
-				requiredSkills: ["skills/implementation/SKILL.md"],
-				validationChecks: ["bun run harness:validate"],
-			},
-			{
-				id: `T${suffix}03`,
-				milestoneId: milestone.id,
-				title: `Validate ${milestone.title}`,
-				kind: "testing",
-				status: "pending",
-				dependsOn: [`T${suffix}02`],
-				affectedFilesOrAreas: [],
-				requiredSkills: [
-					"skills/testing/SKILL.md",
-					"skills/code-review/SKILL.md",
-				],
-				validationChecks: ["bun run harness:validate"],
-			},
-		];
+		if (milestone.taskHints && milestone.taskHints.length > 0) {
+			return tasksFromHints(suffix, milestone, milestone.taskHints, workspaces);
+		}
+		return fallbackTasks(suffix, milestone);
 	});
 }
 

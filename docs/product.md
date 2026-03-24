@@ -54,8 +54,19 @@
 ## Proposed Milestones
 
 - [ ] Customize project identity and ownership surfaces — replace template naming, ownership, and environment defaults for the new repository
+  - Update harness/config.json with project name and ownership
+  - Replace template placeholders across docs and configs
+  - Validate initialization with harness:doctor
 - [ ] Implement the first vertical slice — ship one real cross-workspace feature through `apps/*` and `packages/*`
+  - Define shared types and contracts in packages/shared
+  - Implement API endpoint in apps/api
+  - Implement UI integration in apps/web
+  - Add cross-workspace integration tests
 - [ ] Harden for team delivery — add product-specific validation, deployment, and operational checks
+  - Review and tighten validation rules
+  - Add deployment configuration
+  - Add operational health checks and monitoring
+  - Validate end-to-end delivery pipeline
 
 ---
 
