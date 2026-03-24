@@ -7,6 +7,7 @@ import {
 	writeProgressDoc,
 } from "./planning";
 import { readJson, repoRoot } from "./shared";
+import type { HarnessConfig } from "./types";
 
 const root = repoRoot();
 const readiness = planningReadiness(root);
@@ -23,11 +24,11 @@ if (
 	process.exit(1);
 }
 
-const config = readJson<{ project_name: string }>(
+const config = readJson<HarnessConfig>(
 	path.join(root, "harness/config.json"),
 );
 const state = loadState(root);
-const tasks = defaultTasks(readiness.milestones);
+const tasks = defaultTasks(readiness.milestones, config);
 
 state.projectInfo.projectName = config.project_name;
 state.projectInfo.runtime = "bun";

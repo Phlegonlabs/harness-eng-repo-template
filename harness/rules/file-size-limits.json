@@ -38,6 +38,7 @@
 		"**/*.lock",
 		"**/*.min.*",
 		"**/*.generated.*",
+		".harness/state.json",
 		"vendor/**",
 		"node_modules/**"
 	],

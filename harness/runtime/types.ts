@@ -75,6 +75,7 @@ export interface MilestoneRecord {
 	parallelEligible: boolean;
 	affectedAreas: string[];
 	worktreeName: string | null;
+	taskHints: string[];
 }
 
 export interface TaskRecord {
