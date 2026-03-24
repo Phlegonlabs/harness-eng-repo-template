@@ -110,12 +110,14 @@ export function trackedFiles(root: string): string[] {
 	try {
 		const tracked = execFileSync("git", ["-C", root, "ls-files"], {
 			encoding: "utf8",
+			stdio: ["ignore", "pipe", "pipe"],
 		});
 		const untracked = execFileSync(
 			"git",
 			["-C", root, "ls-files", "--others", "--exclude-standard"],
 			{
 				encoding: "utf8",
+				stdio: ["ignore", "pipe", "pipe"],
 			},
 		);
 		return [...new Set(`${tracked}\n${untracked}`.split(/\r?\n/))]
@@ -130,10 +132,12 @@ export function trackedFiles(root: string): string[] {
 export function globToRegex(pattern: string): RegExp {
 	const escaped = pattern
 		.replace(/[.+^${}()|[\]\\]/g, "\\$&")
-		.replace(/\*\*\//g, "(.+/)?")
-		.replace(/\*\*/g, ".*")
+		.replace(/\*\*\//g, "__DOUBLE_STAR_DIR__")
+		.replace(/\*\*/g, "__DOUBLE_STAR__")
 		.replace(/\*/g, "[^/]*")
-		.replace(/\?/g, ".");
+		.replace(/\?/g, ".")
+		.replace(/__DOUBLE_STAR_DIR__/g, "(.+/)?")
+		.replace(/__DOUBLE_STAR__/g, ".*");
 	return new RegExp(`^${escaped}$`);
 }
 
@@ -181,16 +185,28 @@ export function lastCommitUnix(
 	root: string,
 	relativePath: string,
 ): number | null {
+	if (!gitHasCommits(root)) {
+		return null;
+	}
 	try {
 		return Number(
-			execFileSync(
+			run(
 				"git",
 				["-C", root, "log", "-1", "--format=%at", "--", relativePath],
-				{ encoding: "utf8" },
-			).trim(),
+				root,
+			),
 		);
 	} catch {
 		return null;
+	}
+}
+
+export function gitHasCommits(root: string): boolean {
+	try {
+		run("git", ["-C", root, "rev-parse", "--verify", "HEAD"], root);
+		return true;
+	} catch {
+		return false;
 	}
 }
 

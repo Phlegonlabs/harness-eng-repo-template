@@ -3,18 +3,15 @@ import path from "node:path";
 import {
 	check,
 	exists,
+	gitHasCommits,
 	globToRegex,
 	hasPlaceholderContent,
 	isTextFile,
 	lastCommitUnix,
 	lineCount,
 	markdownLinks,
-	normalizeRelativePath,
 	readJson,
-	repoRelative,
 	trackedFiles,
-	workspacePrefixForPath,
-	workspaceRelativePath,
 } from "./shared";
 import type {
 	DependencyRules,
@@ -25,6 +22,9 @@ import type {
 	NamingRules,
 	ValidationContext,
 } from "./types";
+import { runLayerLint } from "./validation-layering";
+
+export { getLayerForPath, runLayerLint } from "./validation-layering";
 
 export function validationContext(root: string): ValidationContext {
 	return {
@@ -43,120 +43,6 @@ export function validationContext(root: string): ValidationContext {
 			path.join(root, "harness/rules/forbidden-patterns.json"),
 		),
 	};
-}
-
-export function getLayerForPath(relativePath: string, rules: DependencyRules) {
-	const workspaceRoots = rules.workspace_roots ?? [];
-	const normalized = normalizeRelativePath(relativePath);
-	const workspacePath = workspaceRelativePath(normalized, workspaceRoots);
-	const candidates = workspacePath ? [workspacePath, normalized] : [normalized];
-	return rules.layers.find((layer) =>
-		layer.directories.some((directory) =>
-			candidates.some(
-				(candidate) =>
-					candidate === directory || candidate.startsWith(`${directory}/`),
-			),
-		),
-	);
-}
-
-function resolveImportTarget(
-	importPath: string,
-	fileRelativePath: string,
-	root: string,
-	rules: DependencyRules,
-): string | null {
-	const normalizedImport = normalizeRelativePath(importPath);
-	const workspaceRoots = rules.workspace_roots ?? [];
-	const workspacePrefix = workspacePrefixForPath(
-		fileRelativePath,
-		workspaceRoots,
-	);
-	if (/^\.\.?\//.test(normalizedImport)) {
-		const parent = path.dirname(path.join(root, fileRelativePath));
-		return repoRelative(root, path.resolve(parent, normalizedImport));
-	}
-	for (const [alias, target] of Object.entries(rules.internal_import_aliases)) {
-		if (
-			normalizedImport === alias ||
-			normalizedImport.startsWith(`${alias}/`)
-		) {
-			const resolved =
-				`${target}/${normalizedImport.slice(alias.length).replace(/^\/+/, "")}`.replace(
-					/\/$/,
-					"",
-				);
-			return workspacePrefix ? `${workspacePrefix}/${resolved}` : resolved;
-		}
-	}
-	if (
-		rules.internal_import_roots.some(
-			(prefix) =>
-				normalizedImport === prefix ||
-				normalizedImport.startsWith(`${prefix}/`),
-		)
-	) {
-		return workspacePrefix
-			? `${workspacePrefix}/${normalizedImport}`
-			: normalizedImport;
-	}
-	return null;
-}
-
-function importPathsFromFile(target: string): string[] {
-	const content = readFileSync(target, "utf8");
-	const matches = [
-		...content.matchAll(/from\s+['"]([^'"]+)['"]/g),
-		...content.matchAll(/require\(\s*['"]([^'"]+)['"]\s*\)/g),
-		...content.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g),
-	];
-	return [...new Set(matches.map((match) => match[1]))];
-}
-
-export function runLayerLint(context: ValidationContext): number {
-	let errors = 0;
-	const files = trackedFiles(context.repoRoot).filter(
-		(file) =>
-			/\.(ts|tsx|js|jsx|mjs|cjs)$/.test(file) &&
-			Boolean(getLayerForPath(file, context.dependencyRules)),
-	);
-	if (files.length === 0) {
-		check("INFO", "No source files found for layer lint.");
-		return 0;
-	}
-	for (const relativePath of files) {
-		const layer = getLayerForPath(relativePath, context.dependencyRules);
-		if (!layer) continue;
-		for (const importPath of importPathsFromFile(
-			path.join(context.repoRoot, relativePath),
-		)) {
-			const resolved = resolveImportTarget(
-				importPath,
-				relativePath,
-				context.repoRoot,
-				context.dependencyRules,
-			);
-			if (!resolved) continue;
-			const targetLayer = getLayerForPath(resolved, context.dependencyRules);
-			if (!targetLayer) continue;
-			if (targetLayer.index > layer.index) {
-				errors += 1;
-				console.log(`LAYER VIOLATION: ${relativePath}`);
-				console.log(`  File layer: ${layer.name} (index: ${layer.index})`);
-				console.log(
-					`  Imports from: ${importPath} (resolved: ${resolved}, layer: ${targetLayer.name})`,
-				);
-				console.log(`  Allowed imports: ${layer.allowed_imports.join(", ")}`);
-				console.log("");
-			}
-		}
-	}
-	console.log(
-		errors > 0
-			? `FAIL: ${errors} layer boundary violation(s) found.`
-			: "PASS: No layer boundary violations.",
-	);
-	return errors > 0 ? 1 : 0;
 }
 
 export function runFileSizeLint(context: ValidationContext): number {
@@ -209,7 +95,9 @@ export function runNamingLint(context: ValidationContext): number {
 			globToRegex(entry.path_pattern).test(relativePath),
 		);
 		if (!rule) continue;
-		const fileName = path.basename(relativePath, path.extname(relativePath));
+		const fileName = path
+			.basename(relativePath, path.extname(relativePath))
+			.replace(/\.(test|spec|d)$/, "");
 		if (
 			!new RegExp(context.namingRules.case_patterns["kebab-case"]).test(
 				fileName,
@@ -282,6 +170,13 @@ export function runForbiddenLint(context: ValidationContext): number {
 }
 
 export function runDocsFreshnessLint(context: ValidationContext): number {
+	if (!gitHasCommits(context.repoRoot)) {
+		check(
+			"WARN",
+			"Git history unavailable: repository has no commits yet. Doc freshness check skipped.",
+		);
+		return 0;
+	}
 	let warnings = 0;
 	const threshold = context.config.validation.doc_freshness_days;
 	const now = Math.floor(Date.now() / 1000);

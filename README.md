@@ -1,13 +1,14 @@
 # Harness Template
 
-A reusable starter for **agent-first development** with:
+A reusable **strict monorepo template** for agent-first engineering on Bun + Turbo.
 
-- Bun workspaces + Turbo
-- TypeScript-ready apps and packages
-- Ready-to-edit engineering baseline docs
-- Optional PRD / architecture discovery
-- milestone / task planning
-- validation, hooks, and CI
+It ships with:
+
+- `apps/*` and `packages/*` workspaces
+- repository-owned product, architecture, and progress docs
+- machine-readable dependency rules for agents and linters
+- full `harness:validate` quality gates
+- structural regression tests for the harness itself
 
 ---
 
@@ -22,12 +23,55 @@ bun run test
 bun run harness:validate
 ```
 
-Use the runtime in this order:
+Recommended adoption order:
 
-1. `harness:init` personalizes the template for your project name and seeds ready-to-edit docs
-2. Edit `docs/product.md` and `docs/architecture.md` as your repository becomes product-specific
-3. `harness:plan` turns the docs into milestones/tasks in `docs/progress.md`
-4. `harness:validate` remains the quality gate
+1. Run `harness:init` to personalize the project name and baseline docs
+2. Replace the starter content in `docs/product.md` and `docs/architecture.md`
+3. Run `harness:plan` when the docs are ready enough to generate milestones/tasks
+4. Treat `harness:validate` as the pre-handoff and pre-push gate
+
+---
+
+## Monorepo Rules
+
+This template treats only workspace-owned source trees as active application code:
+
+- `apps/*/src`
+- `packages/*/src`
+
+The dependency layer model applies inside each workspace:
+
+```text
+Types → Config → Repo → Service → Runtime → UI
+```
+
+Cross-workspace sharing must go through public package exports such as `@<project>/shared`.
+Deep imports into another workspace's `src/` or `dist/` tree are not allowed.
+
+The only default unlayered exceptions are workspace entrypoints and export barrels such as:
+
+- `apps/*/src/index.ts`
+- `packages/*/src/index.ts`
+
+Strict monorepo enforcement is recorded in:
+
+- [docs/decisions/003-strict-monorepo-enforcement.md](docs/decisions/003-strict-monorepo-enforcement.md)
+
+---
+
+## Quality Gate
+
+`bun run harness:validate` runs the full repository check:
+
+1. `harness:doctor`
+2. linters
+3. structural tests
+4. entropy scans
+
+Structural validation includes regression tests for the harness runtime itself, so boundary rules are tested, not only documented.
+
+The template is expected to validate both before and after `harness:init`.
+The only intentional doctor warning in the untouched template is `project_name === "harness-template"` before initialization.
 
 ---
 
@@ -38,25 +82,19 @@ apps/
   web/             # Frontend or client-facing app workspace
   api/             # API / worker / runtime workspace
 packages/
-  shared/          # Shared types, config, and reusable logic
+  shared/          # Shared types, config, repo/service helpers
 harness/           # Validation, planning, and orchestration runtime
 docs/              # PRD, architecture, progress, ADRs
 ```
 
-The dependency layer model applies **inside each workspace**. Cross-workspace sharing should happen through package exports, not deep file imports.
-
----
-
-## Core Files
+Core repository surfaces:
 
 | File | Purpose |
 |------|---------|
 | `docs/product.md` | PRD canon |
 | `docs/architecture.md` | Architecture canon |
 | `docs/progress.md` | Milestones + tasks |
-| `.harness/state.json` | Machine state |
-| `apps/*` | Application workspaces |
-| `packages/*` | Shared libraries |
+| `.harness/state.json` | Machine execution state |
 | `harness/runtime/` | Bun/TS harness runtime |
 | `harness/rules/` | Mechanical rules |
 | `AGENTS.md` / `CLAUDE.md` | Agent entrypoints |
@@ -82,18 +120,18 @@ bun run harness:merge-milestone -- M1
 
 ---
 
-## Template Notes
+## Notes
 
-- This repo is expected to validate before and after `harness:init`.
-- The only intentional doctor warning is `project_name === "harness-template"` before initialization.
-- `harness:discover --reset` is optional and re-enters guided discovery mode when a team wants PRD/architecture interviews.
-- The default scaffold is a monorepo with `apps/web`, `apps/api`, and `packages/shared`.
+- `harness:discover --reset` is optional. Use it when the team wants guided PRD / architecture interviews.
+- `packages/shared` is the default home for shared contracts and reusable logic, but shared code should still respect the dependency layer model.
+- Keep important decisions in `docs/`, not in chat history.
 
 Template ADRs:
 
 - [docs/decisions/000-template.md](docs/decisions/000-template.md)
 - [docs/decisions/001-harness-engineering.md](docs/decisions/001-harness-engineering.md)
 - [docs/decisions/002-monorepo-template.md](docs/decisions/002-monorepo-template.md)
+- [docs/decisions/003-strict-monorepo-enforcement.md](docs/decisions/003-strict-monorepo-enforcement.md)
 
 Operator guide:
 

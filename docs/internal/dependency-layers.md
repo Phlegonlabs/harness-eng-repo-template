@@ -88,11 +88,26 @@ The `harness/hooks/pre-commit` hook runs `bun run harness:lint` before every com
 
 The rules also define:
 
+- `source_roots` for the workspace-owned source trees that are subject to layer coverage
 - `workspace_roots` for the top-level monorepo containers such as `apps/` and `packages/`
 - `internal_import_roots` for repo-absolute imports like `src/service/foo`
 - `internal_import_aliases` for aliases like `@/service/foo`
 
 Within a workspace, aliases such as `@/service/foo` resolve to that workspace's own `src/` tree. They must not be used to reach into another workspace.
+
+### Entry Points and Export Barrels
+
+- `apps/*/src/index.ts` is the workspace entrypoint.
+- `packages/*/src/index.ts` is the package export barrel.
+- These files may remain outside the six layers, but they are the only default exceptions in the template.
+- Every other source file under `apps/*/src` or `packages/*/src` must match a declared layer directory or file pattern.
+
+### Cross-Workspace Imports
+
+- Relative imports and internal aliases must stay inside the current workspace.
+- Cross-workspace reuse must go through the target package name.
+- Subpath imports are allowed only when the target workspace declares them in `package.json.exports`.
+- Deep imports such as `../../packages/shared/src/...` or `@scope/shared/src/...` are violations.
 
 ---
 

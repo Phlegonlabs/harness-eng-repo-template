@@ -160,6 +160,8 @@ export function renderArchitectureDoc(
 		"**Rule:** Each layer may only import from layers below (to the left) of it.",
 		"**Enforcement:** `bun run harness:lint` checks this on every commit.",
 		"",
+		"Only `apps/*/src` and `packages/*/src` are treated as source roots in the template monorepo. `apps/*/src/index.ts` and `packages/*/src/index.ts` are explicit entrypoints/export barrels and may remain outside the six layers; every other workspace source file must match a declared layer directory or file pattern.",
+		"",
 		"| Layer | Directory | Allowed Imports |",
 		"|-------|-----------|-----------------|",
 		"| `types` | `apps/*/src/types/`, `packages/*/src/types/` | (none — foundational) |",
@@ -186,7 +188,7 @@ export function renderArchitectureDoc(
 		sectionValue(
 			answered,
 			"arch.interfaces-contracts",
-			"### [Interface 1]\n```\n[Schema or API signature]\n```",
+			"### [Interface 1]\n```\n[Schema or API signature]\n```\n\nCross-workspace reuse must go through package exports. Deep imports into another workspace's `src/` or `dist/` tree are not allowed.",
 		),
 		"",
 		"---",

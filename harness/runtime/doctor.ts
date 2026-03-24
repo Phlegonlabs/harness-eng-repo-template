@@ -1,5 +1,13 @@
 import path from "node:path";
-import { check, exists, readJson, repoRoot, run, writeSection } from "./shared";
+import {
+	check,
+	exists,
+	gitHasCommits,
+	readJson,
+	repoRoot,
+	run,
+	writeSection,
+} from "./shared";
 
 const root = repoRoot();
 let errors = 0;
@@ -27,6 +35,15 @@ writeSection("Git Repository");
 try {
 	run("git", ["-C", root, "rev-parse", "--git-dir"], root);
 	check("PASS", "Git repository initialized");
+	if (gitHasCommits(root)) {
+		check("PASS", "Git history detected");
+	} else {
+		check(
+			"WARN",
+			"Git repository has no commits yet. History-based checks stay advisory until the first commit.",
+		);
+		warnings += 1;
+	}
 } catch {
 	check("FAIL", "Not a git repository.");
 	errors += 1;

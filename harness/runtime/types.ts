@@ -19,13 +19,21 @@ export interface LayerRule {
 	name: string;
 	index: number;
 	directories: string[];
+	file_patterns?: string[];
 	allowed_imports: string[];
 }
 
 export interface DependencyRules {
 	workspace_roots?: string[];
+	source_roots?: string[];
 	internal_import_roots: string[];
 	internal_import_aliases: Record<string, string>;
+	unlayered_allowed_patterns?: string[];
+	cross_workspace?: {
+		forbid_relative: boolean;
+		allow_package_root: boolean;
+		allow_exported_subpaths: boolean;
+	};
 	layers: LayerRule[];
 }
 

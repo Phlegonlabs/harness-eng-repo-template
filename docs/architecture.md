@@ -21,6 +21,8 @@ Types → Config → Repo → Service → Runtime → UI
 
 The engineer template assumes that feature work starts inside one or more application workspaces and pulls shared contracts into `packages/shared`. The harness stays at the root and governs validation, planning, and repository policy.
 
+Strict monorepo enforcement details are recorded in [ADR-003](decisions/003-strict-monorepo-enforcement.md).
+
 ---
 
 ## Dependency Layer Model
@@ -33,6 +35,8 @@ Types → Config → Repo → Service → Runtime → UI
 
 **Rule:** Each layer may only import from layers below (to the left) of it.
 **Enforcement:** `bun run harness:lint` checks this on every commit.
+
+Only `apps/*/src` and `packages/*/src` are treated as source roots in the template monorepo. `apps/*/src/index.ts` and `packages/*/src/index.ts` are explicit entrypoints/export barrels and may remain outside the six layers; every other workspace source file must match a declared layer directory or file pattern.
 
 | Layer | Directory | Allowed Imports |
 |-------|-----------|-----------------|
@@ -70,6 +74,7 @@ bun run harness:validate
 ```text
 apps/* and packages/* each expose package.json scripts for build, lint, typecheck, and test.
 Cross-workspace reuse happens through package exports such as @<project>/shared.
+Deep imports into another workspace's src/ or dist/ tree are not allowed.
 ```
 
 ### Documentation contract
@@ -98,7 +103,7 @@ harness:plan reads them to materialize milestone and task placeholders.
 | **Error handling** | Keep domain and service code typed; reserve thrown errors for infrastructure boundaries |
 | **Authentication** | Not preconfigured in the template; add it inside the relevant application workspace when product requirements exist |
 | **Configuration** | Root and workspace environment variables flow through `.env` patterns and are validated by repository conventions |
-| **Code organization** | Every workspace follows the same dependency layer order and exports public entrypoints instead of deep internal imports |
+| **Code organization** | Every workspace follows the same dependency layer order, keeps entrypoints explicit, and exports public entrypoints instead of deep internal imports |
 
 ---
 

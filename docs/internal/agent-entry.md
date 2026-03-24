@@ -18,6 +18,8 @@ Types → Config → Repo → Service → Runtime → UI
 
 - Each layer may only import from layers *below* (to the left of) it.
 - In a monorepo, apply this rule **within each workspace** under `apps/*` and `packages/*`.
+- Only files under each workspace's own `src/` tree count as application source in the template monorepo.
+- `apps/*/src/index.ts` and `packages/*/src/index.ts` are explicit entrypoints/export barrels and may stay outside the six layers.
 - Cross-workspace imports must go through package names and exported entrypoints, not another workspace's internal files.
 - Layer violations are caught by `bun run harness:lint`.
 - The machine-readable rules live in `harness/rules/dependency-layers.json`.

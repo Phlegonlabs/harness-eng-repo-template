@@ -7,6 +7,7 @@ for (const [name, script] of [
 	["Required Files", "harness/runtime/test-required-files.ts"],
 	["Architecture Compliance", "harness/runtime/test-architecture.ts"],
 	["Document Links", "harness/runtime/test-doc-links.ts"],
+	["Harness Runtime", "harness/runtime/test-runtime.ts"],
 ] as const) {
 	console.log(`── ${name} ──────────────────────────────────`);
 	errors += runPassthrough("bun", ["run", script], root);

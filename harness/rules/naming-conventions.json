@@ -14,12 +14,6 @@
 			"violation_message": "File {file} should use kebab-case. Rename to {suggested}."
 		},
 		{
-			"path_pattern": "src/**",
-			"file_case": "kebab-case",
-			"description": "Legacy single-package source files use kebab-case",
-			"violation_message": "File {file} should use kebab-case. Rename to {suggested}."
-		},
-		{
 			"path_pattern": "docs/**",
 			"file_case": "kebab-case",
 			"description": "Documentation files use kebab-case (e.g., operator-guide.md, api-reference.md)",
@@ -49,6 +43,8 @@
 		"apps/README.md",
 		"packages/README.md",
 		"tests/README.md",
+		"docs/execution-plans/TEMPLATE.md",
+		"docs/quality/GRADES.md",
 		".github/**",
 		"Makefile",
 		"Dockerfile"

@@ -2,10 +2,20 @@
 	"_comment": "Dependency layer model. Each layer may only import from layers with lower index.",
 	"_doc": "docs/internal/dependency-layers.md",
 	"workspace_roots": ["apps", "packages"],
+	"source_roots": ["apps/*/src", "packages/*/src"],
 	"internal_import_roots": ["src", "pkg", "cmd"],
 	"internal_import_aliases": {
 		"@": "src",
 		"~": "src"
+	},
+	"unlayered_allowed_patterns": [
+		"apps/*/src/index.ts",
+		"packages/*/src/index.ts"
+	],
+	"cross_workspace": {
+		"forbid_relative": true,
+		"allow_package_root": true,
+		"allow_exported_subpaths": true
 	},
 	"layers": [
 		{
