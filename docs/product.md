@@ -36,6 +36,7 @@
 ### Must Have (v1)
 - [ ] Ready-to-edit monorepo layout with `apps/web`, `apps/api`, and `packages/shared`
 - [ ] Root validation and task orchestration that work immediately after initialization
+- [ ] Task contracts, evaluator results, and handoff artifacts that make long-running work resumable
 - [ ] Repository-owned docs and rules that agents can follow without extra chat context
 
 ### Should Have (v1)
@@ -64,6 +65,7 @@
   - Add cross-workspace integration tests
 - [ ] Harden for team delivery — add product-specific validation, deployment, and operational checks
   - Review and tighten validation rules
+  - Keep task contract / evaluator / handoff artifacts coherent with runtime behavior
   - Add deployment configuration
   - Add operational health checks and monitoring
   - Validate end-to-end delivery pipeline

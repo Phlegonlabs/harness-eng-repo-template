@@ -71,6 +71,7 @@ Full rules live in `docs/internal/agent-entry.md`. These 6 are non-negotiable:
 
 ### ALWAYS DO
 - Run `bun run harness:validate` before any handoff
+- Run `bun run harness:evaluate --task <id>` before considering an active task done
 - Follow the dependency layer order in all new code
 - Update `docs/` when making architectural decisions
 - Use conventional commit format
@@ -148,6 +149,7 @@ Update after significant changes.
 | `bun run harness:init -- <name>` | Initialize the engineer template for a specific project |
 | `bun run harness:doctor` | Health check |
 | `bun run harness:discover --reset` | Re-enter guided PRD/architecture discovery mode |
+| `bun run harness:evaluate --task <id>` | Run the task-level evaluator and write evaluation / handoff artifacts |
 | `bun run build` | Run workspace builds through Turbo |
 | `bun run lint` | Run root + workspace lint checks |
 | `bun run typecheck` | Run root + workspace type checks |

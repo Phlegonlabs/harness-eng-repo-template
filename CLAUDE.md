@@ -79,9 +79,10 @@ Load a skill when you need detailed guidance on a specific task type. They live 
 
 | Script | Purpose |
 |--------|---------|
-| `bun run harness:bootstrap -- <name>` | Initialize with project name |
+| `bun run harness:init -- <name>` | Initialize with project name |
 | `bun run harness:doctor` | Health check |
 | `bun run harness:discover` | Ask and persist PRD/architecture discovery state |
+| `bun run harness:evaluate --task <id>` | Run the task-level evaluator and persist evaluation / handoff artifacts |
 | `bun run harness:validate` | Full validation |
 | `bun run harness:plan` | Sync milestones/tasks from PRD + architecture |
 | `bun run harness:orchestrate` | Show next task and suggested skills |

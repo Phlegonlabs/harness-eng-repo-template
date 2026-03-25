@@ -20,6 +20,7 @@
 			"bun run test",
 			"bun run harness:plan",
 			"bun run harness:orchestrate",
+			"bun run harness:evaluate",
 			"bun run harness:parallel-dispatch",
 			"bun run harness:merge-milestone -- <id>"
 		]

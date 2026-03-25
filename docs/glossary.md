@@ -25,6 +25,10 @@ Add new terms as they emerge; update definitions when meaning shifts.
 | **Teaching Error Message** | A linter error that explains not just what's wrong but why and how to fix it | Pillar 2 |
 | **Milestone** | The top-level execution unit. Independent milestones may run in parallel in separate worktrees | Orchestration |
 | **Task** | A concrete implementation unit inside one milestone. Tasks are serial by default within a milestone | Orchestration |
+| **Task Contract** | The repo-owned execution brief for one task, including scope, deliverables, validation, and out-of-scope constraints | `.harness/contracts/` |
+| **Evaluator** | The independent task-level gate that decides whether a task iteration passes or returns for another loop | `bun run harness:evaluate` |
+| **Handoff Artifact** | A machine-readable checkpoint that lets the next agent or session resume the current task safely | `.harness/handoffs/` |
+| **Checkpoint Resume** | Restarting from the latest handoff artifact instead of relying on raw chat/session memory | Orchestration |
 | **Worktree Dispatch** | Creating an isolated git worktree for one active milestone | Orchestration |
 | **Progressive Disclosure** | Loading only the skills and documents needed for the current phase/task instead of preloading everything | Skills |
 | **Skill Registry** | The repo-owned mapping from phase/task kind to skill files | `harness/skills/registry.json` |

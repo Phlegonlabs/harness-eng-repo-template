@@ -78,16 +78,40 @@ export interface MilestoneRecord {
 	taskHints: string[];
 }
 
+export type TaskStatus =
+	| "pending"
+	| "contract_pending"
+	| "contract_approved"
+	| "in_progress"
+	| "evaluation_pending"
+	| "done"
+	| "blocked";
+
+export type ContractStatus = "missing" | "draft" | "approved";
+export type EvaluatorStatus = "pending" | "passed" | "failed";
+
+export interface TaskArtifacts {
+	contractPath: string | null;
+	latestEvaluationPath: string | null;
+	latestHandoffPath: string | null;
+}
+
 export interface TaskRecord {
 	id: string;
 	milestoneId: string;
 	title: string;
 	kind: string;
-	status: string;
+	status: TaskStatus;
 	dependsOn: string[];
 	affectedFilesOrAreas: string[];
 	requiredSkills: string[];
 	validationChecks: string[];
+	iteration: number;
+	contractStatus: ContractStatus;
+	evaluatorStatus: EvaluatorStatus;
+	stallCount: number;
+	lastCheckpointAt: string | null;
+	artifacts: TaskArtifacts;
 }
 
 export interface ActiveWorktreeRecord {
@@ -135,6 +159,57 @@ export interface HarnessState {
 		progressiveDisclosure: boolean;
 		loaded: string[];
 	};
+}
+
+export interface TaskContractArtifact {
+	version: string;
+	taskId: string;
+	milestoneId: string;
+	title: string;
+	kind: string;
+	goal: string;
+	affectedAreas: string[];
+	deliverables: string[];
+	outOfScope: string[];
+	validationChecks: string[];
+	createdAt: string;
+	approvedAt: string | null;
+}
+
+export interface TaskCheckResult {
+	command: string;
+	exitCode: number;
+	outputSnippet: string;
+}
+
+export interface TaskEvaluationFinding {
+	severity: "blocker" | "warn" | "info";
+	message: string;
+}
+
+export interface TaskEvaluationArtifact {
+	version: string;
+	taskId: string;
+	milestoneId: string;
+	iteration: number;
+	status: "passed" | "failed";
+	evaluatedAt: string;
+	checks: TaskCheckResult[];
+	findings: TaskEvaluationFinding[];
+}
+
+export interface TaskHandoffArtifact {
+	version: string;
+	taskId: string;
+	milestoneId: string;
+	iteration: number;
+	createdAt: string;
+	summary: string;
+	nextAction: string;
+	risks: string[];
+	commandLog: string[];
+	contractPath: string | null;
+	evaluationPath: string | null;
 }
 
 export interface SkillRegistry {

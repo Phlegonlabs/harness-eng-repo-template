@@ -13,6 +13,7 @@
 | `docs/architecture.md` | Ready | Monorepo architecture baseline is ready to customize |
 | Discovery | Optional | Run `bun run harness:discover --reset` to enter guided discovery mode |
 | Backlog sync | Ready | Run `bun run harness:plan` to materialize starter milestones and tasks |
+| Task loop | Ready | Use `bun run harness:orchestrate` + `bun run harness:evaluate` for contract-driven execution |
 
 ---
 

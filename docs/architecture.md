@@ -19,7 +19,7 @@
 Types → Config → Repo → Service → Runtime → UI
 ```
 
-The engineer template assumes that feature work starts inside one or more application workspaces and pulls shared contracts into `packages/shared`. The harness stays at the root and governs validation, planning, and repository policy.
+The engineer template assumes that feature work starts inside one or more application workspaces and pulls shared contracts into `packages/shared`. The harness stays at the root and governs validation, planning, and repository policy. The execution loop now uses task contracts, evaluator artifacts, and handoff checkpoints as repo-owned state.
 
 Strict monorepo enforcement details are recorded in [ADR-003](decisions/003-strict-monorepo-enforcement.md).
 
@@ -67,6 +67,7 @@ Only `apps/*/src` and `packages/*/src` are treated as source roots in the templa
 bun run harness:init -- <project-name>
 bun run build
 bun run test
+bun run harness:evaluate --task <id>
 bun run harness:validate
 ```
 
@@ -81,6 +82,7 @@ Deep imports into another workspace's src/ or dist/ tree are not allowed.
 ```text
 docs/product.md and docs/architecture.md are the human-readable source of truth.
 harness:plan reads them to materialize milestone and task placeholders.
+.harness/contracts, .harness/evaluations, and .harness/handoffs capture task execution artifacts.
 ```
 
 ---
@@ -104,6 +106,7 @@ harness:plan reads them to materialize milestone and task placeholders.
 | **Authentication** | Not preconfigured in the template; add it inside the relevant application workspace when product requirements exist |
 | **Configuration** | Root and workspace environment variables flow through `.env` patterns and are validated by repository conventions |
 | **Code organization** | Every workspace follows the same dependency layer order, keeps entrypoints explicit, and exports public entrypoints instead of deep internal imports |
+| **Long-running execution** | Task contracts define scope, evaluator artifacts gate completion, and handoff artifacts enable checkpoint-based resume |
 
 ---
 
@@ -141,9 +144,11 @@ bun run harness:validate
 ## Validation Plan
 
 1. Run `bun run harness:init -- <project-name>` when adopting the template.
-2. Confirm `bun run build`, `bun run test`, and `bun run typecheck` pass.
-3. Run `bun run harness:validate` before handoff or push.
-4. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.
+2. Use `bun run harness:orchestrate` to open the active task contract.
+3. Run `bun run harness:evaluate --task <id>` before marking a task done.
+4. Confirm `bun run build`, `bun run test`, and `bun run typecheck` pass.
+5. Run `bun run harness:validate` before handoff or push.
+6. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.
 
 ---
 

@@ -6,6 +6,7 @@ import {
 	saveState,
 	writeProgressDoc,
 } from "./planning";
+import { defaultCommandSurface } from "./planning-state";
 import { readJson, repoRoot } from "./shared";
 import type { HarnessConfig } from "./types";
 
@@ -24,28 +25,13 @@ if (
 	process.exit(1);
 }
 
-const config = readJson<HarnessConfig>(
-	path.join(root, "harness/config.json"),
-);
+const config = readJson<HarnessConfig>(path.join(root, "harness/config.json"));
 const state = loadState(root);
 const tasks = defaultTasks(readiness.milestones, config);
 
 state.projectInfo.projectName = config.project_name;
 state.projectInfo.runtime = "bun";
-state.projectInfo.commandSurface = [
-	"bun run harness:init -- <name>",
-	"bun run harness:doctor",
-	"bun run harness:discover --reset",
-	"bun run harness:validate",
-	"bun run build",
-	"bun run lint",
-	"bun run typecheck",
-	"bun run test",
-	"bun run harness:plan",
-	"bun run harness:orchestrate",
-	"bun run harness:parallel-dispatch",
-	"bun run harness:merge-milestone -- <id>",
-];
+state.projectInfo.commandSurface = defaultCommandSurface();
 state.planning.phase = "PLANNING";
 state.planning.docsReady = { product: true, architecture: true, backlog: true };
 state.milestones = readiness.milestones;

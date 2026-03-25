@@ -19,7 +19,7 @@ This template solves that by giving you:
 - **A strict monorepo scaffold** with workspaces, dependency layers, and naming conventions already wired up
 - **Golden rules as JSON files** that linters enforce at commit time and agents read before generating code
 - **A full validation pipeline** (`harness:validate`) that catches layer violations, forbidden patterns, file size bloat, and entropy drift
-- **Planning and orchestration tools** that break your product docs into milestones and tasks — then suggest which skills to load for each phase
+- **Planning and orchestration tools** that break your product docs into milestones and tasks — then drive execution through task contracts, evaluator results, and handoff artifacts
 - **Repository-owned documentation** as the single source of truth — decisions live in `docs/`, not in Slack threads or chat history
 
 ---
@@ -89,7 +89,8 @@ This runs, in order:
 Turn your product and architecture docs into actionable work:
 
 - **`harness:plan`** — Reads `docs/product.md` and `docs/architecture.md`, then generates milestones and tasks in `docs/progress.md`
-- **`harness:orchestrate`** — Shows the next task to work on and suggests which skills to load
+- **`harness:orchestrate`** — Opens the active task, synthesizes its task contract, and writes the latest handoff artifact
+- **`harness:evaluate`** — Runs the task-level evaluator, records pass/fail, and advances or blocks the task explicitly
 - **`harness:parallel-dispatch`** — Allocates isolated git worktrees so multiple milestones can progress in parallel without conflicts
 
 ### Repository-Owned Documentation
@@ -138,7 +139,11 @@ bun run harness:init -- my-project
 bun run build
 bun run test
 
-# 4. Run the full validation suite
+# 4. Open the active task and evaluate it when implementation is ready
+bun run harness:orchestrate
+bun run harness:evaluate --task <id>
+
+# 5. Run the full validation suite
 bun run harness:validate
 ```
 
@@ -147,7 +152,7 @@ bun run harness:validate
 1. **Initialize** — Run `harness:init` to personalize the project name and baseline docs
 2. **Customize your docs** — Replace the starter content in `docs/product.md` (what you're building) and `docs/architecture.md` (how it's structured)
 3. **Generate your plan** — Run `harness:plan` when the docs are ready to produce milestones and tasks
-4. **Start building** — Use `harness:orchestrate` to see the next task and recommended skills
+4. **Start building** — Use `harness:orchestrate` to open the task contract and `harness:evaluate` to gate completion
 5. **Validate before every handoff** — Treat `harness:validate` as the pre-push and pre-PR gate
 
 ---
@@ -176,7 +181,7 @@ bun run harness:validate
 1. **Initialize** — `harness:init` personalizes the template with your project name, updating configs and docs
 2. **Customize docs** — Write your product requirements in `docs/product.md` and your architecture constraints in `docs/architecture.md`
 3. **Plan** — `harness:plan` reads your docs and generates milestones and tasks in `docs/progress.md`
-4. **Execute** — Work on milestones one at a time (or in parallel using `harness:parallel-dispatch` for isolated worktrees). Load skills as needed via `harness:orchestrate`
+4. **Execute** — Work on milestones one at a time (or in parallel using `harness:parallel-dispatch` for isolated worktrees). Load skills as needed via `harness:orchestrate`, then close each task with `harness:evaluate`
 5. **Validate** — Run `harness:validate` before every handoff. If it fails, fix the issue — don't ship broken state
 6. **Ship** — Push, open a PR, and merge. CI will run `harness:validate` again as a safety net
 
@@ -240,7 +245,8 @@ Core repository surfaces:
 | `bun run harness:doctor` | Health check — verifies required files, project naming, and structural integrity |
 | `bun run harness:discover --reset` | Optional guided discovery mode — interactive PRD and architecture interview |
 | `bun run harness:plan` | Generate milestones and tasks from `docs/product.md` + `docs/architecture.md` |
-| `bun run harness:orchestrate` | Show the next task to work on and suggest which skills to load |
+| `bun run harness:orchestrate` | Open the active task contract and checkpoint artifact |
+| `bun run harness:evaluate --task <id>` | Run the task-level evaluator and write evaluation / handoff artifacts |
 | `bun run harness:parallel-dispatch -- --apply` | Preview or allocate isolated worktrees for parallel milestone execution |
 | `bun run harness:merge-milestone -- M1` | Merge a completed milestone worktree back into the main branch |
 | `bun run harness:install-hooks` | Install git hooks for pre-commit validation |
@@ -262,6 +268,7 @@ Decisions and their rationale are documented in `docs/decisions/`:
 | [001-harness-engineering.md](docs/decisions/001-harness-engineering.md) | Adopt Harness Engineering — encode constraints as machine-readable rules in the repo |
 | [002-monorepo-template.md](docs/decisions/002-monorepo-template.md) | Adopt Bun monorepo with Turbo orchestration as the default project structure |
 | [003-strict-monorepo-enforcement.md](docs/decisions/003-strict-monorepo-enforcement.md) | Enforce strict monorepo rules — layer violations caught at lint time, deep imports forbidden |
+| [004-task-contract-evaluator-loop.md](docs/decisions/004-task-contract-evaluator-loop.md) | Add task contracts, evaluator artifacts, and handoff checkpoints to the execution loop |
 
 ---
 

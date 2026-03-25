@@ -1,5 +1,10 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import {
+	createTaskRecord,
+	defaultCommandSurface,
+	normalizeTaskRecord,
+} from "./planning-state";
 import { hasPlaceholderContent, readJson, writeJson } from "./shared";
 import { baselineDiscoveryAnswers } from "./template-baseline";
 import type {
@@ -73,10 +78,16 @@ export function milestonesFromProductDoc(
 }
 
 const KIND_PATTERNS: Array<{ pattern: RegExp; kind: string }> = [
-	{ pattern: /\b(tests?|testing|validat\w+|verify|assert)\b/i, kind: "testing" },
+	{
+		pattern: /\b(tests?|testing|validat\w+|verify|assert)\b/i,
+		kind: "testing",
+	},
 	{ pattern: /\b(deploy\w*|release|publish)\b/i, kind: "deployment" },
 	{ pattern: /\b(review\w*|audit|inspect)\b/i, kind: "review" },
-	{ pattern: /\b(research|investigat\w+|explor\w+|analyz\w+|design)\b/i, kind: "research" },
+	{
+		pattern: /\b(research|investigat\w+|explor\w+|analyz\w+|design)\b/i,
+		kind: "research",
+	},
 ];
 
 function inferKind(hint: string): string {
@@ -111,17 +122,19 @@ function tasksFromHints(
 
 	// Always start with a research task
 	const researchId = `T${suffix}${String(seq).padStart(2, "0")}`;
-	tasks.push({
-		id: researchId,
-		milestoneId: milestone.id,
-		title: `Refine milestone design for ${milestone.title}`,
-		kind: "research",
-		status: "pending",
-		dependsOn: [],
-		affectedFilesOrAreas: [],
-		requiredSkills: ["skills/research/SKILL.md"],
-		validationChecks: [],
-	});
+	tasks.push(
+		createTaskRecord({
+			id: researchId,
+			milestoneId: milestone.id,
+			title: `Refine milestone design for ${milestone.title}`,
+			kind: "research",
+			status: "pending",
+			dependsOn: [],
+			affectedFilesOrAreas: [],
+			requiredSkills: ["skills/research/SKILL.md"],
+			validationChecks: [],
+		}),
+	);
 	seq += 1;
 
 	// One task per hint
@@ -129,34 +142,44 @@ function tasksFromHints(
 		const kind = inferKind(hint);
 		const id = `T${suffix}${String(seq).padStart(2, "0")}`;
 		const prevId = tasks[tasks.length - 1].id;
-		tasks.push({
-			id,
-			milestoneId: milestone.id,
-			title: hint,
-			kind,
-			status: "pending",
-			dependsOn: [prevId],
-			affectedFilesOrAreas: detectAreas(hint, workspaces),
-			requiredSkills: SKILLS_BY_KIND[kind] ?? ["skills/implementation/SKILL.md"],
-			validationChecks: kind === "research" ? [] : ["bun run harness:validate"],
-		});
+		tasks.push(
+			createTaskRecord({
+				id,
+				milestoneId: milestone.id,
+				title: hint,
+				kind,
+				status: "pending",
+				dependsOn: [prevId],
+				affectedFilesOrAreas: detectAreas(hint, workspaces),
+				requiredSkills: SKILLS_BY_KIND[kind] ?? [
+					"skills/implementation/SKILL.md",
+				],
+				validationChecks:
+					kind === "research" ? [] : ["bun run harness:validate"],
+			}),
+		);
 		seq += 1;
 	}
 
 	// Always end with a validation task
 	const valId = `T${suffix}${String(seq).padStart(2, "0")}`;
 	const lastId = tasks[tasks.length - 1].id;
-	tasks.push({
-		id: valId,
-		milestoneId: milestone.id,
-		title: `Validate ${milestone.title}`,
-		kind: "testing",
-		status: "pending",
-		dependsOn: [lastId],
-		affectedFilesOrAreas: [],
-		requiredSkills: ["skills/testing/SKILL.md", "skills/code-review/SKILL.md"],
-		validationChecks: ["bun run harness:validate"],
-	});
+	tasks.push(
+		createTaskRecord({
+			id: valId,
+			milestoneId: milestone.id,
+			title: `Validate ${milestone.title}`,
+			kind: "testing",
+			status: "pending",
+			dependsOn: [lastId],
+			affectedFilesOrAreas: [],
+			requiredSkills: [
+				"skills/testing/SKILL.md",
+				"skills/code-review/SKILL.md",
+			],
+			validationChecks: ["bun run harness:validate"],
+		}),
+	);
 
 	return tasks;
 }
@@ -166,7 +189,7 @@ function fallbackTasks(
 	milestone: MilestoneRecord,
 ): TaskRecord[] {
 	return [
-		{
+		createTaskRecord({
 			id: `T${suffix}01`,
 			milestoneId: milestone.id,
 			title: `Refine milestone design for ${milestone.title}`,
@@ -176,8 +199,8 @@ function fallbackTasks(
 			affectedFilesOrAreas: [],
 			requiredSkills: ["skills/research/SKILL.md"],
 			validationChecks: [],
-		},
-		{
+		}),
+		createTaskRecord({
 			id: `T${suffix}02`,
 			milestoneId: milestone.id,
 			title: `Implement ${milestone.title}`,
@@ -187,8 +210,8 @@ function fallbackTasks(
 			affectedFilesOrAreas: [],
 			requiredSkills: ["skills/implementation/SKILL.md"],
 			validationChecks: ["bun run harness:validate"],
-		},
-		{
+		}),
+		createTaskRecord({
 			id: `T${suffix}03`,
 			milestoneId: milestone.id,
 			title: `Validate ${milestone.title}`,
@@ -201,7 +224,7 @@ function fallbackTasks(
 				"skills/code-review/SKILL.md",
 			],
 			validationChecks: ["bun run harness:validate"],
-		},
+		}),
 	];
 }
 
@@ -246,20 +269,7 @@ export function stateTemplate(projectName: string): HarnessState {
 				architecture: "docs/architecture.md",
 				progress: "docs/progress.md",
 			},
-			commandSurface: [
-				"bun run harness:init -- <name>",
-				"bun run harness:doctor",
-				"bun run harness:discover --reset",
-				"bun run harness:validate",
-				"bun run build",
-				"bun run lint",
-				"bun run typecheck",
-				"bun run test",
-				"bun run harness:plan",
-				"bun run harness:orchestrate",
-				"bun run harness:parallel-dispatch",
-				"bun run harness:merge-milestone -- <id>",
-			],
+			commandSurface: defaultCommandSurface(),
 		},
 		planning: {
 			phase: "READY",
@@ -294,14 +304,36 @@ export function loadState(root: string): HarnessState {
 		path.join(root, ".harness/state.json"),
 	);
 	if (!state.discovery) {
-		return {
+		const fallback = {
 			...(state as HarnessState),
 			discovery: stateTemplate(
 				state.projectInfo?.projectName ?? "harness-template",
 			).discovery,
 		};
+		fallback.tasks = (fallback.tasks ?? []).map(normalizeTaskRecord);
+		fallback.projectInfo.commandSurface =
+			fallback.projectInfo.commandSurface?.length > 0
+				? [
+						...new Set([
+							...fallback.projectInfo.commandSurface,
+							"bun run harness:evaluate",
+						]),
+					]
+				: defaultCommandSurface();
+		return fallback;
 	}
-	return state as HarnessState;
+	const normalized = state as HarnessState;
+	normalized.tasks = (normalized.tasks ?? []).map(normalizeTaskRecord);
+	normalized.projectInfo.commandSurface =
+		normalized.projectInfo.commandSurface?.length > 0
+			? [
+					...new Set([
+						...normalized.projectInfo.commandSurface,
+						"bun run harness:evaluate",
+					]),
+				]
+			: defaultCommandSurface();
+	return normalized;
 }
 
 export function saveState(root: string, state: HarnessState): void {

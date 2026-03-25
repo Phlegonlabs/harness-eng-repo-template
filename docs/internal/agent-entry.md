@@ -71,6 +71,7 @@ bun run harness:validate
 ```
 
 Do not hand off a broken state. If validation fails, fix it.
+For active tasks, `bun run harness:evaluate --task <id>` is the task-level gate before a task may be considered done.
 
 ---
 
@@ -84,7 +85,8 @@ Do not hand off a broken state. If validation fails, fix it.
 4. Read `docs/internal/orchestrator-workflow.md` for the planning/execution model
 5. Identify the specific task and its scope
 6. Check which layers will be touched (review `docs/internal/dependency-layers.md`)
-7. Identify which workspace(s) are affected before editing
+7. Inspect the current task contract / latest handoff artifact when resuming in-flight work
+8. Identify which workspace(s) are affected before editing
 
 ### During Work
 
@@ -99,9 +101,10 @@ Do not hand off a broken state. If validation fails, fix it.
 
 1. Run `bun run harness:validate`
 2. Fix any failures
-3. Stage specific files (not `git add -A`)
-4. Write a conventional commit message
-5. Note any open questions or blockers in `docs/` if relevant
+3. Run `bun run harness:evaluate --task <id>` for the active task if it is still in execution
+4. Stage specific files (not `git add -A`)
+5. Write a conventional commit message
+6. Note any open questions or blockers in `docs/` if relevant
 
 ### Planning and Execution
 
