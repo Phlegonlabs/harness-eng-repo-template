@@ -12,10 +12,7 @@
 			"Bash(find *)",
 			"Bash(cat *)",
 			"Bash(chmod +x *)",
-			"Bash(./harness/scripts/*)",
-			"Bash(./harness/linters/*)",
-			"Bash(./harness/structural-tests/*)",
-			"Bash(./harness/entropy/*)",
+			"Bash(bun run harness:*)",
 			"Bash(./evals/*)"
 		],
 		"deny": [

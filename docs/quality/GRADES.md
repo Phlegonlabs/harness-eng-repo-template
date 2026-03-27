@@ -1,8 +1,8 @@
 # Quality Grades
 
-Tracks the quality of the engineer template itself. Replace these entries with product-specific grades as the repository is adopted.
+Tracks quality across domains and layers. Update as the project evolves.
 
-**Last updated:** 2026-03-23 | **Updated by:** Project leads
+**Last updated:** — | **Updated by:** —
 
 ---
 
@@ -22,9 +22,7 @@ Tracks the quality of the engineer template itself. Replace these entries with p
 
 | Domain | Code Quality | Test Coverage | Documentation | Overall | Notes |
 |--------|-------------|---------------|---------------|---------|-------|
-| Harness runtime | A | B | A | A- | Validation and orchestration flows are live and repo-owned |
-| Workspace scaffold | B | B | B | B | Apps and packages are intentionally minimal but ready to customize |
-| Documentation surfaces | B | n/a | B | B | Docs are actionable defaults and should be replaced with project context after initialization |
+| *(add domains as the project grows)* | — | — | — | — | — |
 
 ---
 
@@ -32,21 +30,18 @@ Tracks the quality of the engineer template itself. Replace these entries with p
 
 | Layer | Grade | Coverage | Notes |
 |-------|-------|----------|-------|
-| Types | B | Minimal scaffold coverage | Shared contracts exist and should be expanded by the first product slice |
-| Config | B | Convention coverage | Environment patterns are documented but product validation is still project-specific |
-| Repo | B | Structural coverage | Repository layer rules exist even when feature-specific repositories are not yet implemented |
-| Service | B | Scaffold tests | Shared service example and rules are present |
-| Runtime | B | Scaffold tests | App runtime workspaces compile and test successfully |
-| UI | B | Scaffold tests | UI workspace is intentionally thin and awaits product-specific components |
+| Types | — | — | — |
+| Config | — | — | — |
+| Repo | — | — | — |
+| Service | — | — | — |
+| Runtime | — | — | — |
+| UI | — | — | — |
 
 ---
 
 ## Action Items
 
-Items that need to be addressed to improve grades:
-
-- [ ] Replace template-specific goals, milestones, and grades with project-specific ones during adoption.
-- [ ] Add product-specific deployment and runtime checks once target environments are chosen.
+- [ ] *(add action items as grades are assessed)*
 
 ---
 

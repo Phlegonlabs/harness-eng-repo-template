@@ -194,11 +194,11 @@ harness-eng-repo-template/
 ├── apps/
 │   ├── web/               # Frontend / client-facing app workspace
 │   │   └── src/
-│   │       ├── types/     # Layer 0: Type definitions
-│   │       ├── config/    # Layer 1: Configuration
-│   │       ├── repo/      # Layer 2: Data access
-│   │       ├── service/   # Layer 3: Business logic
-│   │       ├── runtime/   # Layer 4: Entrypoints
+│   │       ├── types/     # Layer 0: Type definitions        (create as needed)
+│   │       ├── config/    # Layer 1: Configuration           (create as needed)
+│   │       ├── repo/      # Layer 2: Data access             (create as needed)
+│   │       ├── service/   # Layer 3: Business logic          (create as needed)
+│   │       ├── runtime/   # Layer 4: Entrypoints             (create as needed)
 │   │       ├── ui/        # Layer 5: UI components
 │   │       └── index.ts   # Export barrel
 │   └── api/               # API / backend / worker workspace (same layer structure)

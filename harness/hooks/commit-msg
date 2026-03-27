@@ -19,7 +19,7 @@ PATTERN='^(feat|fix|docs|refactor|test|chore|harness)(\([a-z0-9\-]+\))?: .{1,100
 
 FIRST_LINE=$(echo "$COMMIT_MSG" | head -1)
 
-if ! echo "$FIRST_LINE" | grep -qP "$PATTERN"; then
+if ! echo "$FIRST_LINE" | grep -qE "$PATTERN"; then
   echo ""
   echo "harness: commit message format error"
   echo ""

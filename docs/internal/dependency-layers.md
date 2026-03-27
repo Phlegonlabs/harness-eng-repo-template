@@ -38,7 +38,7 @@ Each layer may only import from layers *below* (earlier in the sequence) it.
 ## Layer Definitions
 
 ### Types
-- **Purpose:** Foundation. Shared type definitions, interfaces, constants, enums.
+- **Purpose:** Foundation. Shared type definitions, interfaces, schemas, constants.
 - **Typical location:** `apps/<app>/src/types/` or `packages/<pkg>/src/types/`
 - **Allowed imports:** None (no internal imports)
 - **Examples:** `User`, `OrderStatus`, `ApiResponse<T>`

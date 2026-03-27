@@ -12,12 +12,12 @@ src/<layer>/<domain>/
 └── <feature>.test.ts   ← Unit tests here
 ```
 
-Cross-layer tests live in `tests/`:
+Cross-layer tests live in `tests/` (create directories as the project grows):
 ```
 tests/
-├── integration/         ← API / cross-service tests
+├── integration/         ← API / cross-service tests (create when needed)
 ├── architecture/        ← Structural tests (dependency layer rules)
-└── e2e/                 ← End-to-end tests
+└── e2e/                 ← End-to-end tests (create when needed)
 ```
 
 ## Testing Rules
@@ -38,7 +38,7 @@ The pre-stop hook enforces coverage before the agent completes a task.
 [your test:coverage command]
 ```
 
-Threshold: **80% lines/functions/branches** (configured in `hooks/pre-stop.sh`).
+Threshold: **80% lines/functions/branches** (template default — uncomment the coverage block in `hooks/pre-stop.sh` to activate).
 
 If coverage drops below threshold, the hook re-engages the agent to add tests.
 

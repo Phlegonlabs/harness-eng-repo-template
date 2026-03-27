@@ -2,22 +2,23 @@
 
 > This document is a living spec. Update it when requirements change.
 > Agents read this to understand *what* is being built and *why*.
+> Replace all `[...]` placeholders with your project's details, or run `bun run harness:discover` for a guided interview.
 
 ---
 
 ## Executive Summary
 
-**Harness Template** is an engineer-ready monorepo template that helps product and platform teams start shipping in a Bun + Turbo workspace with built-in validation, planning surfaces, and agent-readable project rules from day one.
+[Describe your product in 2–3 sentences: what it does, who it's for, and why it matters. Use the format: **[PROJECT_NAME]** is a ...]
 
 ---
 
 ## Problem Statement
 
-**Current state:** New repositories often start as a loose collection of setup scripts, incomplete docs, and implicit conventions.
+**Current state:** [Describe the current situation or pain point.]
 
-**The gap:** Engineers and coding agents lose time rebuilding the same repository scaffolding, guessing architecture rules, and deciding how to organize the first production slice.
+**The gap:** [Describe what's missing or broken.]
 
-**Impact:** Teams spend their early project time on setup churn instead of feature delivery, and quality drifts because the working agreements are not encoded in the repository.
+**Impact:** [Describe the consequence of the gap going unaddressed.]
 
 ---
 
@@ -25,64 +26,44 @@
 
 | Persona | Description | Primary Goal |
 |---------|-------------|--------------|
-| Founding engineer | Starts a new product codebase and needs a production-shaped repo immediately | Land the first vertical slice without rebuilding tooling |
-| Platform or tech lead | Standardizes how agents and humans work in the same repository | Provide repeatable structure, validation, and handoff rules |
-| Product engineer using agents | Edits application code with AI assistance every day | Work inside a repo whose conventions are obvious and enforceable |
+| [name] | [Describe persona] | [Primary goal] |
 
 ---
 
 ## Core Capabilities
 
 ### Must Have (v1)
-- [ ] Ready-to-edit monorepo layout with `apps/web`, `apps/api`, and `packages/shared`
-- [ ] Root validation and task orchestration that work immediately after initialization
-- [ ] Task contracts, evaluator results, and handoff artifacts that make long-running work resumable
-- [ ] Repository-owned docs and rules that agents can follow without extra chat context
+- [ ] [Capability 1]
+- [ ] [Capability 2]
 
 ### Should Have (v1)
-- [ ] Guided discovery flow for teams that want PRD and architecture interviews before implementation
-- [ ] Milestone and task planning generated from repository docs
+- [ ] [Capability 3]
 
 ### Could Have (later)
-- [ ] Optional deployment presets per application workspace
-- [ ] Additional shared package templates for design systems or SDKs
+- [ ] [Capability 4]
 
 ### Won't Have (out of scope)
-- One-click product-specific frameworks or business logic beyond the engineering scaffold
+- [Describe explicitly what is out of scope]
 
 ---
 
 ## Proposed Milestones
 
-- [ ] Customize project identity and ownership surfaces — replace template naming, ownership, and environment defaults for the new repository
-  - Update harness/config.json with project name and ownership
-  - Replace template placeholders across docs and configs
-  - Validate initialization with harness:doctor
-- [ ] Implement the first vertical slice — ship one real cross-workspace feature through `apps/*` and `packages/*`
-  - Define shared types and contracts in packages/shared
-  - Implement API endpoint in apps/api
-  - Implement UI integration in apps/web
-  - Add cross-workspace integration tests
-- [ ] Harden for team delivery — add product-specific validation, deployment, and operational checks
-  - Review and tighten validation rules
-  - Keep task contract / evaluator / handoff artifacts coherent with runtime behavior
-  - Add deployment configuration
-  - Add operational health checks and monitoring
-  - Validate end-to-end delivery pipeline
+- [ ] [Milestone 1 title — one-line goal]
+  - [Task hint 1]
+  - [Task hint 2]
+- [ ] [Milestone 2 title — one-line goal]
+  - [Task hint 1]
 
 ---
 
 ## Scope Boundaries
 
 **In scope:**
-- A working engineer template with monorepo structure, validation, docs, and planning surfaces
-- Minimal application and shared package scaffolds that compile and test
-- Optional discovery/orchestration tooling for teams that want a more guided workflow
+- [Describe what is in scope]
 
 **Out of scope:**
-- Product-specific UI, domain models, or deployment infrastructure
-- Framework-specific code generation for every possible stack choice
-- Automatic feature implementation beyond the scaffold itself
+- [Describe what is explicitly out of scope]
 
 ---
 
@@ -90,40 +71,34 @@
 
 | Metric | Baseline | Target | Timeline |
 |--------|----------|--------|----------|
-| Time from clone to first successful validation | Template setup varies by repo | Under 15 minutes after `bun install` and `bun run harness:init` | First session |
-| Time to first project-specific code change | Often delayed by repo setup work | Same session as initialization | First day |
-| Repository guardrails active | Inconsistent in ad hoc starters | `build`, `test`, and `harness:validate` all pass in the template baseline | Before first feature branch |
+| [Metric 1] | [Baseline] | [Target] | [Timeline] |
 
 ---
 
 ## Assumptions & Constraints
 
 **Assumptions:**
-- Teams want a strong default repository shape but still need to customize product details quickly
-- Bun and git are available in the development environment
-- The first shipped work will usually span at least one app workspace and one shared package
+- [Assumption 1]
 
 **Constraints:**
-- The template must stay framework-agnostic at the business-logic level
-- Rules must remain repository-owned and executable offline
-- The default path must not require discovery interviews before coding can begin
+- [Constraint 1]
 
 ---
 
 ## Open Questions
 
-- No template-level blockers. Replace this list with project-specific open questions when the repository is adopted.
+- [Question 1: describe the open question and what decision it blocks]
 
 ---
 
 ## Planning Readiness Checklist
 
-- [x] Product goals are explicit
-- [x] In-scope vs out-of-scope is explicit
-- [x] Success metrics are explicit
-- [x] Proposed milestones are listed
-- [x] No critical unknown blocks architecture work
+- [ ] Product goals are explicit
+- [ ] In-scope vs out-of-scope is explicit
+- [ ] Success metrics are explicit
+- [ ] Proposed milestones are listed
+- [ ] No critical unknown blocks architecture work
 
 ---
 
-*Last updated: 2026-03-23 | Owner: Project leads*
+*Last updated: [date] | Owner: [name]*

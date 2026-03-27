@@ -87,7 +87,15 @@ Load a skill when you need detailed guidance on a specific task type. They live 
 | `bun run harness:plan` | Sync milestones/tasks from PRD + architecture |
 | `bun run harness:orchestrate` | Show next task and suggested skills |
 | `bun run harness:parallel-dispatch -- --apply` | Preview or allocate milestone worktrees |
+| `bun run harness:merge-milestone -- M1` | Merge a milestone worktree back to main |
 | `bun run harness:install-hooks` | Install git hooks |
+| `bun run harness:lint` | Run all linters (layers, file size, naming, forbidden, doc freshness) |
+| `bun run harness:structural` | Run structural tests (required files, architecture, doc links, runtime) |
+| `bun run harness:entropy` | Run entropy scans (drift, orphans, consistency) |
+| `bun run build` | Build all workspaces |
+| `bun run lint` | Lint all workspaces |
+| `bun run typecheck` | Type-check all workspaces |
+| `bun run test` | Test all workspaces |
 
 ---
 

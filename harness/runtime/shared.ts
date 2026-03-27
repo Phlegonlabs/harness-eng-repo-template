@@ -4,7 +4,6 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
-	statSync,
 	writeFileSync,
 } from "node:fs";
 import path from "node:path";
@@ -92,7 +91,7 @@ export function check(
 	console.log(`  ${level}: ${message}`);
 }
 
-export function walkFiles(root: string): string[] {
+function walkFiles(root: string): string[] {
 	const files: string[] = [];
 	for (const entry of readdirSync(root, { withFileTypes: true })) {
 		const fullPath = path.join(root, entry.name);
@@ -252,9 +251,4 @@ export function slugify(value: string): string {
 
 export function exists(target: string): boolean {
 	return existsSync(target);
-}
-
-export function fileMtimeUnix(target: string): number | null {
-	if (!existsSync(target)) return null;
-	return Math.floor(statSync(target).mtimeMs / 1000);
 }

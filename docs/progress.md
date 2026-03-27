@@ -9,11 +9,11 @@
 
 | Surface | Status | Notes |
 |--------|--------|-------|
-| `docs/product.md` | Ready | Engineer-template PRD baseline is ready to customize |
-| `docs/architecture.md` | Ready | Monorepo architecture baseline is ready to customize |
+| `docs/product.md` | Pending | Replace placeholders or run `bun run harness:discover` |
+| `docs/architecture.md` | Pending | Replace placeholders or run `bun run harness:discover` |
 | Discovery | Optional | Run `bun run harness:discover --reset` to enter guided discovery mode |
 | Backlog sync | Ready | Run `bun run harness:plan` to materialize starter milestones and tasks |
-| Task loop | Ready | Use `bun run harness:orchestrate` + `bun run harness:evaluate` for contract-driven execution |
+| Task loop | Ready | Use `harness:orchestrate` + `harness:evaluate` for contract-driven execution |
 
 ---
 
@@ -43,4 +43,4 @@
 
 ## Activity Log
 
-- Ready template baseline refreshed on 2026-03-23.
+- Template initialized. Run `bun run harness:init -- <name>` to begin.

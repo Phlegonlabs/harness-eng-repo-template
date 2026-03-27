@@ -63,7 +63,7 @@ We adopt **Harness Engineering** as the foundational methodology for this projec
 
 ### Risks
 - **Over-constraining:** Rules that are too strict block legitimate work — *Mitigation: review rules quarterly, make them easy to propose changes to via ADRs*
-- **Rule drift:** Linters diverge from documentation — *Mitigation: `scan-drift.sh` runs weekly*
+- **Rule drift:** Linters diverge from documentation — *Mitigation: `bun run harness:entropy` runs weekly*
 
 ---
 
