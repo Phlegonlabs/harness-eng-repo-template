@@ -72,9 +72,27 @@ export function readJson<T>(target: string): T {
 	return JSON.parse(readFileSync(target, "utf8")) as T;
 }
 
-export function writeJson(target: string, value: unknown): void {
+function tryFormatFile(target: string): void {
+	try {
+		execFileSync("bunx", ["@biomejs/biome", "format", "--write", target], {
+			cwd: repoRoot(),
+			stdio: "ignore",
+		});
+	} catch {
+		// Best-effort formatting: callers still keep the written file if Biome is unavailable.
+	}
+}
+
+export function writeTextFile(target: string, content: string): void {
 	mkdirSync(path.dirname(target), { recursive: true });
-	writeFileSync(target, `${JSON.stringify(value, null, "\t")}\n`);
+	writeFileSync(target, content);
+	if (isTextFile(target)) {
+		tryFormatFile(target);
+	}
+}
+
+export function writeJson(target: string, value: unknown): void {
+	writeTextFile(target, `${JSON.stringify(value, null, "\t")}\n`);
 }
 
 export function writeSection(label: string): void {

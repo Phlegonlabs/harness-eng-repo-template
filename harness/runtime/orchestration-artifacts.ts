@@ -1,6 +1,6 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import path from "node:path";
-import { repoRelative, writeJson } from "./shared";
+import { repoRelative, writeJson, writeTextFile } from "./shared";
 import type {
 	MilestoneRecord,
 	TaskContractArtifact,
@@ -121,7 +121,7 @@ export function writeTaskContract(
 	].join("\n");
 
 	const target = taskContractPath(root, task);
-	writeFileSync(target, `${contract}\n`);
+	writeTextFile(target, `${contract}\n`);
 	return repoRelative(root, target);
 }
 

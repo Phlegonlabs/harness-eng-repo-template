@@ -1,4 +1,3 @@
-import { writeFileSync } from "node:fs";
 import path from "node:path";
 import {
 	ARCH_PACKETS,
@@ -14,7 +13,7 @@ import {
 	renderProductDoc,
 } from "./discovery-renderers";
 import { loadState, saveState } from "./planning";
-import { repoRoot } from "./shared";
+import { repoRoot, writeTextFile } from "./shared";
 import type {
 	DiscoveryAnswerBatch,
 	DiscoveryQuestion,
@@ -136,7 +135,7 @@ function writeDiscoveryProgressDoc(root: string, state: HarnessState): void {
 		`- Discovery updated on ${state.discovery.lastUpdatedAt ?? "[date]"}.`,
 	].join("\n");
 
-	writeFileSync(path.join(root, "docs/progress.md"), `${progress}\n`);
+	writeTextFile(path.join(root, "docs/progress.md"), `${progress}\n`);
 }
 
 export function resetDiscoveryState(state: HarnessState): HarnessState {
@@ -197,11 +196,11 @@ export function applyDiscoveryAnswers(
 		backlog: readiness.planReady,
 	};
 
-	writeFileSync(
+	writeTextFile(
 		path.join(root, "docs/product.md"),
 		`${renderProductDoc(state.discovery.answered)}\n`,
 	);
-	writeFileSync(
+	writeTextFile(
 		path.join(root, "docs/architecture.md"),
 		`${renderArchitectureDoc(state.discovery.answered)}\n`,
 	);
@@ -226,11 +225,11 @@ export function nextPacketJson(root: string): DiscoveryQuestionPacket | null {
 
 export function resetDiscovery(root: string = repoRoot()): HarnessState {
 	const state = resetDiscoveryState(loadState(root));
-	writeFileSync(
+	writeTextFile(
 		path.join(root, "docs/product.md"),
 		`${renderProductDoc({})}\n`,
 	);
-	writeFileSync(
+	writeTextFile(
 		path.join(root, "docs/architecture.md"),
 		`${renderArchitectureDoc({})}\n`,
 	);

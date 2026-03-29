@@ -5,7 +5,7 @@ import {
 	writeTaskEvaluation,
 	writeTaskHandoff,
 } from "./orchestration-artifacts";
-import { loadState, saveState } from "./planning";
+import { loadState, saveState, writeProgressDoc } from "./planning";
 import { readJson, repoRoot } from "./shared";
 import type {
 	EvaluatorStatus,
@@ -18,7 +18,9 @@ import type {
 	TaskRecord,
 } from "./types";
 
-const MAX_TASK_ITERATIONS = 3;
+/** Absolute maximum iterations across all retries, including unblocks. */
+const MAX_TASK_ITERATIONS = 5;
+/** Consecutive failures before automatic blocking. Reset on unblock. */
 const MAX_STALL_COUNT = 2;
 
 export interface OrchestrationStatus {
@@ -33,17 +35,23 @@ function unique(values: string[]): string[] {
 	return [...new Set(values)];
 }
 
+function dependenciesMet(task: TaskRecord, allTasks: TaskRecord[]): boolean {
+	return task.dependsOn.every((depId) => {
+		const dep = allTasks.find((t) => t.id === depId);
+		return dep?.status === "done";
+	});
+}
+
 function activeTask(tasks: TaskRecord[]): TaskRecord | null {
 	const orderedStatuses = [
 		"evaluation_pending",
 		"in_progress",
-		"contract_pending",
-		"contract_approved",
 		"pending",
-		"blocked",
 	] as const;
 	for (const status of orderedStatuses) {
-		const task = tasks.find((entry) => entry.status === status);
+		const task = tasks.find(
+			(entry) => entry.status === status && dependenciesMet(entry, tasks),
+		);
 		if (task) return task;
 	}
 	return null;
@@ -203,6 +211,9 @@ export function orchestrateTask(
 		);
 		task.contractStatus = "approved";
 		task.status = "in_progress";
+		if (milestone.status === "planned") {
+			milestone.status = "active";
+		}
 		task.lastCheckpointAt = new Date().toISOString();
 		task.artifacts.latestHandoffPath = writeTaskHandoff(
 			root,
@@ -221,6 +232,13 @@ export function orchestrateTask(
 	}
 
 	saveState(root, state);
+	writeProgressDoc(
+		root,
+		state.milestones,
+		state.tasks,
+		state.execution.activeWorktrees,
+		state.planning.docsReady,
+	);
 	return {
 		phase: state.planning.phase,
 		task,
@@ -242,15 +260,20 @@ export function evaluateTask(
 		(taskId
 			? state.tasks.find((entry) => entry.id === taskId)
 			: state.tasks.find((entry) =>
-					["in_progress", "evaluation_pending", "contract_approved"].includes(
-						entry.status,
-					),
+					["in_progress", "evaluation_pending"].includes(entry.status),
 				)) ?? null;
 	if (!task) {
 		return null;
 	}
+	if (!dependenciesMet(task, state.tasks)) {
+		throw new Error(
+			`Cannot evaluate ${task.id}: dependencies not met (${task.dependsOn.join(", ")}).`,
+		);
+	}
 
 	const milestone = taskMilestone(task, state.milestones);
+	state.planning.phase = "VALIDATING";
+	state.skills.loaded = registrySkills(root, "VALIDATING", task);
 	const currentIteration = Math.max(task.iteration, 1);
 	task.status = "evaluation_pending";
 	task.lastCheckpointAt = new Date().toISOString();
@@ -293,9 +316,14 @@ export function evaluateTask(
 		risks = findings.map((finding) => finding.message);
 	} else {
 		task.status = "done";
-		task.evaluatorStatus = evaluatorStatus;
 		task.stallCount = 0;
 		task.lastCheckpointAt = new Date().toISOString();
+		const milestoneTasks = state.tasks.filter(
+			(t) => t.milestoneId === task.milestoneId,
+		);
+		if (milestoneTasks.every((t) => t.status === "done")) {
+			milestone.status = "complete";
+		}
 	}
 
 	task.evaluatorStatus = evaluatorStatus;
@@ -318,6 +346,13 @@ export function evaluateTask(
 	});
 
 	saveState(root, state);
+	writeProgressDoc(
+		root,
+		state.milestones,
+		state.tasks,
+		state.execution.activeWorktrees,
+		state.planning.docsReady,
+	);
 	return {
 		phase: state.planning.phase,
 		task,
@@ -325,4 +360,24 @@ export function evaluateTask(
 		skills: state.skills.loaded,
 		nextAction,
 	};
+}
+
+export function unblockTask(
+	taskId: string,
+	root: string = repoRoot(),
+): TaskRecord | null {
+	const state = loadState(root);
+	const task = state.tasks.find((t) => t.id === taskId);
+	if (!task || task.status !== "blocked") return null;
+	task.status = "in_progress";
+	task.stallCount = 0;
+	saveState(root, state);
+	writeProgressDoc(
+		root,
+		state.milestones,
+		state.tasks,
+		state.execution.activeWorktrees,
+		state.planning.docsReady,
+	);
+	return task;
 }

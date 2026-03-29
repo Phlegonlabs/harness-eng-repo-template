@@ -1,21 +1,8 @@
+import { defaultCommandSurface as loadDefaultCommandSurface } from "./command-surface";
 import type { TaskRecord } from "./types";
 
-export function defaultCommandSurface(): string[] {
-	return [
-		"bun run harness:init -- <name>",
-		"bun run harness:doctor",
-		"bun run harness:discover --reset",
-		"bun run harness:validate",
-		"bun run build",
-		"bun run lint",
-		"bun run typecheck",
-		"bun run test",
-		"bun run harness:plan",
-		"bun run harness:orchestrate",
-		"bun run harness:evaluate",
-		"bun run harness:parallel-dispatch",
-		"bun run harness:merge-milestone -- <id>",
-	];
+export function defaultCommandSurface(root?: string): string[] {
+	return loadDefaultCommandSurface(root);
 }
 
 export function createTaskRecord(

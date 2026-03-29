@@ -55,6 +55,9 @@ for (const relativePath of [
 	"turbo.json",
 	"tsconfig.json",
 	"tsconfig.base.json",
+	"harness/command-surface.json",
+	"harness/command-surface-root.json",
+	"harness/command-surface-workspace.json",
 	"harness/config.json",
 	"harness/rules/dependency-layers.json",
 	"harness/rules/file-size-limits.json",
@@ -109,6 +112,7 @@ for (const relativePath of [
 	"docs/architecture.md",
 	"docs/progress.md",
 	"docs/internal/agent-entry.md",
+	"docs/internal/command-surface.md",
 	"docs/internal/orchestrator-workflow.md",
 ]) {
 	if (exists(path.join(root, relativePath))) {

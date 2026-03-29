@@ -1,7 +1,14 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
+import { writeCommandSurfaceDoc } from "./command-surface";
 import { saveState, stateTemplate } from "./planning";
-import { readJson, repoRoot, runPassthrough, writeJson } from "./shared";
+import {
+	readJson,
+	repoRoot,
+	runPassthrough,
+	writeJson,
+	writeTextFile,
+} from "./shared";
 import {
 	renderBaselineArchitectureDoc,
 	renderBaselineProductDoc,
@@ -67,24 +74,25 @@ for (const relativePath of [
 	writeJson(absolutePath, workspacePackage);
 }
 
-writeFileSync(
+writeTextFile(
 	path.join(root, "docs/product.md"),
 	`${renderBaselineProductDoc(projectName)}\n`,
 );
-writeFileSync(
+writeTextFile(
 	path.join(root, "docs/architecture.md"),
 	`${renderBaselineArchitectureDoc(projectName)}\n`,
 );
-writeFileSync(
+writeTextFile(
 	path.join(root, "docs/progress.md"),
 	`${renderReadyProgressDoc()}\n`,
 );
-writeFileSync(
+writeTextFile(
 	path.join(root, "docs/quality/GRADES.md"),
 	`${renderQualityGradesDoc()}\n`,
 );
+writeCommandSurfaceDoc(root);
 
-writeFileSync(
+writeTextFile(
 	path.join(root, ".env.example"),
 	readFileSync(path.join(root, ".env.example"), "utf8").replaceAll(
 		previousProjectName,
@@ -95,14 +103,14 @@ const title = projectName
 	.split("-")
 	.map((part) => `${part[0].toUpperCase()}${part.slice(1)}`)
 	.join(" ");
-writeFileSync(
+writeTextFile(
 	path.join(root, "README.md"),
 	readFileSync(path.join(root, "README.md"), "utf8").replace(
 		/^# .+$/m,
 		`# ${title}`,
 	),
 );
-writeFileSync(
+writeTextFile(
 	path.join(root, "LICENSE"),
 	readFileSync(path.join(root, "LICENSE"), "utf8")
 		.replaceAll(

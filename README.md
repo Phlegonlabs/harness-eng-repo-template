@@ -104,6 +104,7 @@ All important context lives in the repo — not in chat history, not in external
 | `docs/progress.md` | Current milestones, tasks, and worktree dispatch status |
 | `docs/decisions/` | Architecture Decision Records (ADRs) — why specific choices were made |
 | `docs/glossary.md` | Shared terminology so agents and humans use the same language |
+| `docs/internal/command-surface.md` | Command availability matrix — prerequisites, expected blocking behavior, and success mode |
 
 ### Progressive Skill System
 
@@ -217,7 +218,7 @@ harness-eng-repo-template/
 ├── skills/                # Agent guidance by task type (loaded on demand)
 ├── tests/                 # Repository-level tests
 ├── AGENTS.md              # Universal agent entry point (routing document)
-├── CLAUDE.md              # Claude Code-specific tool adapter
+├── CLAUDE.md              # Claude Code-specific thin adapter
 ├── package.json           # Root workspace config (Bun, Turbo, scripts)
 ├── turbo.json             # Turbo task orchestration config
 └── biome.json             # Formatter and linter config
@@ -230,14 +231,17 @@ Core repository surfaces:
 | `docs/product.md` | PRD canon — what you're building and why |
 | `docs/architecture.md` | Architecture canon — system shape, constraints, layer model |
 | `docs/progress.md` | Milestones, tasks, and worktree dispatch status |
+| `docs/internal/command-surface.md` | Human-readable command contract for root and workspace scripts |
 | `.harness/state.json` | Machine-owned execution state (not edited by hand) |
 | `harness/runtime/` | Bun/TS harness runtime (validation, planning, orchestration) |
 | `harness/rules/` | Machine-readable golden rules as JSON |
-| `AGENTS.md` / `CLAUDE.md` | Agent entrypoints with routing and tool guidance |
+| `AGENTS.md` / `CLAUDE.md` | Agent entrypoints with shared routing and adapter guidance; Codex follows the shared AGENTS/internal docs contract |
 
 ---
 
 ## Commands
+
+Use [docs/internal/command-surface.md](docs/internal/command-surface.md) as the canonical matrix for command prerequisites, expected blocking behavior, and persistent-command success rules.
 
 | Command | Purpose |
 |---------|---------|

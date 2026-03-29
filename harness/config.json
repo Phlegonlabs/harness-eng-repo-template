@@ -29,8 +29,12 @@
 		"docs/architecture.md",
 		"docs/progress.md",
 		"docs/internal/agent-entry.md",
+		"docs/internal/command-surface.md",
 		"docs/internal/orchestrator-workflow.md",
 		".harness/state.json",
+		"harness/command-surface.json",
+		"harness/command-surface-root.json",
+		"harness/command-surface-workspace.json",
 		"harness/config.json",
 		"harness/rules/dependency-layers.json",
 		"harness/skills/registry.json"

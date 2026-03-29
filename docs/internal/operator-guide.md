@@ -33,6 +33,8 @@ bun run harness:doctor
 bun run harness:validate
 ```
 
+Use [`docs/internal/command-surface.md`](command-surface.md) to confirm whether a command should pass immediately, boot persistently, or block until more setup exists.
+
 Optional commands:
 
 ```bash

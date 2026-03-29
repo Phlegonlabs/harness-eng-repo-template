@@ -19,6 +19,9 @@ if (
 	readiness.milestones.length === 0
 ) {
 	console.log("PLAN BLOCKED");
+	console.log(
+		"  Run `bun run harness:init -- <name>` or complete discovery before planning.",
+	);
 	console.log(`  Product ready: ${readiness.productReady}`);
 	console.log(`  Architecture ready: ${readiness.architectureReady}`);
 	console.log(`  Milestones listed: ${readiness.milestones.length > 0}`);
@@ -31,11 +34,17 @@ const tasks = defaultTasks(readiness.milestones, config);
 
 state.projectInfo.projectName = config.project_name;
 state.projectInfo.runtime = "bun";
-state.projectInfo.commandSurface = defaultCommandSurface();
+state.projectInfo.commandSurface = defaultCommandSurface(root);
 state.planning.phase = "PLANNING";
 state.planning.docsReady = { product: true, architecture: true, backlog: true };
 state.milestones = readiness.milestones;
 state.tasks = tasks;
 saveState(root, state);
-writeProgressDoc(root, readiness.milestones, tasks);
+writeProgressDoc(
+	root,
+	readiness.milestones,
+	tasks,
+	state.execution.activeWorktrees,
+	state.planning.docsReady,
+);
 console.log("PASS: Planning surfaces synchronized.");
