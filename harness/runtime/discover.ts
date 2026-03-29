@@ -1,4 +1,3 @@
-import { stdin } from "node:process";
 import {
 	applyDiscoveryAnswers,
 	nextPacketJson,
@@ -18,11 +17,8 @@ if (args.includes("--reset")) {
 }
 
 if (args.includes("--answer-from-stdin")) {
-	const chunks: string[] = [];
-	for await (const chunk of stdin) {
-		chunks.push(chunk.toString());
-	}
-	const payload = JSON.parse(chunks.join("")) as DiscoveryAnswerBatch;
+	const raw = await Bun.stdin.text();
+	const payload = JSON.parse(raw) as DiscoveryAnswerBatch;
 	const state = applyDiscoveryAnswers(root, payload);
 	console.log(
 		JSON.stringify(
