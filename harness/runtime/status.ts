@@ -70,10 +70,7 @@ function progress(state: HarnessState): HarnessProgressSummary {
 }
 
 function nextAction(state: HarnessState, active: TaskRecord | null): string {
-	if (
-		state.tasks.length === 0 &&
-		(!state.planning.docsReady.backlog || !state.discovery.readiness.planReady)
-	) {
+	if (state.tasks.length === 0 && !state.discovery.readiness.planReady) {
 		return "Run bun run harness:init -- <name> or complete discovery before planning.";
 	}
 	if (state.tasks.length === 0) {

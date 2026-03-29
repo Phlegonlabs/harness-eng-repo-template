@@ -48,4 +48,14 @@ describe("harness status", () => {
 		expect(status.blockedTasks).toHaveLength(1);
 		expect(status.nextAction).toContain("harness:unblock");
 	});
+
+	it("recommends planning when the repo is ready but has no tasks yet", () => {
+		const root = createRepoWithTasks([], tempRoots);
+
+		const status = buildHarnessStatus(root);
+
+		expect(status.phase).toBe("PLANNING");
+		expect(status.activeTask).toBeNull();
+		expect(status.nextAction).toContain("harness:plan");
+	});
 });

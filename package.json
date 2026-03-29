@@ -9,6 +9,7 @@
 		"packages/*"
 	],
 	"scripts": {
+		"postinstall": "bun run harness:install-hooks",
 		"harness:doctor": "bun run harness/runtime/doctor.ts",
 		"harness:lint": "bun run harness/runtime/lint-all.ts",
 		"harness:structural": "bun run harness/runtime/test-all.ts",

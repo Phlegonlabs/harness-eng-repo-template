@@ -103,6 +103,36 @@ const templateScope = "@harness-template";
 const previousScope = `@${previousProjectName}`;
 const projectScope = `@${targetProjectName}`;
 
+function renderCodeowners(owner: string | null): string {
+	const lines = [
+		"# CODEOWNERS — Assign automatic reviewers for pull requests.",
+		"# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners",
+		"",
+	];
+
+	if (!owner) {
+		return [
+			...lines,
+			"# Default owners are intentionally unset after initialization.",
+			"# Re-run `bun run harness:init -- <name> --owner @org/team` to personalize review ownership.",
+		].join("\n");
+	}
+
+	return [
+		...lines,
+		"# Default: all files require review from the engineering team",
+		`* ${owner}`,
+		"",
+		"# Harness rules require extra scrutiny — changes affect all agent runs",
+		`harness/rules/ ${owner}`,
+		`docs/internal/agent-entry.md ${owner}`,
+		"",
+		"# Architecture decisions",
+		`docs/decisions/ ${owner}`,
+		`docs/architecture.md ${owner}`,
+	].join("\n");
+}
+
 function rewriteIdentitySurface(relativePath: string): void {
 	const absolutePath = path.join(root, relativePath);
 	const current = readFileSync(absolutePath, "utf8");
@@ -115,6 +145,8 @@ function rewriteIdentitySurface(relativePath: string): void {
 		if (previousProjectOwner) {
 			next = next.replaceAll(previousProjectOwner, projectOwner);
 		}
+	} else {
+		next = next.replaceAll("@your-org/engineering", "@acme/engineering");
 	}
 	if (next !== current) {
 		writeTextFile(absolutePath, next);
@@ -187,10 +219,18 @@ const title = targetProjectName
 	.join(" ");
 writeTextFile(
 	path.join(root, "README.md"),
-	readFileSync(path.join(root, "README.md"), "utf8").replace(
-		/^# .+$/m,
-		`# ${title}`,
-	),
+	readFileSync(path.join(root, "README.md"), "utf8")
+		.replace(/^# .+$/m, `# ${title}`)
+		.replace(
+			"bun run harness:init -- my-project --profile fullstack",
+			`bun run harness:init -- ${targetProjectName} --profile ${profileName}`,
+		)
+		.replace(
+			"# bun run harness:init -- my-project --profile fullstack --owner @your-org/engineering",
+			projectOwner
+				? `# bun run harness:init -- ${targetProjectName} --profile ${profileName} --owner ${projectOwner}`
+				: `# bun run harness:init -- ${targetProjectName} --profile ${profileName} --owner @acme/engineering`,
+		),
 );
 writeTextFile(
 	path.join(root, "LICENSE"),
@@ -205,8 +245,11 @@ writeTextFile(
 		)
 		.replaceAll("2026", `${new Date().getFullYear()}`),
 );
+writeTextFile(
+	path.join(root, ".github/CODEOWNERS"),
+	`${renderCodeowners(projectOwner)}\n`,
+);
 for (const relativePath of [
-	".github/CODEOWNERS",
 	"apps/api/AGENTS.md",
 	"apps/web/AGENTS.md",
 	"packages/shared/AGENTS.md",

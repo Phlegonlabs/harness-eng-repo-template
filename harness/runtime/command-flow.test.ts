@@ -1,5 +1,5 @@
 import { describe, expect, it, setDefaultTimeout } from "bun:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { repoRoot } from "./shared";
 import {
@@ -22,6 +22,9 @@ setDefaultTimeout(90000);
 describeCommandFlow("command flow", () => {
 	it("keeps the pre-init command surface honest", () => {
 		const tempRoot = cloneRepo(root);
+		for (const hook of ["pre-commit", "commit-msg", "pre-push"]) {
+			expect(existsSync(path.join(tempRoot, ".git/hooks", hook))).toBe(true);
+		}
 		for (const command of [
 			["bun", "run", "harness:doctor"],
 			["bun", "run", "harness:lint"],
@@ -60,6 +63,35 @@ describeCommandFlow("command flow", () => {
 		const evaluate = runCommand(tempRoot, ["bun", "run", "harness:evaluate"]);
 		expect(evaluate.code).toBe(1);
 		expect(evaluate.stdout).toContain("EVALUATE BLOCKED");
+	});
+
+	it("initializes without an owner and still validates the ready baseline", () => {
+		const tempRoot = cloneRepo(root);
+		expect(
+			runCommand(tempRoot, [
+				"bun",
+				"run",
+				"harness:init",
+				"--",
+				"sample-project",
+			]).code,
+		).toBe(0);
+
+		const status = JSON.parse(
+			runCommand(tempRoot, ["bun", "run", "harness:status", "--json"]).stdout,
+		) as { phase: string; nextAction: string };
+
+		expect(status.phase).toBe("READY");
+		expect(status.nextAction).toContain("harness:plan");
+		expect(
+			readFileSync(path.join(tempRoot, ".github/CODEOWNERS"), "utf8"),
+		).not.toContain("@your-org/engineering");
+		expect(
+			readFileSync(path.join(tempRoot, "README.md"), "utf8"),
+		).not.toContain("@your-org/engineering");
+		expect(runCommand(tempRoot, ["bun", "run", "harness:validate"]).code).toBe(
+			0,
+		);
 	});
 
 	it("supports the full post-init root and workspace command surface", async () => {

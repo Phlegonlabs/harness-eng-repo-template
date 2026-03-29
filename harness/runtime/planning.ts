@@ -290,7 +290,7 @@ export function stateTemplate(projectName: string): HarnessState {
 			docsReady: {
 				product: true,
 				architecture: true,
-				backlog: false,
+				backlog: true,
 			},
 			approvals: {
 				planApproved: false,

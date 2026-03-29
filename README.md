@@ -179,6 +179,8 @@ As cloned, this repository is a **pre-init scaffold**:
 git clone <this-repo> my-project
 cd my-project
 bun install
+# git hooks install automatically inside git checkouts
+# if a local clone is missing them, run: bun run harness:install-hooks
 
 # pick the profile that matches the project
 bun run harness:init -- my-project --profile fullstack
@@ -265,6 +267,8 @@ bun run harness:validate
 ```
 
 The harness runtime has its own regression tests under `harness/runtime/*.test.ts`.
+
+Local commits also enforce Conventional Commits through the installed `commit-msg` hook.
 
 ---
 
