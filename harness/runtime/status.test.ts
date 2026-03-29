@@ -10,13 +10,12 @@ import { buildHarnessStatus } from "./status";
 
 const tempRoots: string[] = [];
 
-afterEach(() => {
-	for (const root of tempRoots.splice(0)) {
-		rmSync(root, { recursive: true, force: true });
-	}
-});
-
 describe("harness status", () => {
+	afterEach(() => {
+		for (const root of tempRoots.splice(0)) {
+			rmSync(root, { recursive: true, force: true });
+		}
+	});
 	it("reports the active task and suggested skills", () => {
 		const root = createRepo(["bun --version"], tempRoots);
 		orchestrateTask(root);

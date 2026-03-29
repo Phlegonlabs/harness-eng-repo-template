@@ -30,21 +30,24 @@ export function runDriftScan(context: ValidationContext): number {
 
 export function runOrphanScan(context: ValidationContext): number {
 	let warnings = 0;
-	const docs = trackedFiles(context.repoRoot).filter(
-		(file) =>
-			/^docs\/.+\.md$/.test(file) && !file.startsWith("docs/templates/"),
-	);
 	const markdown = trackedFiles(context.repoRoot).filter((file) =>
 		file.endsWith(".md"),
+	);
+	const contents = new Map(
+		markdown.map((relativePath) => [
+			relativePath,
+			readFileSync(path.join(context.repoRoot, relativePath), "utf8"),
+		]),
+	);
+	const docs = markdown.filter(
+		(file) =>
+			/^docs\/.+\.md$/.test(file) && !file.startsWith("docs/templates/"),
 	);
 	for (const relativePath of docs) {
 		const basename = path.basename(relativePath);
 		const referenced = markdown.some((candidate) => {
 			if (candidate === relativePath) return false;
-			const content = readFileSync(
-				path.join(context.repoRoot, candidate),
-				"utf8",
-			);
+			const content = contents.get(candidate) ?? "";
 			return content.includes(relativePath) || content.includes(basename);
 		});
 		if (!referenced) {

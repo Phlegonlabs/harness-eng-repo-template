@@ -64,12 +64,13 @@ Types: feat, fix, docs, refactor, test, chore, harness
 
 ### 6. Validate Before Handoff
 
-Run the full validation suite before every handoff:
+Run the default local validation suite before every handoff:
 
 ```bash
 bun run harness:validate
 ```
 
+Use `bun run harness:validate:full` when you need the full CI-equivalent suite, including harness runtime regression tests.
 Do not hand off a broken state. If validation fails, fix it.
 For active tasks, `bun run harness:evaluate --task <id>` is the task-level gate before a task may be considered done.
 
@@ -88,6 +89,8 @@ For active tasks, `bun run harness:evaluate --task <id>` is the task-level gate 
 7. Inspect the current task contract / latest handoff artifact when resuming in-flight work
 8. Identify which workspace(s) are affected before editing
 
+A fresh clone of this template is still a pre-init scaffold. Do not assume a runnable backlog exists until `harness:init` or discovery has produced docs-ready inputs and `harness:plan` has run.
+
 ### During Work
 
 - Work depth-first: break large goals into small, testable building blocks
@@ -101,10 +104,11 @@ For active tasks, `bun run harness:evaluate --task <id>` is the task-level gate 
 
 1. Run `bun run harness:validate`
 2. Fix any failures
-3. Run `bun run harness:evaluate --task <id>` for the active task if it is still in execution
-4. Stage specific files (not `git add -A`)
-5. Write a conventional commit message
-6. Note any open questions or blockers in `docs/` if relevant
+3. Run `bun run harness:self-review` when the change spans multiple files or mixes code and docs
+4. Run `bun run harness:evaluate --task <id>` for the active task if it is still in execution
+5. Stage specific files (not `git add -A`)
+6. Write a conventional commit message
+7. Note any open questions or blockers in `docs/` if relevant
 
 ### Planning and Execution
 
@@ -141,7 +145,7 @@ If any of these are true, ask before proceeding:
 See `harness/rules/forbidden-patterns.json` for the machine-readable list.
 These patterns must never appear in committed code:
 - Hardcoded secrets or API keys
-- `console.log` in non-test, non-debug files (use structured logging)
+- `console.log` in non-test, non-debug files (use the shared structured logger)
 - Commented-out code blocks
 - TODO comments without an issue reference
 

@@ -18,6 +18,18 @@
 			"message": "console.debug/warn/error is not allowed in production code. Use your project's structured logger with the appropriate level."
 		},
 		{
+			"id": "no-direct-stream-logging",
+			"pattern": "process\\.(stdout|stderr)\\.write\\(",
+			"description": "Direct stdout/stderr writes in production code",
+			"apply_to": ["apps/**/src/**", "packages/**/src/**"],
+			"exclude": [
+				"**/*.test.*",
+				"**/*.spec.*",
+				"packages/shared/src/service/logger.ts"
+			],
+			"message": "Direct process.stdout/process.stderr writes bypass the shared logging contract. Use the structured logger from @harness-template/shared instead."
+		},
+		{
 			"id": "no-commented-code",
 			"pattern": "^\\s*//.*(?:function|class|const|let|var|def |import ).*$",
 			"description": "Commented-out code blocks",

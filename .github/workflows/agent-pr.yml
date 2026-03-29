@@ -27,7 +27,7 @@ jobs:
         run: bun install
 
       - name: Full validation
-        run: bun run harness:validate
+        run: bun run harness:validate:full
 
       - name: Check AGENTS.md references agent-entry.md
         shell: bash

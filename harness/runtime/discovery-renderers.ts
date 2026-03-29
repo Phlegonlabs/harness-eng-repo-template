@@ -5,6 +5,10 @@ export function hasValue(
 	return Boolean(answered[id]?.trim());
 }
 
+interface RenderDocOptions {
+	owner?: string;
+}
+
 function sectionValue(
 	answered: Record<string, string>,
 	id: string,
@@ -13,8 +17,15 @@ function sectionValue(
 	return hasValue(answered, id) ? answered[id].trim() : fallback;
 }
 
-export function renderProductDoc(answered: Record<string, string>): string {
-	const footer = `*Last updated: ${new Date().toISOString().slice(0, 10)} | Owner: Project leads*`;
+function docFooter(owner?: string): string {
+	return `*Last updated: ${new Date().toISOString().slice(0, 10)} | Owner: ${owner?.trim() || "Project leads"}*`;
+}
+
+export function renderProductDoc(
+	answered: Record<string, string>,
+	options: RenderDocOptions = {},
+): string {
+	const footer = docFooter(options.owner);
 	return [
 		"# Product Requirements Document",
 		"",
@@ -129,8 +140,9 @@ export function renderProductDoc(answered: Record<string, string>): string {
 
 export function renderArchitectureDoc(
 	answered: Record<string, string>,
+	options: RenderDocOptions = {},
 ): string {
-	const footer = `*Last updated: ${new Date().toISOString().slice(0, 10)} | Owner: Project leads*`;
+	const footer = docFooter(options.owner);
 	return [
 		"# System Architecture",
 		"",
@@ -208,7 +220,7 @@ export function renderArchitectureDoc(
 		sectionValue(
 			answered,
 			"arch.cross-cutting",
-			"| Concern | Approach |\n|---------|----------|\n| **Logging** | Structured JSON logs, no `console.log` in production |\n| **Error handling** | Errors typed at system boundaries, propagate as values inside |\n| **Authentication** | [Your approach] |\n| **Configuration** | Environment variables via `.env`, validated at startup from the root or workspace entrypoint |",
+			"| Concern | Approach |\n|---------|----------|\n| **Logging** | Structured JSON logs via the shared logger, not raw `console.*` calls |\n| **Error handling** | Errors typed at system boundaries, propagate as values inside |\n| **Authentication** | [Your approach] |\n| **Configuration** | Environment variables via `.env`, validated at startup from the root or workspace entrypoint |",
 		),
 		"",
 		"---",
@@ -238,7 +250,7 @@ export function renderArchitectureDoc(
 		sectionValue(
 			answered,
 			"arch.validation-plan",
-			"1. `bun run harness:structural` — structural compliance\n2. `bun run harness:lint` — linting and rule checks\n3. `bun run harness:validate` — full harness validation",
+			"1. `bun run harness:structural` — structural compliance\n2. `bun run harness:lint` — linting and rule checks\n3. `bun run harness:validate` — fast local validation\n4. `bun run harness:validate:full` — CI-equivalent validation",
 		),
 		"",
 		"---",

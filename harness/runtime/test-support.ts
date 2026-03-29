@@ -141,9 +141,13 @@ export async function expectPersistentBoot(
 	]);
 
 	if ("survived" in survived && survived.survived) {
-		spawnSync("taskkill", ["/F", "/T", "/PID", String(child.pid)], {
-			stdio: "ignore",
-		});
+		if (process.platform === "win32") {
+			spawnSync("taskkill", ["/F", "/T", "/PID", String(child.pid)], {
+				stdio: "ignore",
+			});
+		} else {
+			child.kill("SIGTERM");
+		}
 		await exit;
 		cleanupProcessesForPath(cwd);
 		expect(true).toBe(true);

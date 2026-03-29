@@ -23,12 +23,18 @@ cd "$PROJECT_ROOT"
 
 echo "Running pre-stop checks..." >&2
 
-# ─── Step 1: Harness validation (always runs) ────────────────────────────────
+# ─── Step 1: Fast local harness validation (always runs) ─────────────────────
 HARNESS_OUTPUT=$(bun run harness:validate 2>&1) || {
   echo "❌ Harness validation failed:" >&2
   echo "$HARNESS_OUTPUT" >&2
   exit 2
 }
+
+# Optional advisory reminder for teams that want a self-review prompt without
+# making the successful pre-stop path noisy by default.
+if [ "${HARNESS_SELF_REVIEW_HINT:-0}" = "1" ]; then
+  echo "ℹ️ Consider running bun run harness:self-review before final handoff." >&2
+fi
 
 # ─── Step 2: Language-specific checks ────────────────────────────────────────
 # Uncomment and adapt the block for your stack:

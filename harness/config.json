@@ -2,6 +2,7 @@
 	"version": "1.0.0",
 	"level": 2,
 	"project_name": "harness-template",
+	"project_owner": "",
 	"workspace_roots": ["apps", "packages"],
 	"default_workspaces": ["apps/web", "apps/api", "packages/shared"],
 	"layers": ["types", "config", "repo", "service", "runtime", "ui"],

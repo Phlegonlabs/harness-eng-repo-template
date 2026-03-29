@@ -154,4 +154,21 @@ describe("orchestration lifecycle", () => {
 		orchestrateTask(root);
 		expect(unblockTask("T101", root)).toBeNull();
 	});
+
+	it("loads debugging skill when a task title indicates a bug fix", () => {
+		const root = createRepoWithTasks(
+			[
+				makeTask({
+					id: "T101",
+					kind: "implementation",
+					title: "Fix API regression in health endpoint",
+				}),
+			],
+			tempRoots,
+		);
+
+		const result = orchestrateTask(root);
+
+		expect(result?.skills).toContain("skills/debugging/SKILL.md");
+	});
 });

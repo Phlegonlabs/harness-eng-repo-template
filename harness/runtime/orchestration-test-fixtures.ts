@@ -31,9 +31,22 @@ const supportFiles: Record<string, string> = {
 			strategy: "test",
 			phases: {
 				EXECUTING: ["skills/implementation/SKILL.md"],
-				VALIDATING: ["skills/testing/SKILL.md", "skills/code-review/SKILL.md"],
+				VALIDATING: [
+					"skills/testing/SKILL.md",
+					"skills/code-review/SKILL.md",
+					"skills/debugging/SKILL.md",
+				],
 			},
-			taskKinds: { implementation: ["skills/implementation/SKILL.md"] },
+			taskKinds: {
+				implementation: ["skills/implementation/SKILL.md"],
+				debugging: ["skills/debugging/SKILL.md"],
+			},
+			conditions: [
+				{
+					when: "task.involvesBugFix == true",
+					load: ["skills/debugging/SKILL.md"],
+				},
+			],
 		},
 		null,
 		2,

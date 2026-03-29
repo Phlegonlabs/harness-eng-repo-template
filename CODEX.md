@@ -41,3 +41,7 @@
 - `bun run harness:orchestrate`
 - `bun run harness:evaluate --task <id>`
 - `bun run harness:validate`
+- `bun run harness:validate:full`
+- `bun run harness:self-review`
+
+Use `bun run harness:self-review` before handoff when a change spans multiple files or mixes code and documentation.

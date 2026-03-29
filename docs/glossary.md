@@ -18,7 +18,8 @@ Add new terms as they emerge; update definitions when meaning shifts.
 | **Drift** | When two documents that should be consistent have diverged from each other | Pillar 3 |
 | **Entropy Scan** | A Bun/TypeScript harness command that detects drift, orphans, or inconsistency | Pillar 3 |
 | **Init** | Running `bun run harness:init -- <name>` to personalize the engineer template for a specific project | Setup |
-| **Validate** | Running `bun run harness:validate` — the full CI contract | CI |
+| **Validate** | Running `bun run harness:validate` — the default local validation gate | CLI |
+| **Validate Full** | Running `bun run harness:validate:full` — the full CI validation contract | CI |
 | **ADR** | Architecture Decision Record — a document capturing a significant architectural choice and its rationale | docs/decisions/ |
 | **Three-Tier Boundary** | The ALWAYS / ASK FIRST / NEVER model for defining what agents may do without approval | AGENTS.md |
 | **Single Source of Truth** | The principle that any fact or rule should live in exactly one place; all other references point to it | General |

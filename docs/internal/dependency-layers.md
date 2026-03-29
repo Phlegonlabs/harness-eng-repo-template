@@ -81,7 +81,7 @@ Each layer may only import from layers *below* (earlier in the sequence) it.
 The `harness/hooks/pre-commit` hook runs `bun run harness:lint` before every commit.
 
 ### In CI
-`.github/workflows/ci.yml` runs `bun run harness:validate` which includes layer linting.
+`.github/workflows/ci.yml` runs `bun run harness:validate:full`, which includes layer linting.
 
 ### Machine-Readable Rules
 `harness/rules/dependency-layers.json` defines the layer model in a format both linters and agents can consume.

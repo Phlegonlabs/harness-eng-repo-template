@@ -86,6 +86,8 @@ Load only what the task requires. Do not bulk-read `docs/internal/` by default.
 - Making breaking schema or API contract changes
 - Taking irreversible infrastructure actions
 
+Dependency selection criteria live in `docs/decisions/006-dependency-philosophy.md`.
+
 ### Never do
 - Skip validation or bypass hooks
 - Break the dependency order intentionally
@@ -146,7 +148,11 @@ Full gate:
 
 ```bash
 bun run harness:validate
+bun run harness:validate:full
 ```
+
+Use `bun run harness:validate` for the default local handoff gate.
+Use `bun run harness:validate:full` in CI or when changing harness runtime behavior.
 
 Useful slices:
 
@@ -170,6 +176,7 @@ Load skills on demand. Start with the minimum set.
 | `skills/implementation/SKILL.md` | feature work or significant refactors |
 | `skills/testing/SKILL.md` | test additions or coverage work |
 | `skills/code-review/SKILL.md` | review, validation, merge readiness |
+| `skills/debugging/SKILL.md` | bug reproduction, log-driven debugging, observability checks |
 | `skills/deployment/SKILL.md` | pre-PR or deployment prep |
 
 If a change spans multiple files or phases, create an execution plan in `docs/execution-plans/`.
@@ -187,6 +194,7 @@ The current harness improvement plan lives in `docs/execution-plans/harness-agen
 | `bun run harness:status --json` | structured current-state summary |
 | `bun run harness:orchestrate` | prepare the next task contract |
 | `bun run harness:evaluate --task <id>` | evaluate the active task |
+| `bun run harness:self-review` | summarize a local self-review pass before handoff |
 | `bun run harness:state-recover --list` | inspect state snapshots |
 | `bun run harness:state-recover --latest` | recover the latest snapshot |
 | `bun run harness:parallel-dispatch -- --apply` | allocate milestone worktrees |
@@ -205,9 +213,15 @@ Only load these when the task touches the matching concern:
 - `docs/internal/orchestrator-workflow.md`
 - `docs/internal/dependency-layers.md`
 - `docs/internal/boundaries.md`
+- `docs/internal/observability.md`
 - `docs/internal/command-surface.md`
+- `apps/web/AGENTS.md`
+- `apps/api/AGENTS.md`
+- `packages/shared/AGENTS.md`
 - `docs/quality/GRADES.md`
 - `docs/execution-plans/harness-agent-ergonomics.md`
+- `docs/execution-plans/harness-gap-alignment.md`
+- `docs/execution-plans/harness-validate-performance.md`
 - `docs/decisions/`
 
 The runtime is the enforcement layer. These docs explain intent and rationale.

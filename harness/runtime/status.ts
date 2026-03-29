@@ -70,6 +70,12 @@ function progress(state: HarnessState): HarnessProgressSummary {
 }
 
 function nextAction(state: HarnessState, active: TaskRecord | null): string {
+	if (
+		state.tasks.length === 0 &&
+		(!state.planning.docsReady.backlog || !state.discovery.readiness.planReady)
+	) {
+		return "Run bun run harness:init -- <name> or complete discovery before planning.";
+	}
 	if (state.tasks.length === 0) {
 		return "Run bun run harness:plan to materialize the backlog.";
 	}
@@ -85,6 +91,13 @@ function nextAction(state: HarnessState, active: TaskRecord | null): string {
 	return "All current tasks are complete. Run bun run harness:plan after updating docs to refresh the backlog.";
 }
 
+function normalizedPhase(state: HarnessState): string {
+	if (state.tasks.length === 0 && !state.discovery.readiness.planReady) {
+		return "DISCOVERY";
+	}
+	return state.planning.phase;
+}
+
 export function buildHarnessStatus(
 	root: string = repoRoot(),
 ): HarnessStatusSnapshot {
@@ -92,7 +105,7 @@ export function buildHarnessStatus(
 	const currentTask = activeTask(state);
 	return {
 		projectName: state.projectInfo.projectName,
-		phase: state.planning.phase,
+		phase: normalizedPhase(state),
 		activeTask: currentTask ? toTaskSummary(currentTask) : null,
 		blockedTasks: state.tasks
 			.filter((task) => task.status === "blocked")

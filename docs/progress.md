@@ -1,7 +1,7 @@
 # Delivery Progress
 
-> This repository starts in a ready-to-customize state.
-> Run `bun run harness:plan` when you want the starter milestones and tasks materialized from the docs.
+> This repository is currently in the pre-init template state.
+> It can be inspected and validated as-is, but planning stays blocked until `harness:init` or discovery produces docs-ready inputs.
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Surface | Status | Notes |
 |--------|--------|-------|
-| `docs/product.md` | Pending | Replace placeholders or run `bun run harness:discover` |
-| `docs/architecture.md` | Pending | Replace placeholders or run `bun run harness:discover` |
-| Discovery | Optional | Run `bun run harness:discover --reset` to enter guided discovery mode |
-| Backlog sync | Ready | Run `bun run harness:plan` to materialize starter milestones and tasks |
-| Task loop | Ready | Use `harness:orchestrate` + `harness:evaluate` for contract-driven execution |
+| `docs/product.md` | Pending | Replace placeholders, run `bun run harness:init`, or use `bun run harness:discover --reset` |
+| `docs/architecture.md` | Pending | Replace placeholders, run `bun run harness:init`, or use `bun run harness:discover --reset` |
+| Discovery | Optional | Run `bun run harness:discover --reset` to enter the guided PRD/architecture path |
+| Backlog sync | Blocked | Run `bun run harness:init` or finish discovery before `bun run harness:plan` |
+| Task loop | Blocked | `harness:orchestrate` and `harness:evaluate` depend on a planned backlog |
 
 ---
 
@@ -43,4 +43,4 @@
 
 ## Activity Log
 
-- Template initialized. Run `bun run harness:init -- <name>` to begin.
+- Template scaffold committed. Run `bun run harness:init -- <name>` to personalize the repo before planning.

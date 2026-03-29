@@ -56,7 +56,8 @@ Use the project's error pattern — propagate errors as values, don't throw insi
 1. Run typecheck — fix all type errors
 2. Run linter — fix all warnings
 3. Run tests — ensure all pass
-4. Run `bun run harness:validate` — full harness check
+4. Run `bun run harness:validate` — default local harness check
+5. Run `bun run harness:validate:full` when changing harness runtime behavior or before relying on CI-equivalent coverage locally
 
 ## When to Create an ADR
 

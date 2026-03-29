@@ -88,6 +88,10 @@ export function milestonesFromProductDoc(
 
 const KIND_PATTERNS: Array<{ pattern: RegExp; kind: string }> = [
 	{
+		pattern: /\b(debug\w*|bug|fix|regression|incident|triage)\b/i,
+		kind: "debugging",
+	},
+	{
 		pattern: /\b(tests?|testing|validat\w+|verify|assert)\b/i,
 		kind: "testing",
 	},
@@ -110,6 +114,7 @@ const SKILLS_BY_KIND: Record<string, string[]> = {
 	research: ["skills/research/SKILL.md"],
 	implementation: ["skills/implementation/SKILL.md"],
 	testing: ["skills/testing/SKILL.md", "skills/code-review/SKILL.md"],
+	debugging: ["skills/debugging/SKILL.md", "skills/code-review/SKILL.md"],
 	review: ["skills/code-review/SKILL.md"],
 	deployment: ["skills/deployment/SKILL.md"],
 };

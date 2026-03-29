@@ -40,7 +40,13 @@
 			"id": "root.harness-validate",
 			"display": "bun run harness:validate",
 			"requires": [],
-			"summary": "Run the full validation suite."
+			"summary": "Run the fast local validation suite."
+		},
+		{
+			"id": "root.harness-validate-full",
+			"display": "bun run harness:validate:full",
+			"requires": [],
+			"summary": "Run the full validation suite, including harness runtime regression tests."
 		},
 		{
 			"id": "root.harness-discover",
@@ -81,6 +87,12 @@
 			"display": "bun run harness:evaluate --task <id>",
 			"requires": ["active_task"],
 			"summary": "Evaluate the active task and write fresh evaluation and handoff artifacts."
+		},
+		{
+			"id": "root.harness-self-review",
+			"display": "bun run harness:self-review",
+			"requires": [],
+			"summary": "Summarize a local self-review pass over the current diff before handoff."
 		},
 		{
 			"id": "root.harness-state-recover",

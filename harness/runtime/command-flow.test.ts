@@ -28,6 +28,7 @@ describeCommandFlow("command flow", () => {
 			["bun", "run", "harness:structural"],
 			["bun", "run", "harness:entropy"],
 			["bun", "run", "harness:validate"],
+			["bun", "run", "harness:self-review"],
 			["bun", "run", "harness:status", "--json"],
 			["bun", "run", "harness:state-recover", "--list"],
 			["bun", "run", "build"],
@@ -70,8 +71,28 @@ describeCommandFlow("command flow", () => {
 				"harness:init",
 				"--",
 				"sample-project",
+				"--owner",
+				"@acme/engineering",
 			]).code,
 		).toBe(0);
+		expect(
+			readFileSync(path.join(tempRoot, ".github/CODEOWNERS"), "utf8"),
+		).toContain("@acme/engineering");
+		expect(
+			readFileSync(path.join(tempRoot, "apps/api/AGENTS.md"), "utf8"),
+		).toContain("@sample-project/shared");
+		expect(
+			readFileSync(
+				path.join(tempRoot, "docs/internal/observability.md"),
+				"utf8",
+			),
+		).toContain("@sample-project/shared");
+		expect(
+			readFileSync(
+				path.join(tempRoot, "harness/rules/forbidden-patterns.json"),
+				"utf8",
+			),
+		).toContain("@sample-project/shared");
 		expect(
 			runCommand(tempRoot, ["bun", "run", "harness:install-hooks"]).code,
 		).toBe(0);
@@ -101,9 +122,9 @@ describeCommandFlow("command flow", () => {
 				.code,
 		).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "harness:validate"]).code).toBe(
-			0,
-		);
+		expect(
+			runCommand(tempRoot, ["bun", "run", "harness:validate:full"]).code,
+		).toBe(0);
 
 		for (const workspace of [
 			"apps/api",

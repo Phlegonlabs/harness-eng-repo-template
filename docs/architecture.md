@@ -61,11 +61,11 @@ Types → Config → Repo → Service → Runtime → UI
 
 | Concern | Approach |
 |---------|----------|
-| **Logging** | [Describe logging approach] |
+| **Logging** | Structured JSON logs through `@harness-template/shared`; see `docs/internal/observability.md` and `docs/decisions/005-observability-strategy.md` |
 | **Error handling** | [Describe error handling approach] |
 | **Authentication** | [Describe auth approach] |
 | **Configuration** | [Describe config approach] |
-| **Code organization** | [Describe code organization approach] |
+| **Code organization** | Dependency layers remain the canonical structure; dependency selection policy lives in `docs/decisions/006-dependency-philosophy.md` |
 
 ---
 

@@ -35,6 +35,32 @@ function unique(values: string[]): string[] {
 	return [...new Set(values)];
 }
 
+function conditionValue(rawValue: string): boolean | string {
+	const trimmed = rawValue.trim();
+	if (trimmed === "true") return true;
+	if (trimmed === "false") return false;
+	return trimmed.replace(/^['"]|['"]$/g, "");
+}
+
+function taskConditionContext(task: TaskRecord): Record<string, unknown> {
+	return {
+		...task,
+		isReadyForHandoff:
+			task.status === "evaluation_pending" || task.status === "done",
+		involvesBugFix:
+			task.kind === "debugging" ||
+			/\b(bug|debug|fix|regression|incident)\b/i.test(task.title),
+	};
+}
+
+function conditionMatches(condition: string, task: TaskRecord): boolean {
+	const match = condition.match(/^task\.([a-zA-Z0-9_]+)\s*==\s*(.+)$/);
+	if (!match) return false;
+	const [, field, rawValue] = match;
+	const expected = conditionValue(rawValue);
+	return taskConditionContext(task)[field] === expected;
+}
+
 function dependenciesMet(task: TaskRecord, allTasks: TaskRecord[]): boolean {
 	return task.dependsOn.every((depId) => {
 		const dep = allTasks.find((t) => t.id === depId);
@@ -79,6 +105,9 @@ function registrySkills(
 	return unique([
 		...(registry.phases[phase] ?? []),
 		...(registry.taskKinds[task.kind] ?? []),
+		...(registry.conditions ?? [])
+			.filter((rule) => conditionMatches(rule.when, task))
+			.flatMap((rule) => rule.load),
 	]);
 }
 

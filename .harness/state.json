@@ -17,12 +17,14 @@
 			"bun run harness:structural",
 			"bun run harness:entropy",
 			"bun run harness:validate",
+			"bun run harness:validate:full",
 			"bun run harness:discover",
 			"bun run harness:discover --reset",
 			"bun run harness:plan",
 			"bun run harness:status --json",
 			"bun run harness:orchestrate",
 			"bun run harness:evaluate --task <id>",
+			"bun run harness:self-review",
 			"bun run harness:state-recover --list",
 			"bun run harness:unblock --task <id>",
 			"bun run harness:parallel-dispatch -- --apply",
@@ -50,7 +52,7 @@
 		]
 	},
 	"planning": {
-		"phase": "READY",
+		"phase": "DISCOVERY",
 		"docsReady": {
 			"product": false,
 			"architecture": false,
@@ -63,8 +65,12 @@
 	},
 	"discovery": {
 		"stage": "PRD",
-		"status": "idle",
-		"currentQuestionIds": [],
+		"status": "collecting",
+		"currentQuestionIds": [
+			"prd.executive-summary",
+			"prd.problem-statement",
+			"prd.target-audience"
+		],
 		"answered": {},
 		"history": [],
 		"readiness": {

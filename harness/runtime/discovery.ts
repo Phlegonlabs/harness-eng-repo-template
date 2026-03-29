@@ -13,13 +13,14 @@ import {
 	renderProductDoc,
 } from "./discovery-renderers";
 import { loadState, saveState } from "./planning";
-import { repoRoot, writeTextFile } from "./shared";
+import { readJson, repoRoot, writeTextFile } from "./shared";
 import type {
 	DiscoveryAnswerBatch,
 	DiscoveryQuestion,
 	DiscoveryQuestionPacket,
 	DiscoveryReadiness,
 	DiscoveryState,
+	HarnessConfig,
 	HarnessState,
 } from "./types";
 
@@ -138,6 +139,17 @@ function writeDiscoveryProgressDoc(root: string, state: HarnessState): void {
 	writeTextFile(path.join(root, "docs/progress.md"), `${progress}\n`);
 }
 
+function discoveryRenderOptions(root: string): {
+	owner?: string;
+} {
+	const config = readJson<HarnessConfig>(
+		path.join(root, "harness/config.json"),
+	);
+	return {
+		owner: config.project_owner?.trim() || undefined,
+	};
+}
+
 export function resetDiscoveryState(state: HarnessState): HarnessState {
 	state.discovery = {
 		stage: "PRD",
@@ -198,11 +210,14 @@ export function applyDiscoveryAnswers(
 
 	writeTextFile(
 		path.join(root, "docs/product.md"),
-		`${renderProductDoc(state.discovery.answered)}\n`,
+		`${renderProductDoc(state.discovery.answered, discoveryRenderOptions(root))}\n`,
 	);
 	writeTextFile(
 		path.join(root, "docs/architecture.md"),
-		`${renderArchitectureDoc(state.discovery.answered)}\n`,
+		`${renderArchitectureDoc(
+			state.discovery.answered,
+			discoveryRenderOptions(root),
+		)}\n`,
 	);
 	writeDiscoveryProgressDoc(root, state);
 	saveState(root, state);
@@ -227,11 +242,11 @@ export function resetDiscovery(root: string = repoRoot()): HarnessState {
 	const state = resetDiscoveryState(loadState(root));
 	writeTextFile(
 		path.join(root, "docs/product.md"),
-		`${renderProductDoc({})}\n`,
+		`${renderProductDoc({}, discoveryRenderOptions(root))}\n`,
 	);
 	writeTextFile(
 		path.join(root, "docs/architecture.md"),
-		`${renderArchitectureDoc({})}\n`,
+		`${renderArchitectureDoc({}, discoveryRenderOptions(root))}\n`,
 	);
 	writeDiscoveryProgressDoc(root, state);
 	saveState(root, state);

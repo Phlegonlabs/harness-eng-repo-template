@@ -17,13 +17,15 @@ This contract applies equally to Codex and Claude sessions.
 | `bun run harness:lint` | root / one_shot | - | n/a | exit_zero | Run the harness-specific lint suite. |
 | `bun run harness:structural` | root / one_shot | - | n/a | exit_zero | Run structural tests for required files, docs, and runtime behavior. |
 | `bun run harness:entropy` | root / one_shot | - | n/a | exit_zero | Run drift, orphan, and consistency scans. |
-| `bun run harness:validate` | root / one_shot | - | n/a | exit_zero | Run the full validation suite. |
+| `bun run harness:validate` | root / one_shot | - | n/a | exit_zero | Run the fast local validation suite. |
+| `bun run harness:validate:full` | root / one_shot | - | n/a | exit_zero | Run the full validation suite, including harness runtime regression tests. |
 | `bun run harness:discover` | root / one_shot | - | n/a | exit_zero | Report discovery status and current question packet. |
 | `bun run harness:discover --reset` | root / one_shot | - | n/a | exit_zero | Reset discovery and rewrite the docs back to guided-question mode. |
 | `bun run harness:plan` | root / one_shot | post_init_or_discovery_complete, docs_ready, milestones_present | expected_block | exit_zero | Synchronize milestones and tasks after docs become executable. |
 | `bun run harness:status --json` | root / one_shot | - | n/a | exit_zero | Render a derived machine-readable summary of the current harness state. |
 | `bun run harness:orchestrate` | root / one_shot | planned_backlog, pending_task | expected_block | exit_zero | Prepare the next task contract and handoff artifact. |
 | `bun run harness:evaluate --task <id>` | root / one_shot | active_task | expected_block | exit_zero | Evaluate the active task and write fresh evaluation and handoff artifacts. |
+| `bun run harness:self-review` | root / one_shot | - | n/a | exit_zero | Summarize a local self-review pass over the current diff before handoff. |
 | `bun run harness:state-recover --list` | root / one_shot | - | n/a | exit_zero | List or recover state snapshots created before state mutations. |
 | `bun run harness:unblock --task <id>` | root / one_shot | blocked_task | expected_block | exit_zero | Unblock a stuck task and reset its stall counter. |
 | `bun run harness:parallel-dispatch -- --apply` | root / one_shot | planned_backlog, clean_main_worktree, eligible_milestone | expected_block | exit_zero | Allocate milestone worktrees when the backlog and git state allow it. |

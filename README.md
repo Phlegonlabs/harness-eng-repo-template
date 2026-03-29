@@ -168,6 +168,13 @@ Profiles can trim that default:
 
 ## Quick Start
 
+Use GitHub's **Use this template** button for the cleanest path. A downloaded ZIP works too as long as you extract it into a writable directory before running the init flow.
+
+As cloned, this repository is a **pre-init scaffold**:
+
+- `bun run harness:doctor`, `bun run harness:validate`, `bun run harness:status --json`, and `bun run harness:discover --reset` are meaningful immediately
+- `bun run harness:plan`, `harness:orchestrate`, and `harness:evaluate` are not the default starting point until initialization or discovery makes the docs ready
+
 ```bash
 git clone <this-repo> my-project
 cd my-project
@@ -175,6 +182,8 @@ bun install
 
 # pick the profile that matches the project
 bun run harness:init -- my-project --profile fullstack
+# optional: personalize CODEOWNERS and doc ownership surfaces
+# bun run harness:init -- my-project --profile fullstack --owner @your-org/engineering
 
 # inspect the current state surface
 bun run harness:status --json
@@ -183,7 +192,7 @@ bun run harness:status --json
 bun run harness:validate
 ```
 
-Then:
+After initialization:
 
 1. Update `docs/product.md`
 2. Update `docs/architecture.md`
@@ -262,6 +271,7 @@ The harness runtime has its own regression tests under `harness/runtime/*.test.t
 ## Notes
 
 - The untouched template intentionally warns in `harness:doctor` until you run `harness:init`.
+- The untouched template is not an active backlog yet; it becomes execution-ready after `harness:init` or the guided discovery path.
 - Important decisions belong in `docs/`, not in chat history.
 - If a change spans multiple phases, create an execution plan in `docs/execution-plans/`.
 - If you want to evaluate the template itself, use the tasks under `evals/tasks/`.

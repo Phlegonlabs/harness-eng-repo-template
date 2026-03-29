@@ -2,6 +2,7 @@ export interface HarnessConfig {
 	version: string;
 	level: number;
 	project_name: string;
+	project_owner?: string;
 	workspace_roots: string[];
 	default_workspaces: string[];
 	layers: string[];
@@ -293,6 +294,10 @@ export interface SkillRegistry {
 	strategy: string;
 	phases: Record<string, string[]>;
 	taskKinds: Record<string, string[]>;
+	conditions?: Array<{
+		when: string;
+		load: string[];
+	}>;
 }
 
 export type DiscoveryStage = "PRD" | "ARCHITECTURE" | "COMPLETE";

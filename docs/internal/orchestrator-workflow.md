@@ -149,4 +149,5 @@ bun run harness:evaluate --task <id>
 The orchestrator owns contract synthesis and resume artifacts.
 The evaluator owns task-level pass/fail.
 The status command owns the structured summary surface for agents.
-`bun run harness:validate` remains the repository-wide gate before handoff or push.
+`bun run harness:validate` remains the default local gate before handoff or push.
+`bun run harness:validate:full` remains the CI-equivalent gate when harness runtime regressions must be exercised.

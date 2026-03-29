@@ -2,6 +2,8 @@
 
 ## First Use
 
+Prefer GitHub's **Use this template** flow when creating a new repository from this scaffold. A downloaded ZIP or clone is also supported.
+
 ```bash
 git clone <repo> my-project && cd my-project
 bun install
@@ -9,14 +11,18 @@ bun run harness:init -- my-project
 bun run harness:doctor
 ```
 
+As cloned, the repository is a template scaffold, not an active execution backlog.
+
+- Safe immediately: `harness:doctor`, `harness:validate`, `harness:status --json`, `harness:discover --reset`
+- Blocked until init/discovery + docs readiness: `harness:plan`, `harness:orchestrate`, `harness:evaluate`
+
 ## Start a Project
 
 ```bash
 bun run harness:plan
 ```
 
-The repository starts in a ready-to-customize state.
-Use planning after you have reviewed or edited the baseline product and architecture docs.
+Use planning only after `harness:init` or the guided discovery flow has produced docs-ready product and architecture surfaces.
 
 Optional guided path:
 
@@ -31,6 +37,7 @@ Run discovery only when you want an interview-style PRD and architecture flow.
 ```bash
 bun run harness:doctor
 bun run harness:validate
+bun run harness:validate:full
 ```
 
 Use [`docs/internal/command-surface.md`](command-surface.md) to confirm whether a command should pass immediately, boot persistently, or block until more setup exists.
@@ -53,4 +60,4 @@ bun run harness:parallel-dispatch -- --apply
 
 - The template validates before and after `harness:init`
 - `project_name: "harness-template"` is the expected pre-init default
-- `bun run harness:plan` should work immediately after initialization because the baseline docs are already valid
+- `bun run harness:plan` is intentionally blocked in the untouched template and should work immediately after initialization because the baseline docs become valid at that point

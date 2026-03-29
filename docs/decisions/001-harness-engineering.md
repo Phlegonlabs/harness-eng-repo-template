@@ -76,4 +76,5 @@ The harness infrastructure lives in `harness/`:
 - Package scripts: `bun run harness:*` — init, doctor, validate, plan, orchestration
 - State: `.harness/state.json` — machine-owned planning and execution state
 
-The full validation suite: `bun run harness:validate`
+Current default local gate: `bun run harness:validate`
+Current full CI-equivalent suite: `bun run harness:validate:full`

@@ -11,10 +11,16 @@ function today(): string {
 	return new Date().toISOString().slice(0, 10);
 }
 
+interface TemplateRenderOptions {
+	owner?: string;
+}
+
 export function baselineDiscoveryAnswers(
 	projectName: string,
+	_options: TemplateRenderOptions = {},
 ): Record<string, string> {
 	const title = projectTitle(projectName);
+	const projectScope = `@${projectName}`;
 
 	return {
 		"prd.executive-summary": `**${title}** is an engineer-ready monorepo template that helps product and platform teams start shipping in a Bun + Turbo workspace with built-in validation, planning surfaces, and agent-readable project rules from day one.`,
@@ -27,7 +33,7 @@ export function baselineDiscoveryAnswers(
 		"prd.scope-boundaries":
 			"**In scope:**\n- A working engineer template with monorepo structure, validation, docs, and planning surfaces\n- Minimal application and shared package scaffolds that compile and test\n- Optional discovery/orchestration tooling for teams that want a more guided workflow\n\n**Out of scope:**\n- Product-specific UI, domain models, or deployment infrastructure\n- Framework-specific code generation for every possible stack choice\n- Automatic feature implementation beyond the scaffold itself",
 		"prd.success-metrics":
-			"| Metric | Baseline | Target | Timeline |\n|--------|----------|--------|----------|\n| Time from clone to first successful validation | Template setup varies by repo | Under 15 minutes after `bun install` and `bun run harness:init` | First session |\n| Time to first project-specific code change | Often delayed by repo setup work | Same session as initialization | First day |\n| Repository guardrails active | Inconsistent in ad hoc starters | `build`, `test`, and `harness:validate` all pass in the template baseline | Before first feature branch |",
+			"| Metric | Baseline | Target | Timeline |\n|--------|----------|--------|----------|\n| Time from clone to first successful validation | Template setup varies by repo | Under 15 minutes after `bun install` and `bun run harness:init` | First session |\n| Time to first project-specific code change | Often delayed by repo setup work | Same session as initialization | First day |\n| Repository guardrails active | Inconsistent in ad hoc starters | `build`, `test`, `harness:validate`, and CI `harness:validate:full` all pass in the template baseline | Before first feature branch |",
 		"prd.assumptions-constraints":
 			"**Assumptions:**\n- Teams want a strong default repository shape but still need to customize product details quickly\n- Bun and git are available in the development environment\n- The first shipped work will usually span at least one app workspace and one shared package\n\n**Constraints:**\n- The template must stay framework-agnostic at the business-logic level\n- Rules must remain repository-owned and executable offline\n- The default path must not require discovery interviews before coding can begin",
 		"prd.proposed-milestones":
@@ -37,36 +43,47 @@ export function baselineDiscoveryAnswers(
 		"arch.overview":
 			"```text\n[Monorepo Root]\n  ├── apps/web          # client-facing app workspace\n  ├── apps/api          # API / runtime workspace\n  ├── packages/shared   # shared types and reusable logic\n  ├── harness/          # repository validation and orchestration runtime\n  └── docs/             # product, architecture, ADRs, and progress surfaces\n\n[Within each workspace]\nTypes → Config → Repo → Service → Runtime → UI\n```\n\nThe engineer template assumes that feature work starts inside one or more application workspaces and pulls shared contracts into `packages/shared`. The harness stays at the root and governs validation, planning, and repository policy.",
 		"arch.system-boundaries":
-			"| System | Direction | Protocol | Notes |\n|--------|-----------|----------|-------|\n| Developer or coding agent | inbound | local CLI / editor | Edits repository files and runs root commands |\n| GitHub Actions | outbound | CI workflow execution | Runs `bun install` and `bun run harness:validate` on pushes and pull requests |\n| Package registry | outbound | package manager network access | Used during `bun install` to resolve dependencies |\n| Product-specific external systems | outbound or inbound | project-defined later | Intentionally not preconfigured in the template baseline |",
+			"| System | Direction | Protocol | Notes |\n|--------|-----------|----------|-------|\n| Developer or coding agent | inbound | local CLI / editor | Edits repository files and runs root commands |\n| GitHub Actions | outbound | CI workflow execution | Runs `bun install` and `bun run harness:validate:full` on pushes and pull requests |\n| Package registry | outbound | package manager network access | Used during `bun install` to resolve dependencies |\n| Product-specific external systems | outbound or inbound | project-defined later | Intentionally not preconfigured in the template baseline |",
 		"arch.interfaces-contracts":
-			"### Root command contract\n```text\nbun run harness:init -- <project-name>\nbun run build\nbun run test\nbun run harness:evaluate --task <id>\nbun run harness:validate\n```\n\n### Workspace contract\n```text\napps/* and packages/* each expose package.json scripts for build, lint, typecheck, and test.\nCross-workspace reuse happens through package exports such as @<project>/shared.\n```\n\n### Documentation contract\n```text\ndocs/product.md and docs/architecture.md are the human-readable source of truth.\nharness:plan reads them to materialize milestone and task placeholders.\n.harness/contracts, .harness/evaluations, and .harness/handoffs store execution artifacts.\n```",
-		"arch.cross-cutting":
-			"| Concern | Approach |\n|---------|----------|\n| **Logging** | Structured logging only; no `console.log` in production-oriented source files |\n| **Error handling** | Keep domain and service code typed; reserve thrown errors for infrastructure boundaries |\n| **Authentication** | Not preconfigured in the template; add it inside the relevant application workspace when product requirements exist |\n| **Configuration** | Root and workspace environment variables flow through `.env` patterns and are validated by repository conventions |\n| **Code organization** | Every workspace follows the same dependency layer order and exports public entrypoints instead of deep internal imports |",
+			"### Root command contract\n```text\nbun run harness:init -- <project-name>\nbun run build\nbun run test\nbun run harness:evaluate --task <id>\nbun run harness:validate\nbun run harness:validate:full\n```\n\n### Workspace contract\n```text\napps/* and packages/* each expose package.json scripts for build, lint, typecheck, and test.\nCross-workspace reuse happens through package exports such as @<project>/shared.\n```\n\n### Documentation contract\n```text\ndocs/product.md and docs/architecture.md are the human-readable source of truth.\nharness:plan reads them to materialize milestone and task placeholders.\n.harness/contracts, .harness/evaluations, and .harness/handoffs store execution artifacts.\n```",
+		"arch.cross-cutting": `| Concern | Approach |\n|---------|----------|\n| **Logging** | Structured JSON logs through \`${projectScope}/shared\`; see \`docs/internal/observability.md\` |\n| **Error handling** | Keep domain and service code typed; reserve thrown errors for infrastructure boundaries |\n| **Authentication** | Not preconfigured in the template; add it inside the relevant application workspace when product requirements exist |\n| **Configuration** | Root and workspace environment variables flow through \`.env\` patterns and are validated by repository conventions |\n| **Code organization** | Every workspace follows the same dependency layer order, uses package exports for reuse, and follows the dependency policy in \`docs/decisions/006-dependency-philosophy.md\` |`,
 		"arch.build-distribution-deployment":
-			"```bash\n# Initialize the template for a real project\nbun run harness:init -- <project-name>\n\n# Build every workspace\nbun run build\n\n# Run all workspace tests\nbun run test\n\n# Validate repository structure and rules\nbun run harness:validate\n\n# Deploy\n# Add project-specific deploy commands once runtime targets are chosen\n```",
+			"```bash\n# Initialize the template for a real project\nbun run harness:init -- <project-name>\n\n# Build every workspace\nbun run build\n\n# Run all workspace tests\nbun run test\n\n# Fast local validation\nbun run harness:validate\n\n# Full CI-equivalent validation\nbun run harness:validate:full\n\n# Deploy\n# Add project-specific deploy commands once runtime targets are chosen\n```",
 		"arch.execution-constraints":
 			"| Constraint | Impact on Milestones | Notes |\n|-----------|----------------------|-------|\n| Changes in `packages/shared` can affect both app workspaces | Shared package changes may need to land before app-specific milestones finish | Use package exports to keep impact explicit |\n| Changes in `harness/rules/` or validation runtime affect the whole repository | These changes should be reviewed carefully and usually run before parallel feature work | Repository policy is globally enforced |\n| App-specific feature work can parallelize when workspaces and affected areas do not overlap | Milestones can run in separate worktrees when dependencies are clear | Use `harness:parallel-dispatch` only after backlog sync |",
 		"arch.technical-risks":
 			"| Risk | Likelihood | Impact | Mitigation |\n|------|-----------|--------|------------|\n| Template docs drift from runtime behavior | Medium | High | Keep docs generated or updated alongside runtime changes and validate links continuously |\n| Shared package becomes a dumping ground | Medium | Medium | Enforce public exports and keep feature-specific logic in the owning app until sharing is justified |\n| Teams skip initialization and keep template naming too long | Medium | Medium | `harness:doctor` warns until `harness:init` has been run with a project-specific name |",
 		"arch.validation-plan":
-			"1. Run `bun run harness:init -- <project-name>` when adopting the template.\n2. Use `bun run harness:orchestrate` to open the active task contract.\n3. Run `bun run harness:evaluate --task <id>` before marking a task done.\n4. Confirm `bun run build`, `bun run test`, and `bun run typecheck` pass.\n5. Run `bun run harness:validate` before handoff or push.\n6. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.",
+			"1. Run `bun run harness:init -- <project-name>` when adopting the template.\n2. Use `bun run harness:orchestrate` to open the active task contract.\n3. Run `bun run harness:evaluate --task <id>` before marking a task done.\n4. Confirm `bun run build`, `bun run test`, and `bun run typecheck` pass.\n5. Run `bun run harness:validate` before local handoff.\n6. Run `bun run harness:validate:full` before relying on CI-equivalent harness coverage locally.\n7. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.",
 	};
 }
 
-export function renderBaselineProductDoc(projectName: string): string {
-	return renderProductDoc(baselineDiscoveryAnswers(projectName));
+export function renderBaselineProductDoc(
+	projectName: string,
+	options: TemplateRenderOptions = {},
+): string {
+	return renderProductDoc(
+		baselineDiscoveryAnswers(projectName, options),
+		options,
+	);
 }
 
-export function renderBaselineArchitectureDoc(projectName: string): string {
-	return renderArchitectureDoc(baselineDiscoveryAnswers(projectName));
+export function renderBaselineArchitectureDoc(
+	projectName: string,
+	options: TemplateRenderOptions = {},
+): string {
+	return renderArchitectureDoc(
+		baselineDiscoveryAnswers(projectName, options),
+		options,
+	);
 }
 
 export function renderReadyProgressDoc(): string {
 	return [
 		"# Delivery Progress",
 		"",
-		"> This repository starts in a ready-to-customize state.",
-		"> Run `bun run harness:plan` when you want the starter milestones and tasks materialized from the docs.",
+		"> This initialized repository starts in a ready-to-execute baseline state.",
+		"> The product and architecture docs are valid enough to support `bun run harness:plan` immediately.",
 		"",
 		"---",
 		"",
@@ -112,13 +129,15 @@ export function renderReadyProgressDoc(): string {
 	].join("\n");
 }
 
-export function renderQualityGradesDoc(): string {
+export function renderQualityGradesDoc(
+	options: TemplateRenderOptions = {},
+): string {
 	return [
 		"# Quality Grades",
 		"",
 		"Tracks the quality of the engineer template itself. Replace these entries with product-specific grades as the repository is adopted.",
 		"",
-		`**Last updated:** ${today()} | **Updated by:** Project leads`,
+		`**Last updated:** ${today()} | **Updated by:** ${options.owner?.trim() || "Project leads"}`,
 		"",
 		"---",
 		"",

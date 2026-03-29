@@ -9,6 +9,7 @@ Before opening a PR:
 1. **Validation passes**
    ```bash
    bun run harness:validate
+   bun run harness:validate:full
    ```
 
 2. **Branch is up to date with main**
@@ -57,6 +58,7 @@ gh pr create \
 - **NEVER** merge without CI passing
 - **NEVER** run database migrations without human operator confirmation
 - **NEVER** skip `bun run harness:validate`
+- Run `bun run harness:validate:full` before relying on CI-equivalent signal for harness changes
 
 ## See Also
 

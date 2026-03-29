@@ -34,13 +34,24 @@ Use this skill when reviewing PRs or validating code changes before merging.
 - [ ] Public APIs have comments explaining purpose (not mechanics)
 - [ ] Complex logic has inline comments explaining *why* (not *what*)
 
+## Self-Review Checklist
+
+- [ ] Architecture consistency: the change still obeys the layer model
+- [ ] Testing coverage: new logic has matching tests or a clear reason why not
+- [ ] Documentation sync: docs changed with any architectural or workflow change
+- [ ] Compatibility check: no unmarked breaking contract change slipped in
+- [ ] Entropy control: no dead code, commented-out code, or orphan TODO/FIXME markers
+- [ ] Handoff readiness: `bun run harness:self-review` output is either clean or explicitly addressed
+
 ## How to Run All Checks
 
 ```bash
 bun run harness:validate
+bun run harness:validate:full
 ```
 
-This runs: health check + linters + structural tests + entropy scans.
+`harness:validate` is the fast local gate.
+`harness:validate:full` adds the full structural/runtime regression suite used in CI.
 
 ## Feedback Format
 
