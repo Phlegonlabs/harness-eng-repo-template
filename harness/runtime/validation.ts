@@ -313,7 +313,6 @@ const TEMPLATE_IDENTITY_TARGETS = [
 	"apps/web/AGENTS.md",
 	"apps/web/package.json",
 	"docs/architecture.md",
-	"docs/decisions/005-observability-strategy.md",
 	"docs/internal/observability.md",
 	"docs/product.md",
 	"docs/progress.md",

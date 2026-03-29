@@ -100,12 +100,7 @@ This runs:
 
 ### Built-in eval scaffold
 
-The template includes reusable eval infrastructure in `evals/` plus real tasks that can be graded with deterministic shell checks.
-
-Current examples:
-
-- `evals/tasks/add-api-health-module.md`
-- `evals/tasks/fix-layer-violation.md`
+The template includes reusable eval infrastructure in `evals/`. Copy `evals/tasks/example-task.md` to create your own eval tasks.
 
 ---
 
@@ -244,15 +239,7 @@ Use `docs/internal/command-surface.md` for the expanded command matrix.
 
 ## Architecture Decisions
 
-The template ships with baseline ADRs in `docs/decisions/`:
-
-- `docs/decisions/000-template.md`
-- `docs/decisions/001-harness-engineering.md`
-- `docs/decisions/002-monorepo-template.md`
-- `docs/decisions/003-strict-monorepo-enforcement.md`
-- `docs/decisions/004-task-contract-evaluator-loop.md`
-
-Use them as starting points, not immutable law.
+Record project architecture decisions in `docs/decisions/` using the template at `docs/decisions/000-template.md`.
 
 ---
 

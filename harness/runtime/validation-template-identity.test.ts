@@ -94,8 +94,6 @@ describe("runTemplateIdentityTest", () => {
 			"docs/architecture.md": "# Architecture",
 			"docs/progress.md": "# Progress",
 			"docs/internal/observability.md": "Use @sample-project/shared.",
-			"docs/decisions/005-observability-strategy.md":
-				"Logger via @sample-project/shared.",
 			"harness/rules/forbidden-patterns.json": '{"rules":[]}',
 			LICENSE: "sample-project contributors",
 			"package.json": '{"name":"sample-project"}',
@@ -126,8 +124,6 @@ describe("runTemplateIdentityTest", () => {
 			"docs/architecture.md": "# Architecture",
 			"docs/progress.md": "# Progress",
 			"docs/internal/observability.md": "Use @sample-project/shared.",
-			"docs/decisions/005-observability-strategy.md":
-				"Logger via @sample-project/shared.",
 			"harness/rules/forbidden-patterns.json":
 				'{"rules":[{"message":"Use @sample-project/shared instead."}]}',
 			LICENSE: "sample-project contributors",

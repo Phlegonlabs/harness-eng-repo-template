@@ -254,7 +254,6 @@ for (const relativePath of [
 	"apps/web/AGENTS.md",
 	"packages/shared/AGENTS.md",
 	"docs/internal/observability.md",
-	"docs/decisions/005-observability-strategy.md",
 	"harness/rules/forbidden-patterns.json",
 ]) {
 	rewriteIdentitySurface(relativePath);

@@ -2,9 +2,9 @@
 # evals/run.sh — deterministic eval runner for the harness template
 #
 # Usage:
-#   EVAL_AGENT_CMD='codex exec --prompt-file {{PROMPT_FILE}}' ./evals/run.sh add-api-health-module
-#   EVAL_AGENT_CMD='claude --print --file {{PROMPT_FILE}}' ./evals/run.sh fix-layer-violation
-#   ./evals/run.sh --skip-agent add-api-health-module
+#   EVAL_AGENT_CMD='codex exec --prompt-file {{PROMPT_FILE}}' ./evals/run.sh <task-name>
+#   EVAL_AGENT_CMD='claude --print --file {{PROMPT_FILE}}' ./evals/run.sh <task-name>
+#   ./evals/run.sh --skip-agent <task-name>
 
 set -euo pipefail
 

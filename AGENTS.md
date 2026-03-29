@@ -86,7 +86,7 @@ Load only what the task requires. Do not bulk-read `docs/internal/` by default.
 - Making breaking schema or API contract changes
 - Taking irreversible infrastructure actions
 
-Dependency selection criteria live in `docs/decisions/006-dependency-philosophy.md`.
+Document dependency selection criteria in `docs/decisions/`.
 
 ### Never do
 - Skip validation or bypass hooks
@@ -179,8 +179,7 @@ Load skills on demand. Start with the minimum set.
 | `skills/debugging/SKILL.md` | bug reproduction, log-driven debugging, observability checks |
 | `skills/deployment/SKILL.md` | pre-PR or deployment prep |
 
-If a change spans multiple files or phases, create an execution plan in `docs/execution-plans/`.
-The current harness improvement plan lives in `docs/execution-plans/harness-agent-ergonomics.md`.
+If a change spans multiple files or phases, create an execution plan in `docs/execution-plans/` using the template at `docs/execution-plans/TEMPLATE.md`.
 
 ---
 
@@ -219,9 +218,7 @@ Only load these when the task touches the matching concern:
 - `apps/api/AGENTS.md`
 - `packages/shared/AGENTS.md`
 - `docs/quality/GRADES.md`
-- `docs/execution-plans/harness-agent-ergonomics.md`
-- `docs/execution-plans/harness-gap-alignment.md`
-- `docs/execution-plans/harness-validate-performance.md`
+- `docs/execution-plans/TEMPLATE.md`
 - `docs/decisions/`
 
 The runtime is the enforcement layer. These docs explain intent and rationale.
