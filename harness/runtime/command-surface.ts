@@ -41,6 +41,7 @@ function normalizeCommand(
 		"root.harness-discover",
 		"root.harness-discover-reset",
 		"root.harness-plan",
+		"root.harness-state-recover",
 		"root.harness-orchestrate",
 		"root.harness-evaluate",
 		"root.harness-parallel-dispatch",

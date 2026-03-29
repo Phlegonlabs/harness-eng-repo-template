@@ -187,6 +187,7 @@ export function runDocsFreshnessLint(context: ValidationContext): number {
 		"docs/internal/agent-entry.md",
 		"AGENTS.md",
 		"CLAUDE.md",
+		"CODEX.md",
 	]) {
 		const committed = lastCommitUnix(context.repoRoot, relativePath);
 		if (!committed) continue;

@@ -4,6 +4,8 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
+	renameSync,
+	rmSync,
 	writeFileSync,
 } from "node:fs";
 import path from "node:path";
@@ -85,7 +87,17 @@ function tryFormatFile(target: string): void {
 
 export function writeTextFile(target: string, content: string): void {
 	mkdirSync(path.dirname(target), { recursive: true });
-	writeFileSync(target, content);
+	const tempTarget = path.join(
+		path.dirname(target),
+		`.${path.basename(target)}.${process.pid}.${Date.now()}.tmp`,
+	);
+	writeFileSync(tempTarget, content);
+	try {
+		renameSync(tempTarget, target);
+	} catch {
+		rmSync(target, { force: true });
+		renameSync(tempTarget, target);
+	}
 	if (isTextFile(target)) {
 		tryFormatFile(target);
 	}

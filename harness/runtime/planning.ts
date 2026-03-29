@@ -11,6 +11,7 @@ import {
 	writeJson,
 	writeTextFile,
 } from "./shared";
+import { createStateSnapshot } from "./state-recovery";
 import { baselineDiscoveryAnswers } from "./template-baseline";
 import type {
 	ActiveWorktreeRecord,
@@ -329,6 +330,7 @@ export function loadState(root: string): HarnessState {
 }
 
 export function saveState(root: string, state: HarnessState): void {
+	createStateSnapshot(root, "pre-save");
 	writeJson(path.join(root, ".harness/state.json"), state);
 }
 

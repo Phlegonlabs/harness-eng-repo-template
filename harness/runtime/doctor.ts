@@ -108,6 +108,7 @@ writeSection("Planning Surfaces");
 for (const relativePath of [
 	"AGENTS.md",
 	"CLAUDE.md",
+	"CODEX.md",
 	"docs/product.md",
 	"docs/architecture.md",
 	"docs/progress.md",

@@ -15,23 +15,60 @@ import {
 	renderQualityGradesDoc,
 	renderReadyProgressDoc,
 } from "./template-baseline";
+import type { DependencyRules } from "./types";
 
 const root = repoRoot();
-const projectName = process.argv.at(-1);
+const args = process.argv.slice(2);
+const profileArgIndex = args.indexOf("--profile");
+const profileName =
+	profileArgIndex >= 0 && args.length > profileArgIndex + 1
+		? args[profileArgIndex + 1]
+		: "fullstack";
+const projectName = args.find((arg, index) => {
+	if (arg.startsWith("--")) return false;
+	if (profileArgIndex >= 0 && index === profileArgIndex + 1) return false;
+	return true;
+});
 if (!projectName || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(projectName)) {
-	console.error("Usage: bun run harness:init -- <kebab-case-project-name>");
+	console.error(
+		"Usage: bun run harness:init -- <kebab-case-project-name> [--profile fullstack|api|cli|library]",
+	);
 	process.exit(1);
 }
 
 const configPath = path.join(root, "harness/config.json");
 const config = readJson<Record<string, unknown>>(configPath);
+const profilePath = path.join(root, "harness/profiles", `${profileName}.json`);
+const profile = (() => {
+	try {
+		return readJson<{ layers: string[] }>(profilePath);
+	} catch {
+		console.error(
+			`Unknown profile '${profileName}'. Available profiles: fullstack, api, cli, library.`,
+		);
+		process.exit(1);
+	}
+})();
 const previousProjectName =
 	typeof config.project_name === "string"
 		? config.project_name
 		: "harness-template";
 config.project_name = projectName;
+config.layers = profile.layers;
 writeJson(configPath, config);
 saveState(root, stateTemplate(projectName));
+
+const dependencyRulesPath = path.join(
+	root,
+	"harness/rules/dependency-layers.json",
+);
+const dependencyRules = readJson<DependencyRules & Record<string, unknown>>(
+	dependencyRulesPath,
+);
+dependencyRules.layers = dependencyRules.layers.filter((layer) =>
+	profile.layers.includes(layer.name),
+);
+writeJson(dependencyRulesPath, dependencyRules);
 
 const packageJsonPath = path.join(root, "package.json");
 const packageJson = readJson<Record<string, unknown>>(packageJsonPath);

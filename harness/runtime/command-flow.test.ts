@@ -1,4 +1,5 @@
 import { describe, expect, it, setDefaultTimeout } from "bun:test";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { repoRoot } from "./shared";
 import {
@@ -27,6 +28,8 @@ describeCommandFlow("command flow", () => {
 			["bun", "run", "harness:structural"],
 			["bun", "run", "harness:entropy"],
 			["bun", "run", "harness:validate"],
+			["bun", "run", "harness:status", "--json"],
+			["bun", "run", "harness:state-recover", "--list"],
 			["bun", "run", "build"],
 			["bun", "run", "lint"],
 			["bun", "run", "lint:root"],
@@ -76,6 +79,9 @@ describeCommandFlow("command flow", () => {
 		expect(runCommand(tempRoot, ["bun", "run", "format:check"]).code).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "harness:plan"]).code).toBe(0);
+		expect(
+			runCommand(tempRoot, ["bun", "run", "harness:status", "--json"]).code,
+		).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "format:check"]).code).toBe(0);
 		expect(
@@ -89,6 +95,10 @@ describeCommandFlow("command flow", () => {
 				"--task",
 				firstTaskId(tempRoot),
 			]).code,
+		).toBe(0);
+		expect(
+			runCommand(tempRoot, ["bun", "run", "harness:state-recover", "--list"])
+				.code,
 		).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "harness:validate"]).code).toBe(
@@ -129,6 +139,39 @@ describeCommandFlow("command flow", () => {
 		).toBe(0);
 		expect(answerDiscovery(tempRoot, "sample-project").code).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "harness:plan"]).code).toBe(0);
+	});
+
+	it("writes profile-specific layer rules during init", () => {
+		const tempRoot = cloneRepo(root);
+		expect(
+			runCommand(tempRoot, [
+				"bun",
+				"run",
+				"harness:init",
+				"--",
+				"sample-cli",
+				"--profile",
+				"cli",
+			]).code,
+		).toBe(0);
+
+		const config = JSON.parse(
+			readFileSync(path.join(tempRoot, "harness/config.json"), "utf8"),
+		) as { layers: string[] };
+		const rules = JSON.parse(
+			readFileSync(
+				path.join(tempRoot, "harness/rules/dependency-layers.json"),
+				"utf8",
+			),
+		) as { layers: Array<{ name: string }> };
+
+		expect(config.layers).toEqual(["types", "config", "service", "runtime"]);
+		expect(rules.layers.map((layer) => layer.name)).toEqual([
+			"types",
+			"config",
+			"service",
+			"runtime",
+		]);
 	});
 
 	it("dispatches and merges a completed milestone through a worktree", () => {

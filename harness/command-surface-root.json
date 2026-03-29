@@ -65,6 +65,12 @@
 			"summary": "Synchronize milestones and tasks after docs become executable."
 		},
 		{
+			"id": "root.harness-status",
+			"display": "bun run harness:status --json",
+			"requires": [],
+			"summary": "Render a derived machine-readable summary of the current harness state."
+		},
+		{
 			"id": "root.harness-orchestrate",
 			"display": "bun run harness:orchestrate",
 			"requires": ["planned_backlog", "pending_task"],
@@ -75,6 +81,12 @@
 			"display": "bun run harness:evaluate --task <id>",
 			"requires": ["active_task"],
 			"summary": "Evaluate the active task and write fresh evaluation and handoff artifacts."
+		},
+		{
+			"id": "root.harness-state-recover",
+			"display": "bun run harness:state-recover --list",
+			"requires": [],
+			"summary": "List or recover state snapshots created before state mutations."
 		},
 		{
 			"id": "root.harness-unblock",

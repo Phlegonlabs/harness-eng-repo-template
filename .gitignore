@@ -55,6 +55,7 @@ temp/
 .harness/launches/
 .harness/logs/
 .harness/cache/
+.harness/snapshots/
 
 # OS
 Thumbs.db

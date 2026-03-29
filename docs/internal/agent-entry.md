@@ -1,8 +1,8 @@
-# Agent Entry — Canonical Rules
+# Agent Entry — Deep Reference
 
-> This is the **single source of truth** for all agent rules.
-> `AGENTS.md` and `CLAUDE.md` are thin pointers to this document.
-> When they diverge, this document wins.
+> `AGENTS.md` is now the primary, self-contained entry point for agents.
+> This document remains the deeper reference for rationale and expanded workflow detail.
+> If this document and the runtime disagree, the runtime and validation suite win.
 
 ---
 
@@ -147,5 +147,4 @@ These patterns must never appear in committed code:
 
 ---
 
-*This document is the canonical source. `AGENTS.md` and `CLAUDE.md` summarize it.*
-*Update this document when rules change — then update the summaries.*
+*Use this document when you need the expanded rationale behind the rules in `AGENTS.md`.*
