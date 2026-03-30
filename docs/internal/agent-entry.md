@@ -88,6 +88,7 @@ For active tasks, `bun run harness:evaluate --task <id>` is the task-level gate 
 6. Check which layers will be touched (review `docs/internal/dependency-layers.md`)
 7. Inspect the current task contract / latest handoff artifact when resuming in-flight work
 8. Identify which workspace(s) are affected before editing
+9. Prefer `bun run harness:compact` when you need a concise resume surface instead of re-reading multiple artifacts
 
 A fresh clone of this template is still a pre-init scaffold. Do not assume a runnable backlog exists until `harness:init` or discovery has produced docs-ready inputs and `harness:plan` has run.
 
@@ -104,11 +105,12 @@ A fresh clone of this template is still a pre-init scaffold. Do not assume a run
 
 1. Run `bun run harness:validate`
 2. Fix any failures
-3. Run `bun run harness:self-review` when the change spans multiple files or mixes code and docs
-4. Run `bun run harness:evaluate --task <id>` for the active task if it is still in execution
-5. Stage specific files (not `git add -A`)
-6. Write a conventional commit message
-7. Note any open questions or blockers in `docs/` if relevant
+3. Run `bun run harness:compact` when the handoff benefits from a condensed artifact snapshot
+4. Run `bun run harness:self-review` when the change spans multiple files or mixes code and docs
+5. Run `bun run harness:evaluate --task <id>` for the active task if it is still in execution
+6. Stage specific files (not `git add -A`)
+7. Write a conventional commit message
+8. Note any open questions or blockers in `docs/` if relevant
 
 ### Planning and Execution
 
@@ -120,7 +122,9 @@ A fresh clone of this template is still a pre-init scaffold. Do not assume a run
 - `bun run harness:discover --reset` is the optional guided flow for teams that want PRD/architecture interviews
 - Generate milestones/tasks only after PRD + architecture are ready enough to execute
 - Parallel execution is milestone-level only and must use isolated worktrees
-- Skill loading follows `harness/skills/registry.json` with progressive disclosure
+- Skill loading follows `harness/skills/registry.json` with progressive disclosure and deterministic file-pattern routing against task-owned affected areas
+- Evaluation may include skill-linked exit criteria through the same repo-owned evaluator flow; there is no separate hidden review pipeline
+- Guardrails follow repo-owned guardian commands; host-specific hooks are thin wrappers over that contract
 
 ---
 

@@ -21,11 +21,9 @@ set -euo pipefail
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 cd "$PROJECT_ROOT"
 
-echo "Running pre-stop checks..." >&2
-
-# ─── Step 1: Fast local harness validation (always runs) ─────────────────────
-HARNESS_OUTPUT=$(bun run harness:validate 2>&1) || {
-  echo "❌ Harness validation failed:" >&2
+# ─── Step 1: Repo-owned stop guardian (always runs) ──────────────────────────
+HARNESS_OUTPUT=$(bun run harness:guardian --mode stop --no-state --quiet-success 2>&1) || {
+  echo "❌ Harness stop guardian failed:" >&2
   echo "$HARNESS_OUTPUT" >&2
   exit 2
 }

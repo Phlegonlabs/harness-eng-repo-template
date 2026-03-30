@@ -9,6 +9,9 @@ import {
 	makeTask,
 } from "./orchestration-test-fixtures";
 import { loadState, milestonesFromProductDoc } from "./planning";
+import { readJson } from "./shared";
+import type { SkillRegistry } from "./skill-types";
+import type { TaskEvaluationArtifact } from "./types";
 
 const tempRoots: string[] = [];
 
@@ -170,5 +173,98 @@ describe("orchestration lifecycle", () => {
 		const result = orchestrateTask(root);
 
 		expect(result?.skills).toContain("skills/debugging/SKILL.md");
+	});
+
+	it("loads required skills and condition-driven skills through one registry policy", () => {
+		const root = createRepoWithTasks(
+			[
+				makeTask({
+					id: "T101",
+					kind: "implementation",
+					title: "Investigate and fix regression",
+					affectedFilesOrAreas: [],
+					requiredSkills: [
+						"skills/implementation/SKILL.md",
+						"skills/code-review/SKILL.md",
+					],
+					validationChecks: ["bun --version"],
+				}),
+			],
+			tempRoots,
+		);
+
+		const result = orchestrateTask(root);
+
+		expect(result?.skills).toContain("skills/implementation/SKILL.md");
+		expect(result?.skills).toContain("skills/code-review/SKILL.md");
+		expect(result?.skills).toContain("skills/research/SKILL.md");
+		expect(result?.skills).toContain("skills/debugging/SKILL.md");
+		expect(result?.skills.length).toBeLessThanOrEqual(4);
+	});
+
+	it("loads file-pattern-matched skills and records active guardrails", () => {
+		const root = createRepoWithTasks(
+			[
+				makeTask({
+					id: "T101",
+					affectedFilesOrAreas: ["harness/runtime/guardian.ts"],
+				}),
+			],
+			tempRoots,
+		);
+
+		const result = orchestrateTask(root);
+		const state = loadState(root);
+
+		expect(result?.skills).toContain("skills/code-review/SKILL.md");
+		expect(
+			state.skills.selectionReasons["skills/code-review/SKILL.md"],
+		).toContain("file-pattern:harness/**");
+		expect(state.skills.activeGuardrails).toContain("documentation-sync");
+	});
+
+	it("fails evaluation when a selected skill exit gate fails", () => {
+		const root = createRepoWithTasks(
+			[
+				makeTask({
+					id: "T101",
+					validationChecks: [],
+					affectedFilesOrAreas: ["tests/runtime/guardian.test.ts"],
+				}),
+			],
+			tempRoots,
+		);
+		const registryPath = path.join(root, "harness/skills/registry.json");
+		const registry = readJson<SkillRegistry>(registryPath);
+		registry.skillMetadata = {
+			...(registry.skillMetadata ?? {}),
+			"skills/testing/SKILL.md": {
+				...(registry.skillMetadata?.["skills/testing/SKILL.md"] ?? {}),
+				exitCriteria: ['node -e "process.exit(1)"'],
+			},
+		};
+		writeFileSync(registryPath, `${JSON.stringify(registry, null, 2)}\n`);
+
+		orchestrateTask(root);
+		const result = evaluateTask("T101", root);
+		const state = loadState(root);
+		const artifact = readJson<TaskEvaluationArtifact>(
+			path.join(root, state.tasks[0].artifacts.latestEvaluationPath ?? ""),
+		);
+
+		expect(result?.task.evaluatorStatus).toBe("failed");
+		expect(
+			artifact.checks.some(
+				(check) => check.source === "skill-exit" && check.exitCode !== 0,
+			),
+		).toBe(true);
+		expect(
+			artifact.findings.some((finding) =>
+				finding.message.includes("skill exit gate"),
+			),
+		).toBe(true);
+		expect(state.skills.activeExitCriteria?.[0]?.command).toBe(
+			'node -e "process.exit(1)"',
+		);
 	});
 });

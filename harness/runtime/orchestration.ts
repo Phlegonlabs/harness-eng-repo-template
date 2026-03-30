@@ -1,16 +1,17 @@
-import { execFileSync } from "node:child_process";
-import path from "node:path";
+import { runCommandWithCapture } from "./command-runner";
+import { ensureTaskBaseline } from "./lifecycle";
 import {
 	writeTaskContract,
 	writeTaskEvaluation,
 	writeTaskHandoff,
 } from "./orchestration-artifacts";
 import { loadState, saveState, writeProgressDoc } from "./planning";
-import { readJson, repoRoot } from "./shared";
+import { repoRoot } from "./shared";
+import { resolveTaskSkills } from "./skill-routing";
+import type { ResolvedSkillSelection } from "./skill-types";
 import type {
 	EvaluatorStatus,
 	MilestoneRecord,
-	SkillRegistry,
 	TaskCheckResult,
 	TaskEvaluationArtifact,
 	TaskEvaluationFinding,
@@ -35,30 +36,22 @@ function unique(values: string[]): string[] {
 	return [...new Set(values)];
 }
 
-function conditionValue(rawValue: string): boolean | string {
-	const trimmed = rawValue.trim();
-	if (trimmed === "true") return true;
-	if (trimmed === "false") return false;
-	return trimmed.replace(/^['"]|['"]$/g, "");
-}
-
-function taskConditionContext(task: TaskRecord): Record<string, unknown> {
-	return {
-		...task,
-		isReadyForHandoff:
-			task.status === "evaluation_pending" || task.status === "done",
-		involvesBugFix:
-			task.kind === "debugging" ||
-			/\b(bug|debug|fix|regression|incident)\b/i.test(task.title),
-	};
-}
-
-function conditionMatches(condition: string, task: TaskRecord): boolean {
-	const match = condition.match(/^task\.([a-zA-Z0-9_]+)\s*==\s*(.+)$/);
-	if (!match) return false;
-	const [, field, rawValue] = match;
-	const expected = conditionValue(rawValue);
-	return taskConditionContext(task)[field] === expected;
+function applySkillSelection(
+	target: {
+		loaded: string[];
+		selectionReasons: Record<string, string[]>;
+		activeGuardrails?: string[];
+		activeExitCriteria?: Array<{
+			command: string;
+			skills: string[];
+		}>;
+	},
+	selection: ResolvedSkillSelection,
+): void {
+	target.loaded = unique(selection.loaded);
+	target.selectionReasons = selection.reasons;
+	target.activeGuardrails = selection.guardrails;
+	target.activeExitCriteria = selection.exitCriteria;
 }
 
 function dependenciesMet(task: TaskRecord, allTasks: TaskRecord[]): boolean {
@@ -94,23 +87,6 @@ function taskMilestone(
 	return milestone;
 }
 
-function registrySkills(
-	root: string,
-	phase: string,
-	task: TaskRecord,
-): string[] {
-	const registry = readJson<SkillRegistry>(
-		path.join(root, "harness/skills/registry.json"),
-	);
-	return unique([
-		...(registry.phases[phase] ?? []),
-		...(registry.taskKinds[task.kind] ?? []),
-		...(registry.conditions ?? [])
-			.filter((rule) => conditionMatches(rule.when, task))
-			.flatMap((rule) => rule.load),
-	]);
-}
-
 function createInitialHandoff(
 	task: TaskRecord,
 	milestone: MilestoneRecord,
@@ -133,59 +109,28 @@ function createInitialHandoff(
 	};
 }
 
-function tokenize(commandLine: string): string[] {
-	return (commandLine.match(/"[^"]*"|'[^']*'|[^\s]+/g) ?? []).map((token) =>
-		token.replace(/^['"]|['"]$/g, ""),
-	);
-}
-
-function commandResult(root: string, commandLine: string): TaskCheckResult {
-	const [command, ...args] = tokenize(commandLine);
-	if (!command) {
-		return {
-			command: commandLine,
-			exitCode: 1,
-			outputSnippet: "Empty command.",
-		};
-	}
-	try {
-		const stdout = execFileSync(command, args, {
-			cwd: root,
-			encoding: "utf8",
-			stdio: ["ignore", "pipe", "pipe"],
-		});
-		return {
-			command: commandLine,
-			exitCode: 0,
-			outputSnippet: stdout.trim().split(/\r?\n/).slice(-10).join("\n"),
-		};
-	} catch (error) {
-		const failure =
-			typeof error === "object" && error
-				? (error as {
-						status?: number;
-						stdout?: string | Buffer;
-						stderr?: string | Buffer;
-					})
-				: {};
-		const stdout =
-			typeof failure.stdout === "string"
-				? failure.stdout
-				: (failure.stdout?.toString("utf8") ?? "");
-		const stderr =
-			typeof failure.stderr === "string"
-				? failure.stderr
-				: (failure.stderr?.toString("utf8") ?? "");
-		return {
-			command: commandLine,
-			exitCode: failure.status ?? 1,
-			outputSnippet: `${stdout}\n${stderr}`
-				.trim()
-				.split(/\r?\n/)
-				.slice(-12)
-				.join("\n"),
-		};
-	}
+function commandResult(options: {
+	root: string;
+	commandLine: string;
+	source: TaskCheckResult["source"];
+	skills?: string[];
+}): TaskCheckResult {
+	const { root, commandLine, source, skills } = options;
+	const result = runCommandWithCapture({
+		root,
+		commandLine,
+		logCategory:
+			source === "skill-exit" ? "evaluation-skill-exit" : "evaluation-check",
+		maxSnippetLines: 12,
+	});
+	return {
+		command: commandLine,
+		exitCode: result.exitCode,
+		outputSnippet: result.snippet.join("\n"),
+		logPath: result.logPath,
+		source,
+		skills,
+	};
 }
 
 function evaluationFindings(
@@ -204,7 +149,10 @@ function evaluationFindings(
 		.filter((result) => result.exitCode !== 0)
 		.map((result) => ({
 			severity: "blocker" as const,
-			message: `${result.command} failed with exit code ${result.exitCode}.`,
+			message:
+				result.source === "skill-exit"
+					? `${result.command} failed with exit code ${result.exitCode} for skill exit gate ${result.skills?.join(", ") ?? "unknown"}.`
+					: `${result.command} failed with exit code ${result.exitCode}.`,
 		}));
 }
 
@@ -226,7 +174,8 @@ export function orchestrateTask(
 
 	const milestone = taskMilestone(task, state.milestones);
 	state.planning.phase = "EXECUTING";
-	state.skills.loaded = registrySkills(root, "EXECUTING", task);
+	const skillResolution = resolveTaskSkills(root, "EXECUTING", task);
+	applySkillSelection(state.skills, skillResolution);
 
 	if (task.status === "pending") {
 		task.iteration = Math.max(task.iteration, 1);
@@ -243,6 +192,7 @@ export function orchestrateTask(
 		if (milestone.status === "planned") {
 			milestone.status = "active";
 		}
+		ensureTaskBaseline(root, task.id);
 		task.lastCheckpointAt = new Date().toISOString();
 		task.artifacts.latestHandoffPath = writeTaskHandoff(
 			root,
@@ -302,16 +252,30 @@ export function evaluateTask(
 
 	const milestone = taskMilestone(task, state.milestones);
 	state.planning.phase = "VALIDATING";
-	state.skills.loaded = registrySkills(root, "VALIDATING", task);
+	const skillResolution = resolveTaskSkills(root, "VALIDATING", task);
+	applySkillSelection(state.skills, skillResolution);
 	const currentIteration = Math.max(task.iteration, 1);
 	task.status = "evaluation_pending";
 	task.lastCheckpointAt = new Date().toISOString();
 	saveState(root, state);
 
 	const checks = task.validationChecks.map((command) =>
-		commandResult(root, command),
+		commandResult({
+			root,
+			commandLine: command,
+			source: "validation",
+		}),
 	);
-	const findings = evaluationFindings(checks);
+	const skillExitChecks = skillResolution.exitCriteria.map((entry) =>
+		commandResult({
+			root,
+			commandLine: entry.command,
+			source: "skill-exit",
+			skills: entry.skills,
+		}),
+	);
+	const allChecks = [...checks, ...skillExitChecks];
+	const findings = evaluationFindings(allChecks);
 	const failed = findings.some((finding) => finding.severity === "blocker");
 	const artifact: TaskEvaluationArtifact = {
 		version: "1.0.0",
@@ -320,7 +284,7 @@ export function evaluateTask(
 		iteration: currentIteration,
 		status: failed ? "failed" : "passed",
 		evaluatedAt: new Date().toISOString(),
-		checks,
+		checks: allChecks,
 		findings,
 	};
 	task.artifacts.latestEvaluationPath = writeTaskEvaluation(
@@ -367,7 +331,7 @@ export function evaluateTask(
 			: `Evaluator passed task ${task.id} on iteration ${currentIteration}.`,
 		nextAction,
 		risks,
-		commandLog: checks.map(
+		commandLog: allChecks.map(
 			(result) => `${result.command} (exit ${result.exitCode})`,
 		),
 		contractPath: task.artifacts.contractPath,

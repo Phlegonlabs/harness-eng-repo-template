@@ -30,6 +30,9 @@ This contract applies equally to Codex and Claude sessions.
 | `bun run harness:unblock --task <id>` | root / one_shot | blocked_task | expected_block | exit_zero | Unblock a stuck task and reset its stall counter. |
 | `bun run harness:parallel-dispatch -- --apply` | root / one_shot | planned_backlog, clean_main_worktree, eligible_milestone | expected_block | exit_zero | Allocate milestone worktrees when the backlog and git state allow it. |
 | `bun run harness:merge-milestone -- M1` | root / one_shot | active_worktree, clean_main_worktree, milestone_done | expected_block | exit_zero | Merge a completed milestone branch back into the main worktree. |
+| `bun run harness:compact` | root / one_shot | - | n/a | exit_zero | Write a concise repository-owned compact snapshot from state and task artifacts. |
+| `bun run harness:guardian --mode preflight` | root / one_shot | - | n/a | exit_zero | Run repo-owned guardrails for preflight, stop, or drift checks. |
+| `bun run harness:dispatch --prepare --role sidecar` | root / one_shot | - | n/a | exit_zero | Prepare or complete a provider-neutral dispatch packet/result artifact. |
 | `bun run build` | root / one_shot | bun_install | expected_block | exit_zero | Build all workspaces through Turbo. |
 | `bun run dev` | root / persistent | bun_install | expected_block | persistent_boot | Start all workspace dev processes in parallel. |
 | `bun run lint` | root / one_shot | bun_install | expected_block | exit_zero | Run the root Biome checks and workspace lint scripts. |

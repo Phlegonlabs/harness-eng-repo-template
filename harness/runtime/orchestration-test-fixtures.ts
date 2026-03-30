@@ -43,10 +43,103 @@ const supportFiles: Record<string, string> = {
 			},
 			conditions: [
 				{
+					when: "task.touchesUnknownArea == true",
+					load: ["skills/research/SKILL.md"],
+				},
+				{
+					when: "task.requiresValidation == true",
+					load: ["skills/testing/SKILL.md"],
+				},
+				{
 					when: "task.involvesBugFix == true",
 					load: ["skills/debugging/SKILL.md"],
 				},
 			],
+			routing: {
+				maxLoadedSkills: 4,
+				preserveRequiredSkills: true,
+				weights: {
+					"skills/implementation/SKILL.md": 100,
+					"skills/research/SKILL.md": 90,
+					"skills/testing/SKILL.md": 80,
+					"skills/debugging/SKILL.md": 85,
+					"skills/code-review/SKILL.md": 70,
+				},
+				reasonLabels: {
+					required: "task-required",
+					phase: "phase-match",
+					taskKind: "kind-match",
+					filePattern: "file-pattern",
+				},
+			},
+			skillMetadata: {
+				"skills/implementation/SKILL.md": {
+					filePatterns: ["apps/**", "packages/**"],
+					guardrails: ["dependency-layers", "file-size-limits"],
+				},
+				"skills/testing/SKILL.md": {
+					filePatterns: ["tests/**", "**/*.test.ts", "**/*.spec.ts"],
+					guardrails: ["test-coverage", "test-file-size"],
+				},
+				"skills/code-review/SKILL.md": {
+					filePatterns: ["docs/**", "harness/**"],
+					guardrails: ["documentation-sync"],
+				},
+				"skills/debugging/SKILL.md": {
+					filePatterns: ["apps/api/**", "packages/shared/**"],
+					guardrails: ["structured-logging"],
+				},
+			},
+			validation: {
+				defaultChecksByKind: {
+					implementation: ["bun --version"],
+					testing: ["bun --version"],
+					debugging: ["bun --version"],
+					review: ["bun --version"],
+					deployment: ["bun --version"],
+					research: [],
+				},
+			},
+		},
+		null,
+		2,
+	)}\n`,
+	"harness/config.json": `${JSON.stringify(
+		{
+			version: "1.0.0",
+			level: 2,
+			project_name: "test-project",
+			project_owner: "",
+			workspace_roots: ["apps", "packages"],
+			default_workspaces: ["apps/web", "apps/api", "packages/shared"],
+			layers: ["types", "config", "repo", "service", "runtime", "ui"],
+			validation: {
+				structural_tests: true,
+				linters: true,
+				entropy_scans: true,
+				doc_freshness_days: 30,
+			},
+			contextManagement: {
+				enabled: true,
+				autoCompact: true,
+				summaryMaxLines: 12,
+				retainRecentArtifacts: 3,
+				historyLimit: 25,
+			},
+			guardians: {
+				enabled: true,
+				preflight: true,
+				stop: true,
+				drift: true,
+				logFailures: true,
+			},
+			entropy: {
+				enabled: true,
+				driftThresholdPercent: 10,
+				baselineOnTaskStart: true,
+			},
+			commit_format: "conventional",
+			required_files: [],
 		},
 		null,
 		2,
@@ -108,6 +201,50 @@ export function baseState(): HarnessState {
 			registry: "harness/skills/registry.json",
 			progressiveDisclosure: true,
 			loaded: [],
+			selectionReasons: {},
+			activeGuardrails: [],
+			activeExitCriteria: [],
+		},
+		compact: {
+			latestJsonPath: null,
+			latestMarkdownPath: null,
+			lastRunAt: null,
+			latestSourceEvent: null,
+		},
+		guardians: {
+			preflight: {
+				status: "idle",
+				runAt: null,
+				logPath: null,
+				artifactPath: null,
+				sourceEvent: null,
+				summary: [],
+			},
+			stop: {
+				status: "idle",
+				runAt: null,
+				logPath: null,
+				artifactPath: null,
+				sourceEvent: null,
+				summary: [],
+			},
+			drift: {
+				status: "idle",
+				runAt: null,
+				logPath: null,
+				artifactPath: null,
+				sourceEvent: null,
+				summary: [],
+			},
+		},
+		entropy: {
+			baselines: {},
+			latestDelta: null,
+		},
+		dispatch: {
+			queuedSidecars: [],
+			latestPacketPath: null,
+			latestResultPath: null,
 		},
 	};
 }

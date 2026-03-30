@@ -1,5 +1,7 @@
 import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
+import { runGuardian } from "./guardian";
+import { refreshLifecycleArtifacts } from "./lifecycle";
 import { loadState, saveState, writeProgressDoc } from "./planning";
 import {
 	ensureCleanMainWorktree,
@@ -187,6 +189,22 @@ if (import.meta.main) {
 	const maxArg = process.argv.find((value) => value.startsWith("--max="));
 	const max = maxArg ? Number(maxArg.split("=")[1]) : 2;
 
+	if (apply) {
+		const guardian = runGuardian({
+			root,
+			mode: "preflight",
+			sourceEvent: "parallel-dispatch",
+			persistState: false,
+		});
+		if (guardian.code !== 0) {
+			console.error("PARALLEL DISPATCH BLOCKED");
+			for (const line of guardian.lines) {
+				console.error(`  ${line}`);
+			}
+			process.exit(1);
+		}
+	}
+
 	const result = dispatchMilestones({ root, apply, max });
 
 	if (!apply) {
@@ -243,4 +261,8 @@ if (import.meta.main) {
 	for (const id of result.dispatched) {
 		console.log(`Dispatched ${id}`);
 	}
+	refreshLifecycleArtifacts({
+		root,
+		sourceEvent: "parallel-dispatch",
+	});
 }

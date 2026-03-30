@@ -55,6 +55,10 @@ temp/
 .harness/launches/
 .harness/logs/
 .harness/cache/
+.harness/compact/
+.harness/guardians/
+.harness/dispatch/
+.harness/dispatch-results/
 .harness/snapshots/
 
 # OS

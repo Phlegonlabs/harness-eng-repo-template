@@ -1,26 +1,10 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import {
-	createTaskRecord,
-	defaultCommandSurface,
-	normalizeTaskRecord,
-} from "./planning-state";
-import {
-	hasPlaceholderContent,
-	readJson,
-	writeJson,
-	writeTextFile,
-} from "./shared";
+import { defaultCommandSurface, normalizeTaskRecord } from "./planning-state";
+import { hasPlaceholderContent, readJson, writeJson } from "./shared";
 import { createStateSnapshot } from "./state-recovery";
 import { baselineDiscoveryAnswers } from "./template-baseline";
-import type {
-	ActiveWorktreeRecord,
-	DiscoveryState,
-	HarnessConfig,
-	HarnessState,
-	MilestoneRecord,
-	TaskRecord,
-} from "./types";
+import type { DiscoveryState, HarnessState, MilestoneRecord } from "./types";
 
 export function planningReadiness(root: string): {
 	productReady: boolean;
@@ -86,176 +70,6 @@ export function milestonesFromProductDoc(
 	return milestones;
 }
 
-const KIND_PATTERNS: Array<{ pattern: RegExp; kind: string }> = [
-	{
-		pattern: /\b(debug\w*|bug|fix|regression|incident|triage)\b/i,
-		kind: "debugging",
-	},
-	{
-		pattern: /\b(tests?|testing|validat\w+|verify|assert)\b/i,
-		kind: "testing",
-	},
-	{ pattern: /\b(deploy\w*|release|publish)\b/i, kind: "deployment" },
-	{ pattern: /\b(review\w*|audit|inspect)\b/i, kind: "review" },
-	{
-		pattern: /\b(research|investigat\w+|explor\w+|analyz\w+|design)\b/i,
-		kind: "research",
-	},
-];
-
-function inferKind(hint: string): string {
-	for (const { pattern, kind } of KIND_PATTERNS) {
-		if (pattern.test(hint)) return kind;
-	}
-	return "implementation";
-}
-
-const SKILLS_BY_KIND: Record<string, string[]> = {
-	research: ["skills/research/SKILL.md"],
-	implementation: ["skills/implementation/SKILL.md"],
-	testing: ["skills/testing/SKILL.md", "skills/code-review/SKILL.md"],
-	debugging: ["skills/debugging/SKILL.md", "skills/code-review/SKILL.md"],
-	review: ["skills/code-review/SKILL.md"],
-	deployment: ["skills/deployment/SKILL.md"],
-};
-
-function detectAreas(hint: string, workspaces: string[]): string[] {
-	return workspaces.filter(
-		(ws) => hint.includes(ws) || hint.includes(ws.split("/").pop() ?? ""),
-	);
-}
-
-function tasksFromHints(
-	suffix: string,
-	milestone: MilestoneRecord,
-	hints: string[],
-	workspaces: string[],
-): TaskRecord[] {
-	const tasks: TaskRecord[] = [];
-	let seq = 1;
-
-	// Always start with a research task
-	const researchId = `T${suffix}${String(seq).padStart(2, "0")}`;
-	tasks.push(
-		createTaskRecord({
-			id: researchId,
-			milestoneId: milestone.id,
-			title: `Refine milestone design for ${milestone.title}`,
-			kind: "research",
-			status: "pending",
-			dependsOn: [],
-			affectedFilesOrAreas: [],
-			requiredSkills: ["skills/research/SKILL.md"],
-			validationChecks: [],
-		}),
-	);
-	seq += 1;
-
-	// One task per hint
-	for (const hint of hints) {
-		const kind = inferKind(hint);
-		const id = `T${suffix}${String(seq).padStart(2, "0")}`;
-		const prevId = tasks[tasks.length - 1].id;
-		tasks.push(
-			createTaskRecord({
-				id,
-				milestoneId: milestone.id,
-				title: hint,
-				kind,
-				status: "pending",
-				dependsOn: [prevId],
-				affectedFilesOrAreas: detectAreas(hint, workspaces),
-				requiredSkills: SKILLS_BY_KIND[kind] ?? [
-					"skills/implementation/SKILL.md",
-				],
-				validationChecks:
-					kind === "research" ? [] : ["bun run harness:validate"],
-			}),
-		);
-		seq += 1;
-	}
-
-	// Always end with a validation task
-	const valId = `T${suffix}${String(seq).padStart(2, "0")}`;
-	const lastId = tasks[tasks.length - 1].id;
-	tasks.push(
-		createTaskRecord({
-			id: valId,
-			milestoneId: milestone.id,
-			title: `Validate ${milestone.title}`,
-			kind: "testing",
-			status: "pending",
-			dependsOn: [lastId],
-			affectedFilesOrAreas: [],
-			requiredSkills: [
-				"skills/testing/SKILL.md",
-				"skills/code-review/SKILL.md",
-			],
-			validationChecks: ["bun run harness:validate"],
-		}),
-	);
-
-	return tasks;
-}
-
-function fallbackTasks(
-	suffix: string,
-	milestone: MilestoneRecord,
-): TaskRecord[] {
-	return [
-		createTaskRecord({
-			id: `T${suffix}01`,
-			milestoneId: milestone.id,
-			title: `Refine milestone design for ${milestone.title}`,
-			kind: "research",
-			status: "pending",
-			dependsOn: [],
-			affectedFilesOrAreas: [],
-			requiredSkills: ["skills/research/SKILL.md"],
-			validationChecks: [],
-		}),
-		createTaskRecord({
-			id: `T${suffix}02`,
-			milestoneId: milestone.id,
-			title: `Implement ${milestone.title}`,
-			kind: "implementation",
-			status: "pending",
-			dependsOn: [`T${suffix}01`],
-			affectedFilesOrAreas: [],
-			requiredSkills: ["skills/implementation/SKILL.md"],
-			validationChecks: ["bun run harness:validate"],
-		}),
-		createTaskRecord({
-			id: `T${suffix}03`,
-			milestoneId: milestone.id,
-			title: `Validate ${milestone.title}`,
-			kind: "testing",
-			status: "pending",
-			dependsOn: [`T${suffix}02`],
-			affectedFilesOrAreas: [],
-			requiredSkills: [
-				"skills/testing/SKILL.md",
-				"skills/code-review/SKILL.md",
-			],
-			validationChecks: ["bun run harness:validate"],
-		}),
-	];
-}
-
-export function defaultTasks(
-	milestones: MilestoneRecord[],
-	config?: HarnessConfig,
-): TaskRecord[] {
-	const workspaces = config?.default_workspaces ?? [];
-	return milestones.flatMap((milestone) => {
-		const suffix = milestone.id.slice(1);
-		if (milestone.taskHints && milestone.taskHints.length > 0) {
-			return tasksFromHints(suffix, milestone, milestone.taskHints, workspaces);
-		}
-		return fallbackTasks(suffix, milestone);
-	});
-}
-
 export function stateTemplate(projectName: string): HarnessState {
 	const answered = baselineDiscoveryAnswers(projectName);
 	const discovery: DiscoveryState = {
@@ -309,6 +123,48 @@ export function stateTemplate(projectName: string): HarnessState {
 			registry: "harness/skills/registry.json",
 			progressiveDisclosure: true,
 			loaded: [],
+			selectionReasons: {},
+		},
+		compact: {
+			latestJsonPath: null,
+			latestMarkdownPath: null,
+			lastRunAt: null,
+			latestSourceEvent: null,
+		},
+		guardians: {
+			preflight: {
+				status: "idle",
+				runAt: null,
+				logPath: null,
+				artifactPath: null,
+				sourceEvent: null,
+				summary: [],
+			},
+			stop: {
+				status: "idle",
+				runAt: null,
+				logPath: null,
+				artifactPath: null,
+				sourceEvent: null,
+				summary: [],
+			},
+			drift: {
+				status: "idle",
+				runAt: null,
+				logPath: null,
+				artifactPath: null,
+				sourceEvent: null,
+				summary: [],
+			},
+		},
+		entropy: {
+			baselines: {},
+			latestDelta: null,
+		},
+		dispatch: {
+			queuedSidecars: [],
+			latestPacketPath: null,
+			latestResultPath: null,
 		},
 	};
 }
@@ -326,11 +182,47 @@ export function loadState(root: string): HarnessState {
 		};
 		fallback.tasks = (fallback.tasks ?? []).map(normalizeTaskRecord);
 		fallback.projectInfo.commandSurface = defaultCommandSurface(root);
+		fallback.skills.selectionReasons = fallback.skills.selectionReasons ?? {};
+		fallback.compact = fallback.compact ?? {
+			latestJsonPath: null,
+			latestMarkdownPath: null,
+			lastRunAt: null,
+			latestSourceEvent: null,
+		};
+		fallback.guardians =
+			fallback.guardians ??
+			stateTemplate(fallback.projectInfo?.projectName ?? "harness-template")
+				.guardians;
+		fallback.entropy = fallback.entropy ?? { baselines: {}, latestDelta: null };
+		fallback.dispatch = fallback.dispatch ?? {
+			queuedSidecars: [],
+			latestPacketPath: null,
+			latestResultPath: null,
+		};
 		return fallback;
 	}
 	const normalized = state as HarnessState;
 	normalized.tasks = (normalized.tasks ?? []).map(normalizeTaskRecord);
 	normalized.projectInfo.commandSurface = defaultCommandSurface(root);
+	normalized.skills.selectionReasons = normalized.skills.selectionReasons ?? {};
+	normalized.compact = normalized.compact ?? {
+		latestJsonPath: null,
+		latestMarkdownPath: null,
+		lastRunAt: null,
+		latestSourceEvent: null,
+	};
+	normalized.guardians =
+		normalized.guardians ??
+		stateTemplate(normalized.projectInfo.projectName).guardians;
+	normalized.entropy = normalized.entropy ?? {
+		baselines: {},
+		latestDelta: null,
+	};
+	normalized.dispatch = normalized.dispatch ?? {
+		queuedSidecars: [],
+		latestPacketPath: null,
+		latestResultPath: null,
+	};
 	return normalized;
 }
 
@@ -339,70 +231,4 @@ export function saveState(root: string, state: HarnessState): void {
 	writeJson(path.join(root, ".harness/state.json"), state);
 }
 
-export function writeProgressDoc(
-	root: string,
-	milestones: MilestoneRecord[],
-	tasks: TaskRecord[],
-	activeWorktrees: ActiveWorktreeRecord[] = [],
-	readiness?: { product: boolean; architecture: boolean; backlog: boolean },
-): void {
-	const progress = [
-		"# Delivery Progress",
-		"",
-		"> Generated from `bun run harness:plan`. Edit the PRD or architecture first,",
-		"> then re-run planning to resync milestones and placeholder tasks.",
-		"",
-		"---",
-		"",
-		"## Planning Status",
-		"",
-		"| Surface | Status | Notes |",
-		"|--------|--------|-------|",
-		`| \`docs/product.md\` | ${readiness?.product !== false ? "Ready" : "Not Ready"} | PRD status |`,
-		`| \`docs/architecture.md\` | ${readiness?.architecture !== false ? "Ready" : "Not Ready"} | Architecture status |`,
-		`| Backlog sync | ${readiness?.backlog !== false ? "Ready" : "Not Ready"} | Milestone and task sync status |`,
-		"",
-		"---",
-		"",
-		"## Milestones",
-		"",
-		"| Milestone | Goal | Status | Depends On | Parallel | Worktree |",
-		"|-----------|------|--------|------------|----------|----------|",
-		...milestones.map(
-			(milestone) =>
-				`| ${milestone.id} | ${milestone.goal} | ${milestone.status} | ${milestone.dependsOn.join(", ") || "-"} | ${milestone.parallelEligible ? "Yes" : "No"} | ${milestone.worktreeName ?? "-"} |`,
-		),
-		"",
-		"---",
-		"",
-		"## Tasks",
-		"",
-		"| Task | Milestone | Kind | Status | Validation | Notes |",
-		"|------|-----------|------|--------|------------|-------|",
-		...tasks.map(
-			(task) =>
-				`| ${task.id} | ${task.milestoneId} | ${task.kind} | ${task.status} | ${task.validationChecks.join("<br>") || "-"} | Skills: ${task.requiredSkills.join(", ")} |`,
-		),
-		"",
-		"---",
-		"",
-		"## Active Worktrees",
-		"",
-		"| Worktree | Milestone | Branch | Status |",
-		"|----------|-----------|--------|--------|",
-		...(activeWorktrees.length > 0
-			? activeWorktrees.map(
-					(worktree) =>
-						`| ${worktree.worktree} | ${worktree.milestoneId} | ${worktree.branch} | ${worktree.status} |`,
-				)
-			: ["| - | - | - | No active milestone worktrees |"]),
-		"",
-		"---",
-		"",
-		"## Activity Log",
-		"",
-		`- Planning synchronized on ${new Date().toISOString()}.`,
-	].join("\n");
-
-	writeTextFile(path.join(root, "docs/progress.md"), `${progress}\n`);
-}
+export { writeProgressDoc } from "./planning-progress";

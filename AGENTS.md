@@ -120,6 +120,7 @@ Canonical surfaces:
 - `.harness/contracts/`, `.harness/evaluations/`, `.harness/handoffs/`: task artifacts
 
 Use `bun run harness:status --json` for a structured snapshot of the current state.
+Use `bun run harness:compact` for the concise repository-owned resume surface.
 Use `bun run harness:state-recover --list` or `--latest` if state recovery is needed.
 
 ---
@@ -149,6 +150,7 @@ Full gate:
 ```bash
 bun run harness:validate
 bun run harness:validate:full
+bun run harness:guardian --mode preflight
 ```
 
 Use `bun run harness:validate` for the default local handoff gate.
@@ -191,6 +193,9 @@ If a change spans multiple files or phases, create an execution plan in `docs/ex
 | `bun run harness:discover --reset` | guided PRD/architecture discovery |
 | `bun run harness:plan` | sync backlog from docs |
 | `bun run harness:status --json` | structured current-state summary |
+| `bun run harness:compact` | write the concise resume and handoff snapshot |
+| `bun run harness:guardian --mode <preflight|stop|drift>` | run repo-owned guardrails |
+| `bun run harness:dispatch --prepare --role sidecar` | prepare a provider-neutral sidecar packet |
 | `bun run harness:orchestrate` | prepare the next task contract |
 | `bun run harness:evaluate --task <id>` | evaluate the active task |
 | `bun run harness:self-review` | summarize a local self-review pass before handoff |

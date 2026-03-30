@@ -1,3 +1,9 @@
+import type {
+	EntropyBaselineRecord,
+	EntropyDeltaRecord,
+	GuardianRunRecord,
+} from "./lifecycle-types";
+
 export interface HarnessConfig {
 	version: string;
 	level: number;
@@ -11,6 +17,25 @@ export interface HarnessConfig {
 		linters: boolean;
 		entropy_scans: boolean;
 		doc_freshness_days: number;
+	};
+	contextManagement: {
+		enabled: boolean;
+		autoCompact: boolean;
+		summaryMaxLines: number;
+		retainRecentArtifacts: number;
+		historyLimit: number;
+	};
+	guardians: {
+		enabled: boolean;
+		preflight: boolean;
+		stop: boolean;
+		drift: boolean;
+		logFailures: boolean;
+	};
+	entropy: {
+		enabled: boolean;
+		driftThresholdPercent: number;
+		baselineOnTaskStart: boolean;
 	};
 	commit_format: string;
 	required_files: string[];
@@ -196,6 +221,32 @@ export interface HarnessState {
 		registry: string;
 		progressiveDisclosure: boolean;
 		loaded: string[];
+		selectionReasons: Record<string, string[]>;
+		activeGuardrails?: string[];
+		activeExitCriteria?: Array<{
+			command: string;
+			skills: string[];
+		}>;
+	};
+	compact: {
+		latestJsonPath: string | null;
+		latestMarkdownPath: string | null;
+		lastRunAt: string | null;
+		latestSourceEvent: string | null;
+	};
+	guardians: {
+		preflight: GuardianRunRecord;
+		stop: GuardianRunRecord;
+		drift: GuardianRunRecord;
+	};
+	entropy: {
+		baselines: Record<string, EntropyBaselineRecord>;
+		latestDelta: EntropyDeltaRecord | null;
+	};
+	dispatch: {
+		queuedSidecars: string[];
+		latestPacketPath: string | null;
+		latestResultPath: string | null;
 	};
 }
 
@@ -239,6 +290,18 @@ export interface HarnessStatusSnapshot {
 	discovery: DiscoveryState["readiness"];
 }
 
+export type {
+	DispatchPacketArtifact,
+	DispatchResultArtifact,
+	EntropyBaselineRecord,
+	EntropyDeltaRecord,
+	EntropySnapshot,
+	GuardianMode,
+	GuardianRunRecord,
+	HarnessCompactArtifactSummary,
+	HarnessCompactSnapshot,
+} from "./lifecycle-types";
+
 export interface TaskContractArtifact {
 	version: string;
 	taskId: string;
@@ -258,6 +321,9 @@ export interface TaskCheckResult {
 	command: string;
 	exitCode: number;
 	outputSnippet: string;
+	logPath?: string | null;
+	source: "validation" | "skill-exit";
+	skills?: string[];
 }
 
 export interface TaskEvaluationFinding {
@@ -288,16 +354,6 @@ export interface TaskHandoffArtifact {
 	commandLog: string[];
 	contractPath: string | null;
 	evaluationPath: string | null;
-}
-
-export interface SkillRegistry {
-	strategy: string;
-	phases: Record<string, string[]>;
-	taskKinds: Record<string, string[]>;
-	conditions?: Array<{
-		when: string;
-		load: string[];
-	}>;
 }
 
 export type DiscoveryStage = "PRD" | "ARCHITECTURE" | "COMPLETE";

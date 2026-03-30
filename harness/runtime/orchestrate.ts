@@ -1,8 +1,23 @@
+import { runGuardian } from "./guardian";
+import { refreshLifecycleArtifacts } from "./lifecycle";
 import { orchestrateTask } from "./orchestration";
 import { loadState } from "./planning";
 import { repoRoot } from "./shared";
 
 const root = repoRoot();
+const guardian = runGuardian({
+	root,
+	mode: "preflight",
+	sourceEvent: "orchestrate",
+	persistState: false,
+});
+if (guardian.code !== 0) {
+	console.log("ORCHESTRATE BLOCKED");
+	for (const line of guardian.lines) {
+		console.log(`  ${line}`);
+	}
+	process.exit(1);
+}
 const result = orchestrateTask(root);
 
 if (!result) {
@@ -29,6 +44,12 @@ if (!result) {
 	console.log("  Next action: all current tasks are complete.");
 	process.exit(0);
 }
+
+refreshLifecycleArtifacts({
+	root,
+	sourceEvent: "orchestrate",
+	taskId: result.task.id,
+});
 
 console.log("Orchestrator Status");
 console.log(`  Phase: ${result.phase}`);

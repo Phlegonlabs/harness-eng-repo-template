@@ -38,5 +38,58 @@
 			"when": "task.involvesBugFix == true",
 			"load": ["skills/debugging/SKILL.md"]
 		}
-	]
+	],
+	"routing": {
+		"maxLoadedSkills": 4,
+		"preserveRequiredSkills": true,
+		"weights": {
+			"skills/implementation/SKILL.md": 100,
+			"skills/research/SKILL.md": 90,
+			"skills/testing/SKILL.md": 80,
+			"skills/debugging/SKILL.md": 85,
+			"skills/code-review/SKILL.md": 70,
+			"skills/deployment/SKILL.md": 60
+		},
+		"reasonLabels": {
+			"required": "task-required",
+			"phase": "phase-match",
+			"taskKind": "kind-match",
+			"filePattern": "file-pattern"
+		}
+	},
+	"skillMetadata": {
+		"skills/research/SKILL.md": {
+			"filePatterns": ["docs/**", "harness/**"]
+		},
+		"skills/implementation/SKILL.md": {
+			"filePatterns": ["apps/**", "packages/**"],
+			"guardrails": ["dependency-layers", "file-size-limits"]
+		},
+		"skills/testing/SKILL.md": {
+			"filePatterns": ["tests/**", "**/*.test.ts", "**/*.spec.ts"],
+			"guardrails": ["test-file-size", "coverage-watch"]
+		},
+		"skills/debugging/SKILL.md": {
+			"filePatterns": ["apps/api/**", "packages/shared/**"],
+			"guardrails": ["structured-logging", "reproduction-first"]
+		},
+		"skills/code-review/SKILL.md": {
+			"filePatterns": ["harness/**", "docs/**"],
+			"guardrails": ["docs-sync", "compatibility-check"]
+		},
+		"skills/deployment/SKILL.md": {
+			"filePatterns": [".github/**", "docs/**"],
+			"guardrails": ["full-validation-before-release"]
+		}
+	},
+	"validation": {
+		"defaultChecksByKind": {
+			"implementation": ["bun run harness:validate --quiet-success"],
+			"testing": ["bun run harness:validate --quiet-success"],
+			"debugging": ["bun run harness:validate --quiet-success"],
+			"review": ["bun run harness:validate --quiet-success"],
+			"deployment": ["bun run harness:validate:full --quiet-success"],
+			"research": []
+		}
+	}
 }

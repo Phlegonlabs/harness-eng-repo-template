@@ -36,4 +36,3 @@ Typical API usage is narrower:
 
 - Run `bun run lint`, `bun run test`, and `bun run typecheck` from this workspace when changing API code.
 - Run `bun run harness:validate` from the repo root before handoff.
-

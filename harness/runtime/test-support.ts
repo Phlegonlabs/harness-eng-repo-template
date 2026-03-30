@@ -67,6 +67,30 @@ export function cloneRepo(repoRoot: string): string {
 			);
 		},
 	});
+	seedGitRepo(tempRoot);
+	return tempRoot;
+}
+
+export function copyRepoScaffold(repoRoot: string): string {
+	const tempRoot = mkdtempSync(path.join(os.tmpdir(), "harness-command-flow-"));
+	tempRoots.push(tempRoot);
+	cpSync(repoRoot, tempRoot, {
+		recursive: true,
+		filter: (source) => {
+			const relative = path.relative(repoRoot, source);
+			if (!relative) return true;
+			const segments = relative.split(path.sep);
+			return !segments.some((segment) =>
+				[".git", "node_modules", ".turbo", ".worktrees", "dist"].includes(
+					segment,
+				),
+			);
+		},
+	});
+	return tempRoot;
+}
+
+export function seedGitRepo(tempRoot: string): void {
 	expect(runCommand(tempRoot, ["git", "init"]).code).toBe(0);
 	expect(
 		runCommand(tempRoot, ["git", "config", "user.email", "tests@example.com"])
@@ -82,7 +106,6 @@ export function cloneRepo(repoRoot: string): string {
 	).toBe(0);
 	const install = runCommand(tempRoot, ["bun", "install"]);
 	expect(install.code).toBe(0);
-	return tempRoot;
 }
 
 export function runCommand(

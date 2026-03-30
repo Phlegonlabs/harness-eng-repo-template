@@ -27,7 +27,7 @@ This template encodes that through:
 - `CLAUDE.md` and `CODEX.md` as thin tool adapters
 - `.harness/state.json` as machine-owned execution state
 - `bun run harness:status --json` as the structured current-state surface
-- `bun run harness:validate` as the repository-wide gate
+- `bun run harness:validate` as the default local validation gate
 
 ---
 
@@ -39,12 +39,14 @@ The default execution loop is:
 
 ```bash
 bun run harness:status --json
+bun run harness:compact
+bun run harness:guardian --mode preflight
 bun run harness:orchestrate
 # implement the task
 bun run harness:evaluate --task <id>
 ```
 
-This produces contracts, evaluation artifacts, and handoff checkpoints under `.harness/`.
+This produces contracts, evaluation artifacts, handoff checkpoints, and a repo-owned compact snapshot under `.harness/`.
 
 ### State hardening and recovery
 
@@ -85,7 +87,7 @@ Repository rules are encoded in JSON so both agents and runtime checks consume t
 
 ### Deterministic validation
 
-One command runs the full repository gate:
+Use the fast local gate during development:
 
 ```bash
 bun run harness:validate
@@ -95,8 +97,14 @@ This runs:
 
 1. `harness:doctor`
 2. harness linters
-3. structural tests
+3. required-files / architecture / template-identity / doc-link checks
 4. entropy scans
+
+For the CI-equivalent gate, including structural tests, run:
+
+```bash
+bun run harness:validate:full
+```
 
 ### Built-in eval scaffold
 
@@ -180,12 +188,12 @@ bun install
 # pick the profile that matches the project
 bun run harness:init -- my-project --profile fullstack
 # optional: personalize CODEOWNERS and doc ownership surfaces
-# bun run harness:init -- my-project --profile fullstack --owner @your-org/engineering
+# bun run harness:init -- my-project --profile fullstack --owner @acme/engineering
 
 # inspect the current state surface
 bun run harness:status --json
 
-# run the repository gate
+# run the fast local repository gate
 bun run harness:validate
 ```
 
@@ -225,13 +233,17 @@ After initialization:
 | `bun run harness:discover --reset` | guided PRD/architecture discovery |
 | `bun run harness:plan` | sync backlog from docs |
 | `bun run harness:status --json` | machine-readable current-state summary |
+| `bun run harness:compact` | write a concise compact snapshot for handoff and resume |
+| `bun run harness:guardian --mode <preflight|stop|drift>` | run repo-owned guardrails |
+| `bun run harness:dispatch --prepare --role sidecar` | prepare a provider-neutral sidecar packet |
 | `bun run harness:orchestrate` | prepare the next task contract |
 | `bun run harness:evaluate --task <id>` | record task evaluation and handoff |
 | `bun run harness:state-recover --list` | list available state snapshots |
 | `bun run harness:state-recover --latest` | restore the latest state snapshot |
 | `bun run harness:parallel-dispatch -- --apply` | allocate milestone worktrees |
 | `bun run harness:merge-milestone -- M1` | merge a completed milestone worktree |
-| `bun run harness:validate` | full repository gate |
+| `bun run harness:validate` | fast local repository gate |
+| `bun run harness:validate:full` | CI-equivalent repository gate, including structural runtime tests |
 
 Use `docs/internal/command-surface.md` for the expanded command matrix.
 
@@ -251,6 +263,7 @@ This repo is expected to pass:
 bun run check
 bun run test
 bun run harness:validate
+bun run harness:validate:full
 ```
 
 The harness runtime has its own regression tests under `harness/runtime/*.test.ts`.

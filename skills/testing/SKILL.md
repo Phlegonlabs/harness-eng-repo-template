@@ -31,7 +31,7 @@ tests/
 
 ## Coverage Requirements
 
-The pre-stop hook enforces coverage before the agent completes a task.
+The pre-stop hook calls the repo-owned guardian stop path before the agent completes a task.
 
 ```bash
 # Run tests with coverage
@@ -79,4 +79,5 @@ it('should return error when user not found', async () => {
 
 - `harness/runtime/` — Architecture compliance runtime
 - `harness/rules/file-size-limits.json` — Test file size limits (300 lines)
-- `hooks/pre-stop.sh` — Coverage enforcement
+- `hooks/pre-stop.sh` — Claude hook adapter for the repo-owned stop guardian
+- `bun run harness:guardian --mode stop` — canonical handoff validation surface

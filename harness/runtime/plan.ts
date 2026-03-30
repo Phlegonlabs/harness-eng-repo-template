@@ -1,12 +1,12 @@
 import path from "node:path";
 import {
-	defaultTasks,
 	loadState,
 	planningReadiness,
 	saveState,
 	writeProgressDoc,
 } from "./planning";
 import { defaultCommandSurface } from "./planning-state";
+import { defaultTasks } from "./planning-tasks";
 import { readJson, repoRoot } from "./shared";
 import type { HarnessConfig } from "./types";
 
@@ -30,7 +30,7 @@ if (
 
 const config = readJson<HarnessConfig>(path.join(root, "harness/config.json"));
 const state = loadState(root);
-const tasks = defaultTasks(readiness.milestones, config);
+const tasks = defaultTasks(root, readiness.milestones, config);
 
 state.projectInfo.projectName = config.project_name;
 state.projectInfo.runtime = "bun";

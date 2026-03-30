@@ -1,4 +1,5 @@
 import path from "node:path";
+import { refreshLifecycleArtifacts } from "./lifecycle";
 import { loadState, saveState, writeProgressDoc } from "./planning";
 import { ensureCleanMainWorktree, repoRoot, runPassthrough } from "./shared";
 
@@ -131,5 +132,9 @@ if (import.meta.main) {
 		process.exit(1);
 	}
 
+	refreshLifecycleArtifacts({
+		root,
+		sourceEvent: "merge-milestone",
+	});
 	console.log(result.message);
 }

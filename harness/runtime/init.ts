@@ -5,6 +5,7 @@ import { saveState, stateTemplate } from "./planning";
 import {
 	readJson,
 	repoRoot,
+	run,
 	runPassthrough,
 	writeJson,
 	writeTextFile,
@@ -259,7 +260,9 @@ for (const relativePath of [
 	rewriteIdentitySurface(relativePath);
 }
 
-if (runPassthrough("git", ["-C", root, "rev-parse", "--git-dir"], root) !== 0) {
+try {
+	run("git", ["-C", root, "rev-parse", "--git-dir"], root);
+} catch {
 	runPassthrough("git", ["-C", root, "init"], root);
 }
 runPassthrough("bun", ["run", "format"], root);

@@ -13,7 +13,7 @@ bun run harness:doctor
 
 As cloned, the repository is a template scaffold, not an active execution backlog.
 
-- Safe immediately: `harness:doctor`, `harness:validate`, `harness:status --json`, `harness:discover --reset`
+- Safe immediately: `harness:doctor`, `harness:validate`, `harness:status --json`, `harness:discover --reset`, `harness:compact`, `harness:guardian --mode preflight`, `harness:dispatch --prepare --role sidecar`
 - Blocked until init/discovery + docs readiness: `harness:plan`, `harness:orchestrate`, `harness:evaluate`
 
 ## Start a Project
@@ -38,6 +38,8 @@ Run discovery only when you want an interview-style PRD and architecture flow.
 bun run harness:doctor
 bun run harness:validate
 bun run harness:validate:full
+bun run harness:compact
+bun run harness:guardian --mode preflight
 ```
 
 Use [`docs/internal/command-surface.md`](command-surface.md) to confirm whether a command should pass immediately, boot persistently, or block until more setup exists.
@@ -47,6 +49,7 @@ Optional commands:
 ```bash
 bun run harness:orchestrate
 bun run harness:parallel-dispatch -- --apply
+bun run harness:dispatch --prepare --role sidecar
 ```
 
 ## What Each Surface Means
@@ -55,6 +58,7 @@ bun run harness:parallel-dispatch -- --apply
 - `docs/architecture.md`: architecture canon
 - `docs/progress.md`: human-readable backlog
 - `.harness/state.json`: machine-owned state
+- `.harness/compact/latest.md`: concise resume and handoff snapshot
 
 ## Template Expectations
 

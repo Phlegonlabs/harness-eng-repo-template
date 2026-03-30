@@ -35,6 +35,25 @@ function context(root: string, projectName: string): ValidationContext {
 				entropy_scans: true,
 				doc_freshness_days: 30,
 			},
+			contextManagement: {
+				enabled: true,
+				autoCompact: true,
+				summaryMaxLines: 12,
+				retainRecentArtifacts: 3,
+				historyLimit: 25,
+			},
+			guardians: {
+				enabled: true,
+				preflight: true,
+				stop: true,
+				drift: true,
+				logFailures: true,
+			},
+			entropy: {
+				enabled: true,
+				driftThresholdPercent: 10,
+				baselineOnTaskStart: true,
+			},
 			commit_format: "conventional",
 			required_files: [],
 		},
@@ -85,7 +104,7 @@ describe("runTemplateIdentityTest", () => {
 	it("fails when initialized project-facing files still contain template markers", () => {
 		const root = createRepo({
 			"README.md": "# Sample Project",
-			".env.example": "PROJECT_NAME=sample-project",
+			".env.example": "PROJECT_NAME=harness-template",
 			".github/CODEOWNERS": "* @your-org/engineering",
 			"apps/api/AGENTS.md": "Import from @harness-template/shared.",
 			"apps/web/AGENTS.md": "# web",
@@ -93,16 +112,18 @@ describe("runTemplateIdentityTest", () => {
 			"docs/product.md": "# Product",
 			"docs/architecture.md": "# Architecture",
 			"docs/progress.md": "# Progress",
-			"docs/internal/observability.md": "Use @sample-project/shared.",
-			"harness/rules/forbidden-patterns.json": '{"rules":[]}',
-			LICENSE: "sample-project contributors",
-			"package.json": '{"name":"sample-project"}',
-			"packages/shared/package.json": '{"name":"@sample-project/shared"}',
+			"docs/internal/observability.md": "Use @harness-template/shared.",
+			"harness/rules/forbidden-patterns.json":
+				'{"rules":[{"message":"Use @harness-template/shared instead."}]}',
+			LICENSE: "harness-template contributors",
+			"package.json": '{"name":"harness-template"}',
+			"packages/shared/package.json": '{"name":"@harness-template/shared"}',
 		});
 
 		const result = captureTemplateIdentity(root);
 
 		expect(result.code).toBe(1);
+		expect(result.output).toContain("TEMPLATE IDENTITY LEAK: .env.example");
 		expect(result.output).toContain(
 			"TEMPLATE IDENTITY LEAK: .github/CODEOWNERS",
 		);

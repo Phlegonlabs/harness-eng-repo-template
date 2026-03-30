@@ -1,3 +1,4 @@
+import { refreshLifecycleArtifacts } from "./lifecycle";
 import { unblockTask } from "./orchestration";
 import { repoRoot } from "./shared";
 
@@ -20,6 +21,12 @@ if (!task) {
 	console.log(`  Task ${taskId} is not blocked or does not exist.`);
 	process.exit(1);
 }
+
+refreshLifecycleArtifacts({
+	root,
+	sourceEvent: "unblock",
+	taskId: task.id,
+});
 
 console.log(
 	`Unblocked task ${task.id}. Run bun run harness:orchestrate to continue.`,

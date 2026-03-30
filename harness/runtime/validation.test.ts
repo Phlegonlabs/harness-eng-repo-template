@@ -3,14 +3,8 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import {
-	clearTrackedFilesCache,
-	gitHasCommits,
-	trackedFiles,
-	writeTextFile,
-} from "./shared";
+import { clearTrackedFilesCache } from "./shared";
 import type { DependencyRules, ValidationContext } from "./types";
-import { runRequiredFilesTest } from "./validation";
 import { runLayerLint } from "./validation-layering";
 
 const tempRoots: string[] = [];
@@ -104,6 +98,25 @@ function context(
 				entropy_scans: true,
 				doc_freshness_days: 30,
 			},
+			contextManagement: {
+				enabled: true,
+				autoCompact: true,
+				summaryMaxLines: 12,
+				retainRecentArtifacts: 3,
+				historyLimit: 25,
+			},
+			guardians: {
+				enabled: true,
+				preflight: true,
+				stop: true,
+				drift: true,
+				logFailures: true,
+			},
+			entropy: {
+				enabled: true,
+				driftThresholdPercent: 10,
+				baselineOnTaskStart: true,
+			},
 			commit_format: "conventional",
 			required_files: [],
 		},
@@ -123,24 +136,6 @@ function captureLint(root: string, rules?: DependencyRules) {
 	try {
 		return {
 			code: runLayerLint(context(root, rules)),
-			output: lines.join("\n"),
-		};
-	} finally {
-		console.log = original;
-	}
-}
-
-function captureRequiredFiles(root: string, requiredFiles: string[] = []) {
-	const lines: string[] = [];
-	const original = console.log;
-	console.log = (...args: unknown[]) => {
-		lines.push(args.join(" "));
-	};
-	try {
-		const validationContext = context(root);
-		validationContext.config.required_files = requiredFiles;
-		return {
-			code: runRequiredFilesTest(validationContext),
 			output: lines.join("\n"),
 		};
 	} finally {
@@ -233,60 +228,5 @@ describe("runLayerLint", () => {
 		expect(result.output).toContain(
 			"@repo/shared/src/service/greeting is not an exported entrypoint",
 		);
-	});
-});
-
-describe("gitHasCommits", () => {
-	it("returns false for a repository with no commits", () => {
-		const root = mkdtempSync(path.join(os.tmpdir(), "harness-git-state-"));
-		tempRoots.push(root);
-		execFileSync("git", ["init"], { cwd: root, stdio: "ignore" });
-
-		expect(gitHasCommits(root)).toBe(false);
-	});
-});
-
-describe("trackedFiles cache", () => {
-	it("invalidates when writeTextFile writes a new file under the same repo", () => {
-		const root = createRepo({
-			"README.md": "# test",
-		});
-		const before = trackedFiles(root);
-
-		writeTextFile(path.join(root, "notes.md"), "# notes\n");
-
-		const after = trackedFiles(root);
-
-		expect(before).not.toContain("notes.md");
-		expect(after).toContain("notes.md");
-	});
-});
-
-describe("runRequiredFilesTest", () => {
-	it("requires AGENTS.md in every configured workspace", () => {
-		const root = createRepo({
-			"apps/api/AGENTS.md": "# api",
-			"packages/shared/AGENTS.md": "# shared",
-		});
-
-		const result = captureRequiredFiles(root);
-
-		expect(result.code).toBe(1);
-		expect(result.output).toContain(
-			"Missing workspace AGENTS.md: apps/web/AGENTS.md",
-		);
-	});
-
-	it("passes when every configured workspace has AGENTS.md", () => {
-		const root = createRepo({
-			"apps/api/AGENTS.md": "# api",
-			"apps/web/AGENTS.md": "# web",
-			"packages/shared/AGENTS.md": "# shared",
-		});
-
-		const result = captureRequiredFiles(root);
-
-		expect(result.code).toBe(0);
-		expect(result.output).toContain("PASS: apps/web/AGENTS.md");
 	});
 });

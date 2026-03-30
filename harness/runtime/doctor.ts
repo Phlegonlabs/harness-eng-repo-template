@@ -57,6 +57,7 @@ export function runDoctor(root: string = repoRoot()): number {
 		"tsconfig.base.json",
 		"harness/command-surface.json",
 		"harness/command-surface-root.json",
+		"harness/command-surface-tooling.json",
 		"harness/command-surface-workspace.json",
 		"harness/config.json",
 		"harness/rules/dependency-layers.json",

@@ -13,6 +13,7 @@ Use this skill when you need to research the codebase, find existing patterns, o
 
 1. **Scope first** — Define exactly what you're looking for before diving in
 2. **Use sub-agents** — Delegate heavy research to a sub-agent to keep the parent context clean
+   Use `bun run harness:dispatch --prepare --role sidecar` when the runtime surface is available
 3. **Cite sources** — Always return results with `filepath:line` references
 4. **Be concise** — Return a condensed summary, not raw file contents
 

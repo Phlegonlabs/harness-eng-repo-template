@@ -36,4 +36,3 @@ Current template usage is intentionally light:
 
 - Run `bun run lint`, `bun run test`, and `bun run typecheck` from this workspace when changing web code.
 - Run `bun run harness:validate` from the repo root before handoff.
-

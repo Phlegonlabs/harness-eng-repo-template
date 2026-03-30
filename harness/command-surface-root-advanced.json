@@ -1,0 +1,22 @@
+{
+	"commands": [
+		{
+			"id": "root.harness-compact",
+			"display": "bun run harness:compact",
+			"requires": [],
+			"summary": "Write a concise repository-owned compact snapshot from state and task artifacts."
+		},
+		{
+			"id": "root.harness-guardian",
+			"display": "bun run harness:guardian --mode preflight",
+			"requires": [],
+			"summary": "Run repo-owned guardrails for preflight, stop, or drift checks."
+		},
+		{
+			"id": "root.harness-dispatch",
+			"display": "bun run harness:dispatch --prepare --role sidecar",
+			"requires": [],
+			"summary": "Prepare or complete a provider-neutral dispatch packet/result artifact."
+		}
+	]
+}

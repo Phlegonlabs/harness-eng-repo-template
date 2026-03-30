@@ -2,6 +2,8 @@
 	"version": "1.0.0",
 	"includes": [
 		"harness/command-surface-root.json",
+		"harness/command-surface-root-advanced.json",
+		"harness/command-surface-tooling.json",
 		"harness/command-surface-workspace.json"
 	]
 }

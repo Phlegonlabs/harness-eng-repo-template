@@ -12,6 +12,25 @@
 		"entropy_scans": true,
 		"doc_freshness_days": 30
 	},
+	"contextManagement": {
+		"enabled": true,
+		"autoCompact": true,
+		"summaryMaxLines": 12,
+		"retainRecentArtifacts": 3,
+		"historyLimit": 25
+	},
+	"guardians": {
+		"enabled": true,
+		"preflight": true,
+		"stop": true,
+		"drift": true,
+		"logFailures": true
+	},
+	"entropy": {
+		"enabled": true,
+		"driftThresholdPercent": 10,
+		"baselineOnTaskStart": true
+	},
 	"commit_format": "conventional",
 	"required_files": [
 		"AGENTS.md",
@@ -36,6 +55,8 @@
 		".harness/state.json",
 		"harness/command-surface.json",
 		"harness/command-surface-root.json",
+		"harness/command-surface-root-advanced.json",
+		"harness/command-surface-tooling.json",
 		"harness/command-surface-workspace.json",
 		"harness/config.json",
 		"harness/rules/dependency-layers.json",
