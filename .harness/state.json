@@ -1,7 +1,7 @@
 {
 	"version": "1.0.0",
 	"projectInfo": {
-		"projectName": "sample-project",
+		"projectName": "harness-template",
 		"harnessLevel": "standard",
 		"runtime": "bun",
 		"primaryDocs": {
@@ -71,7 +71,7 @@
 		"status": "ready_for_plan",
 		"currentQuestionIds": [],
 		"answered": {
-			"prd.executive-summary": "**Sample Project** is an engineer-ready monorepo template that helps product and platform teams start shipping in a Bun + Turbo workspace with built-in validation, planning surfaces, and agent-readable project rules from day one.",
+			"prd.executive-summary": "**Harness Template** is an engineer-ready monorepo template that helps product and platform teams start shipping in a Bun + Turbo workspace with built-in validation, planning surfaces, and agent-readable project rules from day one.",
 			"prd.problem-statement": "**Current state:** New repositories often start as a loose collection of setup scripts, incomplete docs, and implicit conventions.\n\n**The gap:** Engineers and coding agents lose time rebuilding the same repository scaffolding, guessing architecture rules, and deciding how to organize the first production slice.\n\n**Impact:** Teams spend their early project time on setup churn instead of feature delivery, and quality drifts because the working agreements are not encoded in the repository.",
 			"prd.target-audience": "| Persona | Description | Primary Goal |\n|---------|-------------|--------------|\n| Founding engineer | Starts a new product codebase and needs a production-shaped repo immediately | Land the first vertical slice without rebuilding tooling |\n| Platform or tech lead | Standardizes how agents and humans work in the same repository | Provide repeatable structure, validation, and handoff rules |\n| Product engineer using agents | Edits application code with AI assistance every day | Work inside a repo whose conventions are obvious and enforceable |",
 			"prd.core-capabilities": "### Must Have (v1)\n- [ ] Ready-to-edit monorepo layout with `apps/web`, `apps/api`, and `packages/shared`\n- [ ] Root validation, guardian, compact, and task orchestration that work immediately after initialization\n- [ ] Task contracts, evaluator results, handoff artifacts, and compact snapshots for long-running work\n- [ ] Repository-owned docs and rules that agents can follow without extra chat context\n\n### Should Have (v1)\n- [ ] Guided discovery flow for teams that want PRD and architecture interviews before implementation\n- [ ] Milestone and task planning generated from repository docs\n- [ ] Provider-neutral dispatch packet artifacts for sidecar and review workflows\n\n### Could Have (later)\n- [ ] Optional deployment presets per application workspace\n- [ ] Additional shared package templates for design systems or SDKs\n\n### Won't Have (out of scope)\n- One-click product-specific frameworks or business logic beyond the engineering scaffold",
@@ -83,7 +83,7 @@
 			"arch.overview": "```text\n[Monorepo Root]\n  ├── apps/web          # client-facing app workspace\n  ├── apps/api          # API / runtime workspace\n  ├── packages/shared   # shared types and reusable logic\n  ├── harness/          # repository validation and orchestration runtime\n  └── docs/             # product, architecture, ADRs, and progress surfaces\n\n[Within each workspace]\nTypes → Config → Repo → Service → Runtime → UI\n```\n\nThe engineer template assumes that feature work starts inside one or more application workspaces and pulls shared contracts into `packages/shared`. The harness stays at the root and governs validation, planning, and repository policy.",
 			"arch.system-boundaries": "| System | Direction | Protocol | Notes |\n|--------|-----------|----------|-------|\n| Developer or coding agent | inbound | local CLI / editor | Edits repository files and runs root commands |\n| GitHub Actions | outbound | CI workflow execution | Runs `bun install` and `bun run harness:validate:full` on pushes and pull requests |\n| Package registry | outbound | package manager network access | Used during `bun install` to resolve dependencies |\n| Product-specific external systems | outbound or inbound | project-defined later | Intentionally not preconfigured in the template baseline |",
 			"arch.interfaces-contracts": "### Root command contract\n```text\nbun run harness:init -- <project-name>\nbun run harness:guardian --mode preflight\nbun run harness:compact\nbun run harness:dispatch --prepare --role sidecar\nbun run build\nbun run test\nbun run harness:evaluate --task <id>\nbun run harness:validate\nbun run harness:validate:full\n```\n\n### Workspace contract\n```text\napps/* and packages/* each expose package.json scripts for build, lint, typecheck, and test.\nCross-workspace reuse happens through package exports such as @<project>/shared.\n```\n\n### Documentation contract\n```text\ndocs/product.md and docs/architecture.md are the human-readable source of truth.\nharness:plan reads them to materialize milestone and task placeholders.\n.harness/contracts, .harness/evaluations, .harness/handoffs, and .harness/compact store execution artifacts.\n```",
-			"arch.cross-cutting": "| Concern | Approach |\n|---------|----------|\n| **Logging** | Structured JSON logs through `@sample-project/shared`; see `docs/internal/observability.md` |\n| **Error handling** | Keep domain and service code typed; reserve thrown errors for infrastructure boundaries |\n| **Authentication** | Not preconfigured in the template; add it inside the relevant application workspace when product requirements exist |\n| **Configuration** | Root and workspace environment variables flow through `.env` patterns and are validated by repository conventions |\n| **Code organization** | Every workspace follows the same dependency layer order and uses package exports for reuse |",
+			"arch.cross-cutting": "| Concern | Approach |\n|---------|----------|\n| **Logging** | Structured JSON logs through `@harness-template/shared`; see `docs/internal/observability.md` |\n| **Error handling** | Keep domain and service code typed; reserve thrown errors for infrastructure boundaries |\n| **Authentication** | Not preconfigured in the template; add it inside the relevant application workspace when product requirements exist |\n| **Configuration** | Root and workspace environment variables flow through `.env` patterns and are validated by repository conventions |\n| **Code organization** | Every workspace follows the same dependency layer order and uses package exports for reuse |",
 			"arch.build-distribution-deployment": "```bash\n# Initialize the template for a real project\nbun run harness:init -- <project-name>\n\n# Build every workspace\nbun run build\n\n# Run all workspace tests\nbun run test\n\n# Fast local validation\nbun run harness:validate\n\n# Full CI-equivalent validation\nbun run harness:validate:full\n\n# Deploy\n# Add project-specific deploy commands once runtime targets are chosen\n```",
 			"arch.execution-constraints": "| Constraint | Impact on Milestones | Notes |\n|-----------|----------------------|-------|\n| Changes in `packages/shared` can affect both app workspaces | Shared package changes may need to land before app-specific milestones finish | Use package exports to keep impact explicit |\n| Changes in `harness/rules/` or validation runtime affect the whole repository | These changes should be reviewed carefully and usually run before parallel feature work | Repository policy is globally enforced |\n| App-specific feature work can parallelize when workspaces and affected areas do not overlap | Milestones can run in separate worktrees when dependencies are clear | Use `harness:parallel-dispatch` only after backlog sync |",
 			"arch.technical-risks": "| Risk | Likelihood | Impact | Mitigation |\n|------|-----------|--------|------------|\n| Template docs drift from runtime behavior | Medium | High | Keep docs generated or updated alongside runtime changes and validate links continuously |\n| Shared package becomes a dumping ground | Medium | Medium | Enforce public exports and keep feature-specific logic in the owning app until sharing is justified |\n| Teams skip initialization and keep template naming too long | Medium | Medium | `harness:doctor` warns until `harness:init` has been run with a project-specific name |",
@@ -120,25 +120,20 @@
 	},
 	"guardians": {
 		"preflight": {
-			"status": "passed",
-			"runAt": "2026-03-30T04:43:21.565Z",
+			"status": "idle",
+			"runAt": null,
 			"logPath": null,
-			"artifactPath": ".harness/guardians/preflight-latest.json",
-			"sourceEvent": "manual:preflight",
-			"summary": ["PASS: Guardian preflight checks passed."]
+			"artifactPath": null,
+			"sourceEvent": null,
+			"summary": []
 		},
 		"stop": {
-			"status": "warn",
-			"runAt": "2026-03-30T04:26:23.313Z",
-			"logPath": ".harness/logs/guardian-stop-2026-03-30T04-26-23-234Z.log",
-			"artifactPath": ".harness/guardians/stop-latest.json",
-			"sourceEvent": "manual:stop",
-			"summary": [
-				"INFO: Entropy scans complete. Review warnings above.",
-				"",
-				"  ⚠ 7. Entropy Scans emitted advisory output",
-				"PASS with warnings: 1 step(s) emitted advisory output."
-			]
+			"status": "idle",
+			"runAt": null,
+			"logPath": null,
+			"artifactPath": null,
+			"sourceEvent": null,
+			"summary": []
 		},
 		"drift": {
 			"status": "idle",

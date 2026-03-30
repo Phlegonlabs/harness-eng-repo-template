@@ -1,124 +1,103 @@
 # Harness Engineering Repo Template
 
-An agent-first repository template for teams using Codex, Claude Code, and similar coding agents as the primary executors of planning, implementation, testing, and handoff work.
+![Template Ready](https://img.shields.io/badge/template-ready-brightgreen)
+![Bun](https://img.shields.io/badge/runtime-bun-black)
+![Turbo](https://img.shields.io/badge/monorepo-turbo-blue)
+![Agent First](https://img.shields.io/badge/workflow-agent--first-purple)
+![Codex + Claude](https://img.shields.io/badge/agents-codex%20%2B%20claude-orange)
 
-This template gives you:
+An agent-first Bun + Turbo monorepo template for teams that want a repository to be readable by humans, executable by agents, and strict about validation from day one.
 
-- a Bun + Turbo monorepo scaffold
-- machine-readable engineering rules in `harness/rules/`
-- a contract-driven task loop with orchestrate/evaluate artifacts
-- self-contained agent entry docs
-- deterministic repo validation
-- reusable eval scaffolding for testing the template itself
+## What You Get
 
----
+- A working monorepo scaffold with `apps/web`, `apps/api`, and `packages/shared`
+- Repo-owned workflow commands for planning, orchestration, evaluation, recovery, and validation
+- Machine-readable engineering rules under `harness/rules/`
+- Self-contained agent entry docs in `AGENTS.md`, `CODEX.md`, and `CLAUDE.md`
+- A clean pre-init baseline that becomes project-specific through `harness:init`
+- CI-ready validation through `bun run harness:validate:full`
 
-## What This Template Optimizes For
+## Who This Is For
 
-The template is built around one assumption:
+- Teams using Codex, Claude Code, or similar coding agents as primary implementers
+- Founding or platform engineers who want a reusable repo baseline instead of rebuilding scaffolding
+- Projects that want architecture, planning, and validation to live in the repository rather than in chat history
 
-> agents do most of the execution; humans shape the environment, review results, and make final decisions
+## Template Workflow
 
-That changes what matters in a repo. Instead of relying on tribal knowledge and chat context, the repository needs to be easy for agents to read, hard for them to damage, and explicit about what counts as done.
+The template assumes this split:
 
-This template encodes that through:
+- Humans define product intent, architecture decisions, and final approvals
+- Agents perform planning, implementation, testing, evaluation, and handoff work
+- The repository provides the durable memory and enforcement layer
 
-- `AGENTS.md` as the primary self-contained agent entry point
-- `CLAUDE.md` and `CODEX.md` as thin tool adapters
-- `.harness/state.json` as machine-owned execution state
-- `bun run harness:status --json` as the structured current-state surface
-- `bun run harness:validate` as the default local validation gate
+The canonical repo surfaces are:
 
----
+- `AGENTS.md`: primary operating contract for agents
+- `docs/product.md`: product canon
+- `docs/architecture.md`: architecture canon
+- `docs/progress.md`: human-readable execution view
+- `.harness/state.json`: machine-readable execution state
 
-## Template Features
+## Quick Start
 
-### Agent-first command loop
-
-The default execution loop is:
-
-```bash
-bun run harness:status --json
-bun run harness:compact
-bun run harness:guardian --mode preflight
-bun run harness:orchestrate
-# implement the task
-bun run harness:evaluate --task <id>
-```
-
-This produces contracts, evaluation artifacts, handoff checkpoints, and a repo-owned compact snapshot under `.harness/`.
-
-### State hardening and recovery
-
-State writes are hardened and snapshotted automatically.
-
-Use:
+Use GitHub's `Use this template` button when possible. A downloaded ZIP also works.
 
 ```bash
-bun run harness:state-recover --list
-bun run harness:state-recover --latest
-```
-
-Snapshots live under `.harness/snapshots/`.
-
-### Profile-aware initialization
-
-The template supports multiple layer profiles at init time:
-
-```bash
+git clone <this-repo> my-project
+cd my-project
+bun install
 bun run harness:init -- my-project --profile fullstack
-bun run harness:init -- my-project --profile api
-bun run harness:init -- my-project --profile cli
-bun run harness:init -- my-project --profile library
-```
-
-Profiles adjust `harness/config.json` and the machine-readable dependency rules for the initialized project.
-
-### Machine-readable rules
-
-Repository rules are encoded in JSON so both agents and runtime checks consume the same contract:
-
-| File | Purpose |
-|------|---------|
-| `harness/rules/dependency-layers.json` | import direction and layer coverage |
-| `harness/rules/file-size-limits.json` | source, test, and doc file limits |
-| `harness/rules/forbidden-patterns.json` | banned patterns such as secrets and dead code |
-| `harness/rules/naming-conventions.json` | file naming rules |
-
-### Deterministic validation
-
-Use the fast local gate during development:
-
-```bash
+bun run harness:status --json
 bun run harness:validate
 ```
 
-This runs:
-
-1. `harness:doctor`
-2. harness linters
-3. required-files / architecture / template-identity / doc-link checks
-4. entropy scans
-
-For the CI-equivalent gate, including structural tests, run:
+If you want CODEOWNERS personalized during init:
 
 ```bash
-bun run harness:validate:full
+bun run harness:init -- my-project --profile fullstack --owner @acme/engineering
 ```
 
-### Built-in eval scaffold
+After initialization:
 
-The template includes reusable eval infrastructure in `evals/`. Copy `evals/tasks/example-task.md` to create your own eval tasks.
+1. Update [`docs/product.md`](docs/product.md)
+2. Update [`docs/architecture.md`](docs/architecture.md)
+3. Run `bun run harness:plan`
+4. Use `bun run harness:orchestrate` and `bun run harness:evaluate --task <id>` to drive execution
 
----
+## Pre-Init vs Post-Init
 
-## Default Layout
+Before `harness:init`, this repository is intentionally a template scaffold:
+
+- `bun run harness:doctor` should pass with a warning that the project is still `harness-template`
+- `bun run harness:validate` should pass
+- `bun run harness:discover --reset` is available if you want guided PRD/architecture discovery
+- `bun run harness:plan` and active task execution are not the normal first step yet
+
+After `harness:init`, the repository becomes your project baseline:
+
+- Package names, docs, and identity surfaces are personalized
+- The ready-state docs support planning immediately
+- Validation checks look for leftover template identity leaks
+
+## Profiles
+
+Choose the profile that matches the project shape:
+
+| Profile | Intended Use | Layers |
+|---------|--------------|--------|
+| `fullstack` | Typical web/app product with runtime and UI | `types`, `config`, `repo`, `service`, `runtime`, `ui` |
+| `api` | API or backend service without UI by default | `types`, `config`, `repo`, `service`, `runtime` |
+| `cli` | CLI-focused project | `types`, `config`, `service`, `runtime` |
+| `library` | Shared library / SDK style project | `types`, `config`, `service` |
+
+## Repository Layout
 
 ```text
-harness-eng-repo-template/
+.
 ├── apps/
-│   ├── web/
-│   └── api/
+│   ├── api/
+│   └── web/
 ├── packages/
 │   └── shared/
 ├── docs/
@@ -140,142 +119,103 @@ harness-eng-repo-template/
 └── package.json
 ```
 
-Default workspaces are:
+## Key Commands
 
-- `apps/web`
-- `apps/api`
-- `packages/shared`
+### Setup and State
 
----
+- `bun run harness:init -- <name> --profile <profile>`: personalize the template
+- `bun run harness:doctor`: repository health check
+- `bun run harness:status --json`: machine-readable state summary
+- `bun run harness:compact`: write a concise repo-owned handoff snapshot
+- `bun run harness:state-recover --list`: inspect state snapshots
 
-## Dependency Layers
+### Planning and Execution
 
-The fullstack profile uses:
+- `bun run harness:discover --reset`: guided PRD/architecture interview flow
+- `bun run harness:plan`: sync backlog from docs
+- `bun run harness:orchestrate`: prepare the next task contract
+- `bun run harness:evaluate --task <id>`: evaluate an active task
+- `bun run harness:dispatch --prepare --role sidecar`: prepare a provider-neutral sidecar packet
+- `bun run harness:parallel-dispatch -- --apply`: allocate milestone worktrees
+- `bun run harness:merge-milestone -- M1`: merge a completed milestone worktree
 
-```text
-Types → Config → Repo → Service → Runtime → UI
-```
+### Validation
 
-Each layer may only import from layers to its left.
+- `bun run harness:validate`: fast local validation
+- `bun run harness:validate:full`: CI-equivalent validation, including structural/runtime regression tests
+- `bun run harness:guardian --mode preflight`: task-start guardrails
+- `bun run harness:guardian --mode stop`: stop/handoff guardrails
+- `bun run harness:guardian --mode drift`: advisory drift checks
 
-Profiles can trim that default:
+### Workspace Checks
 
-| Profile | Layers |
-|---------|--------|
-| `fullstack` | `types`, `config`, `repo`, `service`, `runtime`, `ui` |
-| `api` | `types`, `config`, `repo`, `service`, `runtime` |
-| `cli` | `types`, `config`, `service`, `runtime` |
-| `library` | `types`, `config`, `service` |
+- `bun run build`
+- `bun run lint`
+- `bun run typecheck`
+- `bun run test`
 
----
+Use [`docs/internal/command-surface.md`](docs/internal/command-surface.md) for the full command contract.
 
-## Quick Start
+## Validation Model
 
-Use GitHub's **Use this template** button for the cleanest path. A downloaded ZIP works too as long as you extract it into a writable directory before running the init flow.
+Use the commands this way:
 
-As cloned, this repository is a **pre-init scaffold**:
+- During normal development: `bun run harness:validate`
+- Before merge or release: `bun run harness:validate:full`
+- When you need full workspace confidence: `bun run check`, `bun run test`, `bun run harness:validate:full`
 
-- `bun run harness:doctor`, `bun run harness:validate`, `bun run harness:status --json`, and `bun run harness:discover --reset` are meaningful immediately
-- `bun run harness:plan`, `harness:orchestrate`, and `harness:evaluate` are not the default starting point until initialization or discovery makes the docs ready
+`harness:validate` runs:
+
+1. `harness:doctor`
+2. harness linters
+3. required-files / architecture / template-identity / doc-link checks
+4. entropy scans
+
+## What You Should Customize
+
+After creating a project from this template, replace these first:
+
+- `docs/product.md`
+- `docs/architecture.md`
+- `docs/progress.md` after planning begins
+- `.env.example` with project-specific environment variables
+- `.github/CODEOWNERS` if you did not set `--owner` during init
+- CI/deployment surfaces once your runtime target is known
+
+## Agent Usage
+
+The intended default loop is:
 
 ```bash
-git clone <this-repo> my-project
-cd my-project
-bun install
-# git hooks install automatically inside git checkouts
-# if a local clone is missing them, run: bun run harness:install-hooks
-
-# pick the profile that matches the project
-bun run harness:init -- my-project --profile fullstack
-# optional: personalize CODEOWNERS and doc ownership surfaces
-# bun run harness:init -- my-project --profile fullstack --owner @acme/engineering
-
-# inspect the current state surface
 bun run harness:status --json
-
-# run the fast local repository gate
-bun run harness:validate
+bun run harness:guardian --mode preflight
+bun run harness:orchestrate
+# implement the task
+bun run harness:evaluate --task <id>
 ```
 
-After initialization:
+For long-running work, the repo stores contracts, handoffs, compact snapshots, guardian artifacts, and state recovery snapshots under `.harness/`.
 
-1. Update `docs/product.md`
-2. Update `docs/architecture.md`
-3. Run `bun run harness:plan`
-4. Use `harness:orchestrate` and `harness:evaluate` to drive execution
+## Included Rules
 
----
+The template ships machine-readable rules for:
 
-## Core Docs
+- dependency layers
+- file size limits
+- forbidden patterns
+- naming conventions
 
-| Surface | Role |
-|---------|------|
-| `AGENTS.md` | primary agent entry point |
-| `CLAUDE.md` | Claude Code adapter |
-| `CODEX.md` | Codex adapter |
-| `docs/product.md` | product canon |
-| `docs/architecture.md` | architecture canon |
-| `docs/progress.md` | human-readable execution view |
-| `docs/glossary.md` | shared terminology for humans and agents |
-| `.harness/state.json` | machine-owned execution state |
-| `docs/internal/command-surface.md` | command contract matrix |
-| `docs/internal/orchestrator-workflow.md` | expanded task-loop reference |
-| `docs/internal/operator-guide.md` | human operator guidance for running the harness |
+Those live under `harness/rules/` and are consumed by the runtime rather than treated as doc-only guidance.
 
----
+## More References
 
-## Commands
-
-| Command | Purpose |
-|---------|---------|
-| `bun run harness:init -- <name> --profile <profile>` | personalize the template |
-| `bun run harness:doctor` | health check |
-| `bun run harness:discover --reset` | guided PRD/architecture discovery |
-| `bun run harness:plan` | sync backlog from docs |
-| `bun run harness:status --json` | machine-readable current-state summary |
-| `bun run harness:compact` | write a concise compact snapshot for handoff and resume |
-| `bun run harness:guardian --mode <preflight|stop|drift>` | run repo-owned guardrails |
-| `bun run harness:dispatch --prepare --role sidecar` | prepare a provider-neutral sidecar packet |
-| `bun run harness:orchestrate` | prepare the next task contract |
-| `bun run harness:evaluate --task <id>` | record task evaluation and handoff |
-| `bun run harness:state-recover --list` | list available state snapshots |
-| `bun run harness:state-recover --latest` | restore the latest state snapshot |
-| `bun run harness:parallel-dispatch -- --apply` | allocate milestone worktrees |
-| `bun run harness:merge-milestone -- M1` | merge a completed milestone worktree |
-| `bun run harness:validate` | fast local repository gate |
-| `bun run harness:validate:full` | CI-equivalent repository gate, including structural runtime tests |
-
-Use `docs/internal/command-surface.md` for the expanded command matrix.
-
----
-
-## Architecture Decisions
-
-Record project architecture decisions in `docs/decisions/` using the template at `docs/decisions/000-template.md`.
-
----
-
-## Validation and Tests
-
-This repo is expected to pass:
-
-```bash
-bun run check
-bun run test
-bun run harness:validate
-bun run harness:validate:full
-```
-
-The harness runtime has its own regression tests under `harness/runtime/*.test.ts`.
-
-Local commits also enforce Conventional Commits through the installed `commit-msg` hook.
-
----
+- [`docs/glossary.md`](docs/glossary.md): shared repository terminology
+- [`docs/internal/operator-guide.md`](docs/internal/operator-guide.md): human operator workflow notes
+- [`docs/decisions/000-template.md`](docs/decisions/000-template.md): starter ADR template
 
 ## Notes
 
-- The untouched template intentionally warns in `harness:doctor` until you run `harness:init`.
-- The untouched template is not an active backlog yet; it becomes execution-ready after `harness:init` or the guided discovery path.
-- Important decisions belong in `docs/`, not in chat history.
-- If a change spans multiple phases, create an execution plan in `docs/execution-plans/`.
-- If you want to evaluate the template itself, use the tasks under `evals/tasks/`.
+- The untouched template intentionally warns in `harness:doctor` until you run `harness:init`
+- The repository is the durable memory; record important decisions in `docs/`
+- If a change spans multiple phases, create an execution plan under `docs/execution-plans/`
+- If you want to evaluate the template itself, use the tasks under `evals/tasks/`

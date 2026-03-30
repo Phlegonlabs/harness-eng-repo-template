@@ -2,6 +2,11 @@ name: Harness Engineering Repo Template
 description: Agent-first Bun + Turbo monorepo template with repo-owned validation, planning, and execution contracts.
 labels:
   - bun
+  - turbo
   - monorepo
   - template
   - agent-first
+  - codex
+  - claude-code
+  - typescript
+  - validation
