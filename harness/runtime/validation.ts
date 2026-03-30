@@ -1,25 +1,31 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import {
+	collectBrokenDocLinks,
+	collectDocFreshnessFindings,
+} from "./docs-report";
+import {
 	check,
 	exists,
-	gitHasCommits,
 	globToRegex,
 	hasPlaceholderContent,
 	isTextFile,
-	lastCommitUnix,
 	lineCount,
-	markdownLinks,
 	readJson,
 	trackedFiles,
 } from "./shared";
 import type {
 	DependencyRules,
+	DocFreshnessRuleSet,
 	FileSizeRules,
 	ForbiddenRule,
 	ForbiddenRules,
+	GoldenPrinciplesRuleSet,
 	HarnessConfig,
 	NamingRules,
+	ObservabilityProfilesConfig,
+	QualityDimensionsConfig,
+	ReviewChecklist,
 	ValidationContext,
 } from "./types";
 import { runLayerLint } from "./validation-layering";
@@ -41,6 +47,21 @@ export function validationContext(root: string): ValidationContext {
 		),
 		forbiddenRules: readJson<ForbiddenRules>(
 			path.join(root, "harness/rules/forbidden-patterns.json"),
+		),
+		reviewChecklist: readJson<ReviewChecklist>(
+			path.join(root, "harness/rules/review-checklist.json"),
+		),
+		goldenPrinciples: readJson<GoldenPrinciplesRuleSet>(
+			path.join(root, "harness/rules/golden-principles.json"),
+		),
+		docFreshnessRules: readJson<DocFreshnessRuleSet>(
+			path.join(root, "harness/rules/doc-freshness.json"),
+		),
+		qualityDimensions: readJson<QualityDimensionsConfig>(
+			path.join(root, "harness/rules/quality-dimensions.json"),
+		),
+		observabilityProfiles: readJson<ObservabilityProfilesConfig>(
+			path.join(root, "harness/rules/observability-profiles.json"),
 		),
 	};
 }
@@ -170,40 +191,39 @@ export function runForbiddenLint(context: ValidationContext): number {
 }
 
 export function runDocsFreshnessLint(context: ValidationContext): number {
-	if (!gitHasCommits(context.repoRoot)) {
-		check(
-			"WARN",
-			"Git history unavailable: repository has no commits yet. Doc freshness check skipped.",
-		);
+	const findings = collectDocFreshnessFindings(context);
+	if (
+		findings.length === 1 &&
+		findings[0].doc === "git-history" &&
+		findings[0].severity === "info"
+	) {
+		check("WARN", findings[0].message);
 		return 0;
 	}
+	let errors = 0;
 	let warnings = 0;
-	const threshold = context.config.validation.doc_freshness_days;
-	const now = Math.floor(Date.now() / 1000);
-	for (const relativePath of [
-		"docs/product.md",
-		"docs/architecture.md",
-		"docs/progress.md",
-		"docs/internal/agent-entry.md",
-		"AGENTS.md",
-		"CLAUDE.md",
-		"CODEX.md",
-	]) {
-		const committed = lastCommitUnix(context.repoRoot, relativePath);
-		if (!committed) continue;
-		const daysSince = Math.floor((now - committed) / 86400);
-		if (daysSince > threshold) {
-			warnings += 1;
-			console.log(`STALE DOC: ${relativePath}`);
-			console.log(`  Last updated: ${daysSince} day(s) ago`);
-			console.log(`  Threshold: ${threshold} day(s)`);
-			console.log("");
+	for (const finding of findings) {
+		console.log(`STALE DOC: ${finding.doc}`);
+		console.log(`  Severity: ${finding.severity}`);
+		console.log(`  Message: ${finding.message}`);
+		if (finding.tracks?.length) {
+			console.log(`  Tracks: ${finding.tracks.join(", ")}`);
 		}
+		console.log("");
+		if (finding.severity === "error") {
+			errors += 1;
+		} else {
+			warnings += 1;
+		}
+	}
+	if (errors > 0) {
+		console.log(`FAIL: ${errors} doc freshness error(s) found.`);
+		return 1;
 	}
 	console.log(
 		warnings > 0
-			? `WARN: ${warnings} doc(s) may be stale.`
-			: `PASS: All key docs updated within ${threshold} day(s).`,
+			? `WARN: ${warnings} doc freshness warning(s) found.`
+			: "PASS: All tracked docs satisfy freshness rules.",
 	);
 	return 0;
 }
@@ -275,25 +295,12 @@ export function runArchitectureTest(context: ValidationContext): number {
 
 export function runDocLinksTest(context: ValidationContext): number {
 	let errors = 0;
-	for (const relativePath of trackedFiles(context.repoRoot).filter((file) =>
-		file.endsWith(".md"),
-	)) {
-		const absolutePath = path.join(context.repoRoot, relativePath);
-		const directory = path.dirname(absolutePath);
-		for (const link of markdownLinks(absolutePath)) {
-			if (/^https?:\/\//.test(link) || link.startsWith("#")) continue;
-			const linkPath = link.split("#")[0];
-			if (!linkPath) continue;
-			const resolved = linkPath.startsWith("/")
-				? path.join(context.repoRoot, linkPath.slice(1))
-				: path.resolve(directory, linkPath);
-			if (!exists(resolved)) {
-				errors += 1;
-				console.log(`BROKEN LINK: ${relativePath}`);
-				console.log(`  Link: ${link}`);
-				console.log("");
-			}
-		}
+	const brokenLinks = collectBrokenDocLinks(context);
+	for (const brokenLink of brokenLinks) {
+		errors += 1;
+		console.log(`BROKEN LINK: ${brokenLink.file}`);
+		console.log(`  Link: ${brokenLink.link}`);
+		console.log("");
 	}
 	console.log(
 		errors > 0

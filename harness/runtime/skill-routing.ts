@@ -19,7 +19,8 @@ function taskConditionContext(task: TaskRecord): Record<string, unknown> {
 	return {
 		...task,
 		touchesUnknownArea: task.affectedFilesOrAreas.length === 0,
-		requiresValidation: task.validationChecks.length > 0,
+		requiresValidation:
+			task.evaluationGates.length > 0 || task.validationChecks.length > 0,
 		isReadyForHandoff:
 			task.status === "evaluation_pending" || task.status === "done",
 		involvesBugFix:

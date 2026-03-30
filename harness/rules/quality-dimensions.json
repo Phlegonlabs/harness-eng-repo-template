@@ -1,0 +1,47 @@
+{
+	"dimensions": [
+		{
+			"name": "type_safety",
+			"label": "Type Safety",
+			"weight": 0.2,
+			"measurement": "Typecheck result plus explicit-any pressure"
+		},
+		{
+			"name": "test_health",
+			"label": "Test Health",
+			"weight": 0.2,
+			"measurement": "Test presence ratio plus structural check result"
+		},
+		{
+			"name": "architectural_compliance",
+			"label": "Architectural Compliance",
+			"weight": 0.2,
+			"measurement": "Layer boundary compliance and required architecture surfaces"
+		},
+		{
+			"name": "entropy_score",
+			"label": "Entropy Score",
+			"weight": 0.15,
+			"measurement": "Golden-principle violations and repository drift signals"
+		},
+		{
+			"name": "doc_freshness",
+			"label": "Doc Freshness",
+			"weight": 0.1,
+			"measurement": "Freshness and link-health of required docs"
+		},
+		{
+			"name": "code_hygiene",
+			"label": "Code Hygiene",
+			"weight": 0.15,
+			"measurement": "Forbidden patterns, file-size violations, and naming hygiene"
+		}
+	],
+	"grading": {
+		"A": { "min": 90, "label": "Excellent" },
+		"B": { "min": 75, "label": "Good" },
+		"C": { "min": 60, "label": "Needs attention" },
+		"D": { "min": 40, "label": "At risk" },
+		"F": { "min": 0, "label": "Critical" }
+	}
+}

@@ -11,10 +11,21 @@ const taskId =
 	taskArgIndex >= 0 && process.argv.length > taskArgIndex + 1
 		? process.argv[taskArgIndex + 1]
 		: undefined;
+const gateArgIndex = process.argv.indexOf("--gate");
+const gateId =
+	gateArgIndex >= 0 && process.argv.length > gateArgIndex + 1
+		? process.argv[gateArgIndex + 1]
+		: undefined;
 const quietSuccess = process.argv.includes("--quiet-success");
+const jsonMode = process.argv.includes("--json");
+const reportMode = process.argv.includes("--report");
+const previewMode = Boolean(gateId);
 
 const root = repoRoot();
-const result = evaluateTask(taskId, root);
+const result = evaluateTask(taskId, root, {
+	gateId,
+	preview: previewMode,
+});
 
 if (!result) {
 	const state = loadState(root);
@@ -56,9 +67,40 @@ refreshLifecycleArtifacts({
 	taskId: result.task.id,
 });
 
+const latestArtifact =
+	result.task.artifacts.latestEvaluationPath &&
+	result.task.artifacts.latestEvaluationPath !== null
+		? readJson<TaskEvaluationArtifact>(
+				path.join(root, result.task.artifacts.latestEvaluationPath),
+			)
+		: null;
+
 if (quietSuccess && result.task.evaluatorStatus === "passed") {
 	console.log(`PASS: ${result.task.id} evaluation passed.`);
 	process.exit(0);
+}
+
+if (jsonMode) {
+	console.log(
+		JSON.stringify(
+			{
+				phase: result.phase,
+				task: result.task,
+				milestone: result.milestone,
+				skills: result.skills,
+				nextAction: result.nextAction,
+				evaluation: latestArtifact ?? null,
+			},
+			null,
+			2,
+		),
+	);
+	process.exit(
+		result.task.evaluatorStatus === "failed" ||
+			latestArtifact?.status === "failed"
+			? 1
+			: 0,
+	);
 }
 
 console.log("Evaluator Status");
@@ -75,21 +117,32 @@ console.log(
 	`  Handoff artifact: ${result.task.artifacts.latestHandoffPath ?? "-"}`,
 );
 if (
-	result.task.evaluatorStatus === "failed" &&
-	result.task.artifacts.latestEvaluationPath
+	(result.task.evaluatorStatus === "failed" || previewMode) &&
+	latestArtifact
 ) {
-	const artifact = readJson<TaskEvaluationArtifact>(
-		path.join(root, result.task.artifacts.latestEvaluationPath),
-	);
-	for (const check of artifact.checks.filter((entry) => entry.exitCode !== 0)) {
+	for (const check of latestArtifact.gateResults.filter(
+		(entry) => entry.exitCode !== 0,
+	)) {
 		const label =
 			check.source === "skill-exit"
 				? `Failed skill exit gate${check.skills?.length ? ` (${check.skills.join(", ")})` : ""}`
 				: "Failed check";
-		console.log(`  ${label}: ${check.command}`);
+		console.log(`  ${label}: ${check.label} (${check.command})`);
 		if (check.logPath) {
 			console.log(`  Log: ${check.logPath}`);
 		}
 	}
+	if (reportMode) {
+		console.log(`  Gate results: ${latestArtifact.gateResults.length}`);
+		console.log(
+			`  Blocking failures: ${latestArtifact.blockingFailures.join(", ") || "-"}`,
+		);
+	}
 }
 console.log(`  Next action: ${result.nextAction}`);
+process.exit(
+	result.task.evaluatorStatus === "failed" ||
+		latestArtifact?.status === "failed"
+		? 1
+		: 0,
+);

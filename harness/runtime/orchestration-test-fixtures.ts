@@ -1,6 +1,10 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import {
+	defaultTaskAcceptanceCriteria,
+	normalizeTaskEvaluationGates,
+} from "./task-evaluation";
 import type { HarnessState, TaskRecord } from "./types";
 
 const supportFiles: Record<string, string> = {
@@ -138,12 +142,27 @@ const supportFiles: Record<string, string> = {
 				driftThresholdPercent: 10,
 				baselineOnTaskStart: true,
 			},
+			quality: {
+				enabled: true,
+				gradesPath: "docs/quality/GRADES.md",
+				historyPath: ".harness/quality/history.jsonl",
+			},
+			observability: {
+				enabled: false,
+				activeProfile: null,
+				defaultLogLimit: 200,
+			},
 			commit_format: "conventional",
 			required_files: [],
 		},
 		null,
 		2,
 	)}\n`,
+	"harness/rules/review-checklist.json": `${JSON.stringify({ categories: [] }, null, 2)}\n`,
+	"harness/rules/golden-principles.json": `${JSON.stringify({ principles: [] }, null, 2)}\n`,
+	"harness/rules/doc-freshness.json": `${JSON.stringify({ rules: [], cross_link_validation: { enabled: false, check_internal_links: false } }, null, 2)}\n`,
+	"harness/rules/quality-dimensions.json": `${JSON.stringify({ dimensions: [], grading: { A: { min: 90, label: "Excellent" }, F: { min: 0, label: "Critical" } } }, null, 2)}\n`,
+	"harness/rules/observability-profiles.json": `${JSON.stringify({ profiles: [] }, null, 2)}\n`,
 };
 
 export function baseState(): HarnessState {
@@ -280,6 +299,10 @@ export function createRepo(
 			affectedFilesOrAreas: ["apps/api"],
 			requiredSkills: ["skills/implementation/SKILL.md"],
 			validationChecks,
+			evaluationGates: normalizeTaskEvaluationGates(validationChecks, []),
+			acceptanceCriteria: defaultTaskAcceptanceCriteria(
+				"Implement the test feature",
+			),
 			iteration: 0,
 			contractStatus: "missing",
 			evaluatorStatus: "pending",
@@ -307,6 +330,8 @@ export function makeTask(
 		affectedFilesOrAreas: [],
 		requiredSkills: ["skills/implementation/SKILL.md"],
 		validationChecks: ["bun --version"],
+		evaluationGates: normalizeTaskEvaluationGates(["bun --version"], []),
+		acceptanceCriteria: defaultTaskAcceptanceCriteria(`Task ${overrides.id}`),
 		iteration: 0,
 		contractStatus: "missing",
 		evaluatorStatus: "pending",

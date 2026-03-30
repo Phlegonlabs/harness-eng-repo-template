@@ -41,10 +41,13 @@
 - `bun run harness:guardian --mode preflight`
 - `bun run harness:state-recover --list`
 - `bun run harness:orchestrate`
-- `bun run harness:evaluate --task <id>`
+- `bun run harness:evaluate --task <id> --all`
+- `bun run harness:evaluate --task <id> --gate <gate-id>`
 - `bun run harness:validate`
 - `bun run harness:validate:full`
-- `bun run harness:self-review`
+- `bun run harness:self-review --report`
+- `bun run harness:docs --report`
+- `bun run harness:quality --score`
 
-Use `bun run harness:self-review` before handoff when a change spans multiple files or mixes code and documentation.
+Use `bun run harness:self-review --report` before handoff when a change spans multiple files or mixes code and documentation.
 Skill routing and evaluation exit gates are runtime-owned; rely on the registry and task state rather than maintaining Codex-only workflow assumptions.

@@ -28,13 +28,16 @@ jobs:
       - name: Run entropy scans
         id: entropy
         run: |
-          bun run harness:entropy 2>&1 | tee /tmp/entropy-output.txt
+          bun run harness:entropy --report 2>&1 | tee /tmp/entropy-output.txt
           echo "output<<EOF" >> $GITHUB_OUTPUT
           cat /tmp/entropy-output.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Run doc freshness check
-        run: bun run harness/runtime/lint-docs-freshness.ts
+        run: bun run harness:docs --report
+
+      - name: Run quality score
+        run: bun run harness:quality --score
 
       - name: Create issue if warnings found
         if: ${{ contains(steps.entropy.outputs.output, 'WARN') }}

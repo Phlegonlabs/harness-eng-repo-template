@@ -68,7 +68,10 @@ bun run harness:compact
 bun run harness:dispatch --prepare --role sidecar
 bun run build
 bun run test
-bun run harness:evaluate --task <id>
+bun run harness:evaluate --task <id> --all
+bun run harness:self-review --report
+bun run harness:docs --report
+bun run harness:quality --score
 bun run harness:validate
 bun run harness:validate:full
 ```
@@ -103,6 +106,7 @@ harness:plan reads them to materialize milestone and task placeholders.
 | Concern | Approach |
 |---------|----------|
 | **Logging** | Structured JSON logs through `@harness-template/shared`; see `docs/internal/observability.md` |
+| **Observability** | Opt-in profile-based health and log commands live in the harness runtime and remain disabled until a project configures an active profile |
 | **Error handling** | Keep domain and service code typed; reserve thrown errors for infrastructure boundaries |
 | **Authentication** | Not preconfigured in the template; add it inside the relevant application workspace when product requirements exist |
 | **Configuration** | Root and workspace environment variables flow through `.env` patterns and are validated by repository conventions |
@@ -149,12 +153,13 @@ bun run harness:validate:full
 1. Run `bun run harness:init -- <project-name>` when adopting the template.
 2. Use `bun run harness:guardian --mode preflight` before task activation or milestone dispatch.
 3. Use `bun run harness:orchestrate` to open the active task contract.
-4. Run `bun run harness:evaluate --task <id>` before marking a task done.
+4. Run `bun run harness:evaluate --task <id> --all` before marking a task done.
 5. Confirm `bun run build`, `bun run test`, and `bun run typecheck` pass.
 6. Run `bun run harness:compact` when a concise resume or handoff surface is helpful.
-7. Run `bun run harness:validate` before local handoff.
-8. Run `bun run harness:validate:full` before relying on CI-equivalent harness coverage locally.
-9. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.
+7. Run `bun run harness:self-review --report`, `bun run harness:docs --report`, and `bun run harness:quality --score` when the task touches runtime, docs, or policy surfaces.
+8. Run `bun run harness:validate` before local handoff.
+9. Run `bun run harness:validate:full` before relying on CI-equivalent harness coverage locally.
+10. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.
 
 ---
 

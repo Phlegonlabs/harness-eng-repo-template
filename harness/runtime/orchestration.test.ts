@@ -70,6 +70,21 @@ describe("orchestration lifecycle", () => {
 		expect(state.tasks[0].stallCount).toBe(2);
 	});
 
+	it("supports single-gate preview without completing the task lifecycle", () => {
+		const root = createRepo(["bun --version"], tempRoots);
+		orchestrateTask(root);
+		const result = evaluateTask("T101", root, {
+			gateId: "gate-01",
+			preview: true,
+		});
+		const state = loadState(root);
+
+		expect(result?.task.id).toBe("T101");
+		expect(state.tasks[0].status).toBe("in_progress");
+		expect(state.tasks[0].evaluatorStatus).toBe("pending");
+		expect(state.tasks[0].artifacts.latestEvaluationPath).toBeTruthy();
+	});
+
 	it("respects task dependency order", () => {
 		const root = createRepoWithTasks(
 			[

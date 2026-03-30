@@ -48,12 +48,15 @@ Use `Bash` for actual command execution, validation, git, or script entrypoints.
 - `bun run harness:compact`
 - `bun run harness:guardian --mode preflight`
 - `bun run harness:orchestrate`
-- `bun run harness:evaluate --task <id>`
+- `bun run harness:evaluate --task <id> --all`
+- `bun run harness:evaluate --task <id> --gate <gate-id>`
 - `bun run harness:validate`
 - `bun run harness:validate:full`
-- `bun run harness:self-review`
+- `bun run harness:self-review --report`
+- `bun run harness:docs --report`
+- `bun run harness:quality --score`
 
 If you need the full matrix, read `docs/internal/command-surface.md`.
 
-Use `bun run harness:self-review` before handoff when a change spans multiple files or mixes code and documentation.
+Use `bun run harness:self-review --report` before handoff when a change spans multiple files or mixes code and documentation.
 Skill routing and evaluation exit gates are runtime-owned; Claude hooks should wrap the repo command path, not reimplement it.

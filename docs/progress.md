@@ -27,8 +27,8 @@
 
 ## Tasks
 
-| Task | Milestone | Kind | Status | Validation | Notes |
-|------|-----------|------|--------|------------|-------|
+| Task | Milestone | Kind | Status | Evaluation Gates | Notes |
+|------|-----------|------|--------|------------------|-------|
 | *(run `bun run harness:plan` to generate starter tasks)* | - | - | - | - | - |
 
 ---

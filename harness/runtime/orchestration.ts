@@ -1,4 +1,9 @@
-import { runCommandWithCapture } from "./command-runner";
+import {
+	buildEvaluationArtifact,
+	evaluationFindings,
+	resolvedTaskGates,
+	runEvaluationGates,
+} from "./evaluation-runner";
 import { ensureTaskBaseline } from "./lifecycle";
 import {
 	writeTaskContract,
@@ -12,9 +17,6 @@ import type { ResolvedSkillSelection } from "./skill-types";
 import type {
 	EvaluatorStatus,
 	MilestoneRecord,
-	TaskCheckResult,
-	TaskEvaluationArtifact,
-	TaskEvaluationFinding,
 	TaskHandoffArtifact,
 	TaskRecord,
 } from "./types";
@@ -98,7 +100,7 @@ function createInitialHandoff(
 		iteration: task.iteration,
 		createdAt: new Date().toISOString(),
 		summary: `Task ${task.id} is ready for implementation under milestone ${milestone.id}.`,
-		nextAction: `Implement the task, then run bun run harness:evaluate --task ${task.id}.`,
+		nextAction: `Implement the task, then run bun run harness:evaluate --task ${task.id} --all.`,
 		risks: [
 			"Stay inside the task contract and avoid unrelated edits.",
 			"Do not hand off until evaluator passes.",
@@ -109,58 +111,11 @@ function createInitialHandoff(
 	};
 }
 
-function commandResult(options: {
-	root: string;
-	commandLine: string;
-	source: TaskCheckResult["source"];
-	skills?: string[];
-}): TaskCheckResult {
-	const { root, commandLine, source, skills } = options;
-	const result = runCommandWithCapture({
-		root,
-		commandLine,
-		logCategory:
-			source === "skill-exit" ? "evaluation-skill-exit" : "evaluation-check",
-		maxSnippetLines: 12,
-	});
-	return {
-		command: commandLine,
-		exitCode: result.exitCode,
-		outputSnippet: result.snippet.join("\n"),
-		logPath: result.logPath,
-		source,
-		skills,
-	};
-}
-
-function evaluationFindings(
-	results: TaskCheckResult[],
-): TaskEvaluationFinding[] {
-	if (results.length === 0) {
-		return [
-			{
-				severity: "info",
-				message:
-					"No automated validation checks were configured for this task.",
-			},
-		];
-	}
-	return results
-		.filter((result) => result.exitCode !== 0)
-		.map((result) => ({
-			severity: "blocker" as const,
-			message:
-				result.source === "skill-exit"
-					? `${result.command} failed with exit code ${result.exitCode} for skill exit gate ${result.skills?.join(", ") ?? "unknown"}.`
-					: `${result.command} failed with exit code ${result.exitCode}.`,
-		}));
-}
-
 function failureNextStep(task: TaskRecord, blocked: boolean): string {
 	if (blocked) {
 		return `Task ${task.id} is blocked. Review the latest evaluation and handoff artifacts before retrying manually.`;
 	}
-	return `Address the evaluator findings, continue work on ${task.id}, then rerun bun run harness:evaluate --task ${task.id}.`;
+	return `Address the evaluator findings, continue work on ${task.id}, then rerun bun run harness:evaluate --task ${task.id} --all.`;
 }
 
 export function orchestrateTask(
@@ -226,13 +181,14 @@ export function orchestrateTask(
 		nextAction:
 			task.status === "blocked"
 				? `Resolve blocker for ${task.id} before continuing.`
-				: `Implement ${task.id}, then run bun run harness:evaluate --task ${task.id}.`,
+				: `Implement ${task.id}, then run bun run harness:evaluate --task ${task.id} --all.`,
 	};
 }
 
 export function evaluateTask(
 	taskId?: string,
 	root: string = repoRoot(),
+	options?: { gateId?: string; preview?: boolean },
 ): OrchestrationStatus | null {
 	const state = loadState(root);
 	const task =
@@ -254,50 +210,53 @@ export function evaluateTask(
 	state.planning.phase = "VALIDATING";
 	const skillResolution = resolveTaskSkills(root, "VALIDATING", task);
 	applySkillSelection(state.skills, skillResolution);
+	const selectedGates = resolvedTaskGates(task, skillResolution);
+	const previewMode = Boolean(options?.preview);
+	const gatesToRun = options?.gateId
+		? selectedGates.filter((entry) => entry.gate.id === options.gateId)
+		: selectedGates;
+	if (options?.gateId && gatesToRun.length === 0) {
+		throw new Error(
+			`No evaluation gate ${options.gateId} exists for ${task.id}.`,
+		);
+	}
 	const currentIteration = Math.max(task.iteration, 1);
-	task.status = "evaluation_pending";
-	task.lastCheckpointAt = new Date().toISOString();
-	saveState(root, state);
+	if (!previewMode) {
+		task.status = "evaluation_pending";
+		task.lastCheckpointAt = new Date().toISOString();
+		saveState(root, state);
+	}
 
-	const checks = task.validationChecks.map((command) =>
-		commandResult({
-			root,
-			commandLine: command,
-			source: "validation",
-		}),
-	);
-	const skillExitChecks = skillResolution.exitCriteria.map((entry) =>
-		commandResult({
-			root,
-			commandLine: entry.command,
-			source: "skill-exit",
-			skills: entry.skills,
-		}),
-	);
-	const allChecks = [...checks, ...skillExitChecks];
-	const findings = evaluationFindings(allChecks);
+	const gateResults = runEvaluationGates({ root, gates: gatesToRun });
+	const findings = evaluationFindings(gateResults);
 	const failed = findings.some((finding) => finding.severity === "blocker");
-	const artifact: TaskEvaluationArtifact = {
-		version: "1.0.0",
-		taskId: task.id,
-		milestoneId: task.milestoneId,
+	const artifact = buildEvaluationArtifact({
+		task,
 		iteration: currentIteration,
-		status: failed ? "failed" : "passed",
-		evaluatedAt: new Date().toISOString(),
-		checks: allChecks,
-		findings,
-	};
+		gateResults,
+		mode: previewMode ? "gate-preview" : "all",
+		nextAction: previewMode
+			? failed
+				? `Fix ${options?.gateId ?? "the selected gate"} before running the full evaluator.`
+				: `Gate ${options?.gateId ?? "preview"} passed. Run bun run harness:evaluate --task ${task.id} --all to complete task evaluation.`
+			: null,
+	});
 	task.artifacts.latestEvaluationPath = writeTaskEvaluation(
 		root,
 		task,
 		artifact,
 	);
+	if (previewMode) {
+		saveState(root, state);
+	}
 
 	let nextAction = `Advance to the next task with bun run harness:orchestrate.`;
 	let evaluatorStatus: EvaluatorStatus = "passed";
 	let risks: string[] = [];
 
-	if (failed) {
+	if (previewMode) {
+		nextAction = artifact.nextAction ?? nextAction;
+	} else if (failed) {
 		evaluatorStatus = "failed";
 		task.stallCount += 1;
 		task.iteration = currentIteration + 1;
@@ -319,33 +278,36 @@ export function evaluateTask(
 		}
 	}
 
-	task.evaluatorStatus = evaluatorStatus;
-	task.artifacts.latestHandoffPath = writeTaskHandoff(root, task, {
-		version: "1.0.0",
-		taskId: task.id,
-		milestoneId: milestone.id,
-		iteration: currentIteration,
-		createdAt: new Date().toISOString(),
-		summary: failed
-			? `Evaluator failed task ${task.id} on iteration ${currentIteration}.`
-			: `Evaluator passed task ${task.id} on iteration ${currentIteration}.`,
-		nextAction,
-		risks,
-		commandLog: allChecks.map(
-			(result) => `${result.command} (exit ${result.exitCode})`,
-		),
-		contractPath: task.artifacts.contractPath,
-		evaluationPath: task.artifacts.latestEvaluationPath,
-	});
+	if (!previewMode) {
+		task.evaluatorStatus = evaluatorStatus;
+		task.artifacts.latestHandoffPath = writeTaskHandoff(root, task, {
+			version: "1.0.0",
+			taskId: task.id,
+			milestoneId: milestone.id,
+			iteration: currentIteration,
+			createdAt: new Date().toISOString(),
+			summary: failed
+				? `Evaluator failed task ${task.id} on iteration ${currentIteration}.`
+				: `Evaluator passed task ${task.id} on iteration ${currentIteration}.`,
+			nextAction,
+			risks,
+			commandLog: gateResults.map(
+				(result) =>
+					`${result.command} (${result.status}, exit ${result.exitCode})`,
+			),
+			contractPath: task.artifacts.contractPath,
+			evaluationPath: task.artifacts.latestEvaluationPath,
+		});
 
-	saveState(root, state);
-	writeProgressDoc(
-		root,
-		state.milestones,
-		state.tasks,
-		state.execution.activeWorktrees,
-		state.planning.docsReady,
-	);
+		saveState(root, state);
+		writeProgressDoc(
+			root,
+			state.milestones,
+			state.tasks,
+			state.execution.activeWorktrees,
+			state.planning.docsReady,
+		);
+	}
 	return {
 		phase: state.planning.phase,
 		task,

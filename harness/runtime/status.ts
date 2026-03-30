@@ -31,6 +31,7 @@ function toTaskSummary(task: TaskRecord): HarnessTaskSummary {
 		latestEvaluationPath: task.artifacts.latestEvaluationPath,
 		latestHandoffPath: task.artifacts.latestHandoffPath,
 		requiredSkills: task.requiredSkills,
+		evaluationGateCount: task.evaluationGates.length,
 	};
 }
 
@@ -129,7 +130,7 @@ function renderSummary(status: HarnessStatusSnapshot): string {
 	if (status.activeTask) {
 		lines.push(
 			`  Active: ${status.activeTask.id} — ${status.activeTask.title}`,
-			`  Kind: ${status.activeTask.kind} | Status: ${status.activeTask.status} | Iteration: ${status.activeTask.iteration}/${status.activeTask.maxIterations} | Stalls: ${status.activeTask.stallCount}`,
+			`  Kind: ${status.activeTask.kind} | Status: ${status.activeTask.status} | Iteration: ${status.activeTask.iteration}/${status.activeTask.maxIterations} | Stalls: ${status.activeTask.stallCount} | Gates: ${status.activeTask.evaluationGateCount}`,
 			`  Contract: ${status.activeTask.contractPath ?? "-"}`,
 			`  Evaluation: ${status.activeTask.latestEvaluationPath ?? "-"}`,
 			`  Handoff: ${status.activeTask.latestHandoffPath ?? "-"}`,

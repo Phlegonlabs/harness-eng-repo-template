@@ -1,8 +1,16 @@
+import type { DiscoveryState } from "./discovery-types";
 import type {
 	EntropyBaselineRecord,
 	EntropyDeltaRecord,
 	GuardianRunRecord,
 } from "./lifecycle-types";
+import type {
+	DocFreshnessRuleSet,
+	GoldenPrinciplesRuleSet,
+	ObservabilityProfilesConfig,
+	QualityDimensionsConfig,
+	ReviewChecklist,
+} from "./policy-types";
 
 export interface HarnessConfig {
 	version: string;
@@ -37,39 +45,18 @@ export interface HarnessConfig {
 		driftThresholdPercent: number;
 		baselineOnTaskStart: boolean;
 	};
+	quality?: {
+		enabled: boolean;
+		gradesPath: string;
+		historyPath: string;
+	};
+	observability?: {
+		enabled: boolean;
+		activeProfile: string | null;
+		defaultLogLimit: number;
+	};
 	commit_format: string;
 	required_files: string[];
-}
-
-export type CommandScope = "root" | "workspace";
-export type WorkspaceKind = "app" | "package";
-export type CommandMode = "one_shot" | "persistent";
-export type MissingPrereqBehavior = "n/a" | "expected_block";
-export type CommandSuccessMode = "exit_zero" | "persistent_boot";
-
-export interface CommandDefinition {
-	id: string;
-	display: string;
-	requires: string[];
-	summary: string;
-}
-
-export interface NormalizedCommandDefinition extends CommandDefinition {
-	scope: CommandScope;
-	workspaceKind?: WorkspaceKind;
-	mode: CommandMode;
-	mutatesRepo: boolean;
-	missingPrereqBehavior: MissingPrereqBehavior;
-	successMode: CommandSuccessMode;
-}
-
-export interface CommandSurfaceRegistry {
-	version: string;
-	includes: string[];
-}
-
-export interface CommandSurfaceFragment {
-	commands: CommandDefinition[];
 }
 
 export interface LayerRule {
@@ -144,6 +131,28 @@ export type TaskStatus =
 
 export type ContractStatus = "missing" | "draft" | "approved";
 export type EvaluatorStatus = "pending" | "passed" | "failed";
+export type EvaluationGateCategory =
+	| "validation"
+	| "typecheck"
+	| "lint"
+	| "test"
+	| "structural"
+	| "entropy"
+	| "docs"
+	| "runtime"
+	| "quality"
+	| "custom"
+	| "skill-exit";
+export type EvaluationGateSource = "task" | "skill-exit";
+
+export interface TaskEvaluationGate {
+	id: string;
+	label: string;
+	command: string;
+	category: EvaluationGateCategory;
+	blocking: boolean;
+	source: EvaluationGateSource;
+}
 
 export interface TaskArtifacts {
 	contractPath: string | null;
@@ -161,6 +170,8 @@ export interface TaskRecord {
 	affectedFilesOrAreas: string[];
 	requiredSkills: string[];
 	validationChecks: string[];
+	evaluationGates: TaskEvaluationGate[];
+	acceptanceCriteria: string[];
 	iteration: number;
 	contractStatus: ContractStatus;
 	evaluatorStatus: EvaluatorStatus;
@@ -250,46 +261,6 @@ export interface HarnessState {
 	};
 }
 
-export interface HarnessTaskSummary {
-	id: string;
-	title: string;
-	kind: string;
-	status: TaskStatus;
-	iteration: number;
-	maxIterations: number;
-	stallCount: number;
-	milestoneId: string;
-	contractPath: string | null;
-	latestEvaluationPath: string | null;
-	latestHandoffPath: string | null;
-	requiredSkills: string[];
-}
-
-export interface HarnessProgressSummary {
-	totalTasks: number;
-	pending: number;
-	inProgress: number;
-	evaluationPending: number;
-	blocked: number;
-	done: number;
-	totalMilestones: number;
-	activeMilestones: number;
-	completedMilestones: number;
-}
-
-export interface HarnessStatusSnapshot {
-	projectName: string;
-	phase: string;
-	activeTask: HarnessTaskSummary | null;
-	blockedTasks: HarnessTaskSummary[];
-	suggestedSkills: string[];
-	nextAction: string;
-	validationStatus: "unknown";
-	progress: HarnessProgressSummary;
-	activeWorktrees: ActiveWorktreeRecord[];
-	discovery: DiscoveryState["readiness"];
-}
-
 export type {
 	DispatchPacketArtifact,
 	DispatchResultArtifact,
@@ -313,21 +284,33 @@ export interface TaskContractArtifact {
 	deliverables: string[];
 	outOfScope: string[];
 	validationChecks: string[];
+	evaluationGates: TaskEvaluationGate[];
+	acceptanceCriteria: string[];
 	createdAt: string;
 	approvedAt: string | null;
 }
 
-export interface TaskCheckResult {
+export interface TaskEvaluationGateResult {
+	id: string;
+	label: string;
 	command: string;
 	exitCode: number;
 	outputSnippet: string;
+	status: "passed" | "failed" | "skipped";
+	durationMs: number;
+	blocking: boolean;
+	category: EvaluationGateCategory;
 	logPath?: string | null;
-	source: "validation" | "skill-exit";
+	source: EvaluationGateSource;
 	skills?: string[];
+	reason?: string;
 }
+
+export type TaskCheckResult = TaskEvaluationGateResult;
 
 export interface TaskEvaluationFinding {
 	severity: "blocker" | "warn" | "info";
+	gateId?: string;
 	message: string;
 }
 
@@ -336,10 +319,14 @@ export interface TaskEvaluationArtifact {
 	taskId: string;
 	milestoneId: string;
 	iteration: number;
-	status: "passed" | "failed";
+	status: "passed" | "failed" | "partial";
 	evaluatedAt: string;
+	mode: "all" | "gate-preview";
+	gateResults: TaskEvaluationGateResult[];
 	checks: TaskCheckResult[];
 	findings: TaskEvaluationFinding[];
+	blockingFailures: string[];
+	nextAction: string | null;
 }
 
 export interface TaskHandoffArtifact {
@@ -356,59 +343,6 @@ export interface TaskHandoffArtifact {
 	evaluationPath: string | null;
 }
 
-export type DiscoveryStage = "PRD" | "ARCHITECTURE" | "COMPLETE";
-export type DiscoveryStatus = "idle" | "collecting" | "ready_for_plan";
-
-export interface DiscoveryQuestion {
-	id: string;
-	stage: Exclude<DiscoveryStage, "COMPLETE">;
-	prompt: string;
-	docTargets: string[];
-	expectedAnswerShape: string;
-}
-
-export interface DiscoveryQuestionPacket {
-	stage: Exclude<DiscoveryStage, "COMPLETE">;
-	questionIds: string[];
-	questions: DiscoveryQuestion[];
-	completionCriteria: {
-		productReady: boolean;
-		architectureReady: boolean;
-		planReady: boolean;
-	};
-}
-
-export interface DiscoveryAnswer {
-	id: string;
-	value: string;
-}
-
-export interface DiscoveryAnswerBatch {
-	answers: DiscoveryAnswer[];
-}
-
-export interface DiscoveryHistoryRecord {
-	stage: DiscoveryStage;
-	questionIds: string[];
-	answeredAt: string;
-}
-
-export interface DiscoveryReadiness {
-	productReady: boolean;
-	architectureReady: boolean;
-	planReady: boolean;
-}
-
-export interface DiscoveryState {
-	stage: DiscoveryStage;
-	status: DiscoveryStatus;
-	currentQuestionIds: string[];
-	answered: Record<string, string>;
-	history: DiscoveryHistoryRecord[];
-	readiness: DiscoveryReadiness;
-	lastUpdatedAt: string | null;
-}
-
 export interface ValidationContext {
 	repoRoot: string;
 	config: HarnessConfig;
@@ -416,4 +350,60 @@ export interface ValidationContext {
 	fileSizeRules: FileSizeRules;
 	namingRules: NamingRules;
 	forbiddenRules: ForbiddenRules;
+	reviewChecklist?: ReviewChecklist;
+	goldenPrinciples?: GoldenPrinciplesRuleSet;
+	docFreshnessRules?: DocFreshnessRuleSet;
+	qualityDimensions?: QualityDimensionsConfig;
+	observabilityProfiles?: ObservabilityProfilesConfig;
 }
+
+export type {
+	CommandDefinition,
+	CommandMode,
+	CommandScope,
+	CommandSuccessMode,
+	CommandSurfaceFragment,
+	CommandSurfaceRegistry,
+	MissingPrereqBehavior,
+	NormalizedCommandDefinition,
+	WorkspaceKind,
+} from "./command-types";
+export type {
+	DiscoveryAnswer,
+	DiscoveryAnswerBatch,
+	DiscoveryHistoryRecord,
+	DiscoveryQuestion,
+	DiscoveryQuestionPacket,
+	DiscoveryReadiness,
+	DiscoveryStage,
+	DiscoveryState,
+	DiscoveryStatus,
+} from "./discovery-types";
+export type {
+	DocFreshnessFinding,
+	DocFreshnessRule,
+	DocFreshnessRuleSet,
+	DocsReport,
+	GoldenPrincipleFinding,
+	GoldenPrincipleRule,
+	GoldenPrinciplesRuleSet,
+	ObservabilityProfile,
+	ObservabilityProfilesConfig,
+	QualityDimensionDefinition,
+	QualityDimensionScore,
+	QualityDimensionsConfig,
+	QualityGradeDefinition,
+	QualityReport,
+	ReviewChecklist,
+	ReviewChecklistCategory,
+	ReviewChecklistRule,
+	ReviewSeverity,
+	SelfReviewCheckResult,
+	SelfReviewFinding,
+	SelfReviewReport,
+} from "./policy-types";
+export type {
+	HarnessProgressSummary,
+	HarnessStatusSnapshot,
+	HarnessTaskSummary,
+} from "./status-types";

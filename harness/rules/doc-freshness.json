@@ -1,0 +1,32 @@
+{
+	"rules": [
+		{
+			"doc": "docs/architecture.md",
+			"tracks": ["apps/**", "packages/**", "harness/**"],
+			"max_drift_days": 14,
+			"severity": "warning"
+		},
+		{
+			"doc": "docs/product.md",
+			"tracks": [],
+			"max_drift_days": 30,
+			"severity": "info"
+		},
+		{
+			"doc": "docs/progress.md",
+			"tracks": [".harness/state.json"],
+			"max_drift_days": 3,
+			"severity": "error"
+		},
+		{
+			"doc": "docs/internal/orchestrator-workflow.md",
+			"tracks": ["harness/runtime/**", "harness/skills/**"],
+			"max_drift_days": 14,
+			"severity": "warning"
+		}
+	],
+	"cross_link_validation": {
+		"enabled": true,
+		"check_internal_links": true
+	}
+}

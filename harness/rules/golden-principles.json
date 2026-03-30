@@ -1,0 +1,30 @@
+{
+	"principles": [
+		{
+			"id": "GP-01",
+			"name": "No console logging in repository code",
+			"description": "Use structured logging helpers instead of console.* in repository-owned source.",
+			"severity": "error",
+			"pattern": "console\\.(log|warn|error|debug|info)\\s*\\(",
+			"apply_to": ["apps/**", "packages/**"],
+			"exclude": ["**/*.test.ts", "**/*.spec.ts"]
+		},
+		{
+			"id": "GP-02",
+			"name": "No placeholder TODO or FIXME markers",
+			"description": "Avoid leaving unresolved TODO/FIXME markers in committed source.",
+			"severity": "warning",
+			"pattern": "\\b(?:TODO|FIXME)\\b",
+			"apply_to": ["apps/**", "packages/**", "harness/runtime/**"],
+			"exclude": ["**/*.test.ts", "**/*.spec.ts"]
+		},
+		{
+			"id": "GP-03",
+			"name": "No deep src imports across workspaces",
+			"description": "Cross-workspace imports must use declared exports, not deep src paths.",
+			"severity": "error",
+			"pattern": "(?:from|import)\\s+['\"][^'\"]*/src/[^'\"]+['\"]",
+			"apply_to": ["apps/**", "packages/**"]
+		}
+	]
+}

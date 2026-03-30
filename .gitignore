@@ -56,7 +56,10 @@ temp/
 .harness/logs/
 .harness/cache/
 .harness/compact/
+.harness/docs/
 .harness/guardians/
+.harness/quality/
+.harness/reviews/
 .harness/dispatch/
 .harness/dispatch-results/
 .harness/snapshots/

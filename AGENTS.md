@@ -55,7 +55,7 @@ Load only what the task requires. Do not bulk-read `docs/internal/` by default.
 3. Run `bun run harness:validate` before handoff.
    If the repo is broken, fix it before stopping.
 
-4. For in-flight tasks, run `bun run harness:evaluate --task <id>` before considering the task done.
+4. For in-flight tasks, run `bun run harness:evaluate --task <id> --all` before considering the task done.
 
 5. Use conventional commits:
    `type(scope): description`
@@ -109,7 +109,7 @@ The harness runtime is a contract-driven loop:
    - `.harness/state.json`
 4. `bun run harness:orchestrate` prepares the next task contract
 5. Implement inside the task scope
-6. `bun run harness:evaluate --task <id>` records pass/fail and handoff artifacts
+6. `bun run harness:evaluate --task <id> --all` records pass/fail and handoff artifacts
 7. Use milestone worktrees only through `harness:parallel-dispatch` and `harness:merge-milestone`
 
 Canonical surfaces:
@@ -163,6 +163,9 @@ bun run harness:doctor
 bun run harness:lint
 bun run harness:structural
 bun run harness:entropy
+bun run harness:docs --report
+bun run harness:quality --score
+bun run harness:health
 bun run harness:status --json
 ```
 
@@ -197,8 +200,12 @@ If a change spans multiple files or phases, create an execution plan in `docs/ex
 | `bun run harness:guardian --mode <preflight|stop|drift>` | run repo-owned guardrails |
 | `bun run harness:dispatch --prepare --role sidecar` | prepare a provider-neutral sidecar packet |
 | `bun run harness:orchestrate` | prepare the next task contract |
-| `bun run harness:evaluate --task <id>` | evaluate the active task |
-| `bun run harness:self-review` | summarize a local self-review pass before handoff |
+| `bun run harness:evaluate --task <id> --all` | evaluate the active task through all configured gates |
+| `bun run harness:evaluate --task <id> --gate <gate-id>` | preview one evaluation gate without advancing task lifecycle |
+| `bun run harness:self-review --report` | run the machine-readable self-review pass and write a review artifact |
+| `bun run harness:docs --report` | run docs freshness and link checks and write a docs artifact |
+| `bun run harness:quality --score` | compute the current quality score and write a quality artifact |
+| `bun run harness:health` / `bun run harness:logs --query <text>` | use the active observability profile if one is enabled |
 | `bun run harness:state-recover --list` | inspect state snapshots |
 | `bun run harness:state-recover --latest` | recover the latest snapshot |
 | `bun run harness:parallel-dispatch -- --apply` | allocate milestone worktrees |

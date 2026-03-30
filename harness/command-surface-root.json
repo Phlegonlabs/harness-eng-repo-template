@@ -37,6 +37,30 @@
 			"summary": "Run drift, orphan, and consistency scans."
 		},
 		{
+			"id": "root.harness-docs",
+			"display": "bun run harness:docs --report",
+			"requires": [],
+			"summary": "Run documentation freshness and link checks and write a docs report."
+		},
+		{
+			"id": "root.harness-quality",
+			"display": "bun run harness:quality --score",
+			"requires": [],
+			"summary": "Compute the current repository quality score and write a quality report artifact."
+		},
+		{
+			"id": "root.harness-health",
+			"display": "bun run harness:health",
+			"requires": [],
+			"summary": "Run the active observability profile health check, if one is configured."
+		},
+		{
+			"id": "root.harness-logs",
+			"display": "bun run harness:logs --query <text>",
+			"requires": [],
+			"summary": "Search configured observability log files for matching lines."
+		},
+		{
 			"id": "root.harness-validate",
 			"display": "bun run harness:validate",
 			"requires": [],
@@ -86,13 +110,13 @@
 			"id": "root.harness-evaluate",
 			"display": "bun run harness:evaluate --task <id>",
 			"requires": ["active_task"],
-			"summary": "Evaluate the active task and write fresh evaluation and handoff artifacts."
+			"summary": "Evaluate the active task, including structured gates, and write fresh evaluation and handoff artifacts."
 		},
 		{
 			"id": "root.harness-self-review",
-			"display": "bun run harness:self-review",
+			"display": "bun run harness:self-review --report",
 			"requires": [],
-			"summary": "Summarize a local self-review pass over the current diff before handoff."
+			"summary": "Run the machine-readable self-review checklist over the current diff and write a review report."
 		},
 		{
 			"id": "root.harness-state-recover",

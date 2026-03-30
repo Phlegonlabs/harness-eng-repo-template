@@ -44,11 +44,11 @@ export function writeProgressDoc(
 		"",
 		"## Tasks",
 		"",
-		"| Task | Milestone | Kind | Status | Validation | Notes |",
-		"|------|-----------|------|--------|------------|-------|",
+		"| Task | Milestone | Kind | Status | Evaluation Gates | Notes |",
+		"|------|-----------|------|--------|------------------|-------|",
 		...tasks.map(
 			(task) =>
-				`| ${task.id} | ${task.milestoneId} | ${task.kind} | ${task.status} | ${task.validationChecks.join("<br>") || "-"} | Skills: ${task.requiredSkills.join(", ")} |`,
+				`| ${task.id} | ${task.milestoneId} | ${task.kind} | ${task.status} | ${task.evaluationGates.map((gate) => `${gate.id}: ${gate.label}`).join("<br>") || "-"} | Skills: ${task.requiredSkills.join(", ")} |`,
 		),
 		"",
 		"---",

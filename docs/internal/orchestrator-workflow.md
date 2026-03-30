@@ -14,7 +14,7 @@ The planning and execution sequence is:
 5. Milestones become the top-level executable units.
 6. `bun run harness:orchestrate` prepares the next task by creating a task contract and initial handoff artifact.
 7. The implementer executes the task inside the contract scope.
-8. `bun run harness:evaluate --task <id>` runs the independent evaluator and records pass/fail plus a fresh handoff artifact.
+8. `bun run harness:evaluate --task <id> --all` runs the independent evaluator and records pass/fail plus a fresh handoff artifact.
 9. Different milestones may run in parallel through isolated git worktrees.
 
 Optional path:
@@ -89,6 +89,8 @@ Each task records:
 - `affectedFilesOrAreas`
 - `requiredSkills`
 - `validationChecks`
+- `evaluationGates`
+- `acceptanceCriteria`
 - `artifacts.contractPath`
 - `artifacts.latestEvaluationPath`
 - `artifacts.latestHandoffPath`
@@ -108,6 +110,8 @@ pending -> contract_pending -> contract_approved -> in_progress -> evaluation_pe
 Rules:
 
 - A task is not done when code "looks ready"; it is done when evaluator output passes.
+- Evaluator gates run sequentially and later gates are skipped after a blocking failure.
+- `bun run harness:evaluate --task <id> --gate <gate-id>` previews one gate without advancing task lifecycle.
 - Every execution round writes a handoff artifact.
 - Failed evaluation increments task iteration and either returns the task to `in_progress` or blocks it when retry/stall limits are exceeded.
 
@@ -152,7 +156,10 @@ bun run harness:compact
 bun run harness:guardian --mode preflight
 bun run harness:orchestrate
 # implement work inside the current task contract
-bun run harness:evaluate --task <id>
+bun run harness:evaluate --task <id> --all
+bun run harness:self-review --report
+bun run harness:docs --report
+bun run harness:quality --score
 ```
 
 The orchestrator owns contract synthesis and resume artifacts.
@@ -162,3 +169,8 @@ The compact command owns the concise repository snapshot for resumes and handoff
 Guardian commands own repo-level preflight, stop, and drift enforcement.
 `bun run harness:validate` remains the default local gate before handoff or push.
 `bun run harness:validate:full` remains the CI-equivalent gate when harness runtime regressions must be exercised.
+
+Related repository artifacts:
+
+- `docs/decisions/001-evaluation-review-integration.md`
+- `docs/execution-plans/evaluation-review-integration.md`

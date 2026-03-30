@@ -1,4 +1,8 @@
 import { defaultCommandSurface as loadDefaultCommandSurface } from "./command-surface";
+import {
+	defaultTaskAcceptanceCriteria,
+	normalizeTaskEvaluationGates,
+} from "./task-evaluation";
 import type { TaskRecord } from "./types";
 
 export function defaultCommandSurface(root?: string): string[] {
@@ -9,6 +13,8 @@ export function createTaskRecord(
 	task: Omit<
 		TaskRecord,
 		| "iteration"
+		| "evaluationGates"
+		| "acceptanceCriteria"
 		| "contractStatus"
 		| "evaluatorStatus"
 		| "stallCount"
@@ -19,6 +25,8 @@ export function createTaskRecord(
 	return {
 		...task,
 		iteration: 0,
+		evaluationGates: normalizeTaskEvaluationGates(task.validationChecks, []),
+		acceptanceCriteria: defaultTaskAcceptanceCriteria(task.title),
 		contractStatus: "missing",
 		evaluatorStatus: "pending",
 		stallCount: 0,
@@ -35,6 +43,15 @@ export function normalizeTaskRecord(task: TaskRecord): TaskRecord {
 	return {
 		...task,
 		status: task.status ?? "pending",
+		validationChecks: task.validationChecks ?? [],
+		evaluationGates: normalizeTaskEvaluationGates(
+			task.validationChecks ?? [],
+			task.evaluationGates ?? [],
+		),
+		acceptanceCriteria:
+			task.acceptanceCriteria && task.acceptanceCriteria.length > 0
+				? task.acceptanceCriteria
+				: defaultTaskAcceptanceCriteria(task.title),
 		iteration: task.iteration ?? 0,
 		contractStatus: task.contractStatus ?? "missing",
 		evaluatorStatus: task.evaluatorStatus ?? "pending",

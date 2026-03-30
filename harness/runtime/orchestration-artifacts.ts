@@ -74,6 +74,8 @@ export function buildTaskContract(
 			"Do not change harness/rules without an ADR and explicit approval",
 		],
 		validationChecks,
+		evaluationGates: task.evaluationGates,
+		acceptanceCriteria: task.acceptanceCriteria,
 		createdAt: now,
 		approvedAt: now,
 	};
@@ -113,6 +115,17 @@ export function writeTaskContract(
 		"## Validation Checks",
 		"",
 		...artifact.validationChecks.map((item) => `- ${item}`),
+		"",
+		"## Acceptance Criteria",
+		"",
+		...artifact.acceptanceCriteria.map((item) => `- ${item}`),
+		"",
+		"## Evaluation Gates",
+		"",
+		...artifact.evaluationGates.map(
+			(gate) =>
+				`- ${gate.id}: ${gate.label} | ${gate.blocking ? "blocking" : "non-blocking"} | ${gate.command}`,
+		),
 		"",
 		"## Out Of Scope",
 		"",

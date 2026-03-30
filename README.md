@@ -12,6 +12,7 @@ An agent-first Bun + Turbo monorepo template for teams that want a repository to
 
 - A working monorepo scaffold with `apps/web`, `apps/api`, and `packages/shared`
 - Repo-owned workflow commands for planning, orchestration, evaluation, recovery, and validation
+- Structured evaluation gates, machine-readable self-review, docs checks, and quality scoring
 - Machine-readable engineering rules under `harness/rules/`
 - Self-contained agent entry docs in `AGENTS.md`, `CODEX.md`, and `CLAUDE.md`
 - A clean pre-init baseline that becomes project-specific through `harness:init`
@@ -63,13 +64,13 @@ After initialization:
 1. Update [`docs/product.md`](docs/product.md)
 2. Update [`docs/architecture.md`](docs/architecture.md)
 3. Run `bun run harness:plan`
-4. Use `bun run harness:orchestrate` and `bun run harness:evaluate --task <id>` to drive execution
+4. Use `bun run harness:orchestrate` and `bun run harness:evaluate --task <id> --all` to drive execution
 
 ## Pre-Init vs Post-Init
 
 Before `harness:init`, this repository is intentionally a template scaffold:
 
-- `bun run harness:doctor` should pass with a warning that the project is still `harness-template`
+- `bun run harness:doctor` should pass with a warning that the repo is still using the default template identity
 - `bun run harness:validate` should pass
 - `bun run harness:discover --reset` is available if you want guided PRD/architecture discovery
 - `bun run harness:plan` and active task execution are not the normal first step yet
@@ -134,7 +135,8 @@ Choose the profile that matches the project shape:
 - `bun run harness:discover --reset`: guided PRD/architecture interview flow
 - `bun run harness:plan`: sync backlog from docs
 - `bun run harness:orchestrate`: prepare the next task contract
-- `bun run harness:evaluate --task <id>`: evaluate an active task
+- `bun run harness:evaluate --task <id> --all`: evaluate an active task through all configured gates
+- `bun run harness:evaluate --task <id> --gate <gate-id>`: preview one gate without advancing task lifecycle
 - `bun run harness:dispatch --prepare --role sidecar`: prepare a provider-neutral sidecar packet
 - `bun run harness:parallel-dispatch -- --apply`: allocate milestone worktrees
 - `bun run harness:merge-milestone -- M1`: merge a completed milestone worktree
@@ -143,6 +145,9 @@ Choose the profile that matches the project shape:
 
 - `bun run harness:validate`: fast local validation
 - `bun run harness:validate:full`: CI-equivalent validation, including structural/runtime regression tests
+- `bun run harness:self-review --report`: run the machine-readable self-review checklist
+- `bun run harness:docs --report`: run docs freshness and link checks
+- `bun run harness:quality --score`: compute a repo quality score and write a quality artifact
 - `bun run harness:guardian --mode preflight`: task-start guardrails
 - `bun run harness:guardian --mode stop`: stop/handoff guardrails
 - `bun run harness:guardian --mode drift`: advisory drift checks
@@ -167,9 +172,9 @@ Use the commands this way:
 `harness:validate` runs:
 
 1. `harness:doctor`
-2. harness linters
+2. harness linters, including docs freshness
 3. required-files / architecture / template-identity / doc-link checks
-4. entropy scans
+4. entropy scans and golden-principle checks
 
 ## What You Should Customize
 
@@ -191,7 +196,10 @@ bun run harness:status --json
 bun run harness:guardian --mode preflight
 bun run harness:orchestrate
 # implement the task
-bun run harness:evaluate --task <id>
+bun run harness:evaluate --task <id> --all
+bun run harness:self-review --report
+bun run harness:docs --report
+bun run harness:quality --score
 ```
 
 For long-running work, the repo stores contracts, handoffs, compact snapshots, guardian artifacts, and state recovery snapshots under `.harness/`.
@@ -204,6 +212,11 @@ The template ships machine-readable rules for:
 - file size limits
 - forbidden patterns
 - naming conventions
+- review checklist items
+- golden principles
+- docs freshness rules
+- quality dimensions
+- observability profiles
 
 Those live under `harness/rules/` and are consumed by the runtime rather than treated as doc-only guidance.
 

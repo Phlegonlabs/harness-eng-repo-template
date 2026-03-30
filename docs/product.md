@@ -36,13 +36,15 @@
 ### Must Have (v1)
 - [ ] Ready-to-edit monorepo layout with `apps/web`, `apps/api`, and `packages/shared`
 - [ ] Root validation, guardian, compact, and task orchestration that work immediately after initialization
-- [ ] Task contracts, evaluator results, handoff artifacts, and compact snapshots for long-running work
+- [ ] Task contracts, structured evaluation gates, evaluator results, handoff artifacts, and compact snapshots for long-running work
 - [ ] Repository-owned docs and rules that agents can follow without extra chat context
+- [ ] Machine-readable self-review, docs freshness, and quality scoring surfaces
 
 ### Should Have (v1)
 - [ ] Guided discovery flow for teams that want PRD and architecture interviews before implementation
 - [ ] Milestone and task planning generated from repository docs
 - [ ] Provider-neutral dispatch packet artifacts for sidecar and review workflows
+- [ ] Opt-in observability profiles for runtime health and log queries
 
 ### Could Have (later)
 - [ ] Optional deployment presets per application workspace
@@ -93,6 +95,7 @@
 | Time from clone to first successful validation | Template setup varies by repo | Under 15 minutes after `bun install` and `bun run harness:init` | First session |
 | Time to first project-specific code change | Often delayed by repo setup work | Same session as initialization | First day |
 | Repository guardrails active | Inconsistent in ad hoc starters | `build`, `test`, `harness:validate`, and CI `harness:validate:full` all pass in the template baseline | Before first feature branch |
+| Quality evidence availability | Often ad hoc or manual | `harness:self-review`, `harness:docs`, and `harness:quality` produce machine-readable artifacts out of the box | Before first feature branch |
 
 ---
 

@@ -1,0 +1,60 @@
+{
+	"categories": [
+		{
+			"name": "architecture",
+			"checks": [
+				{
+					"id": "R-ARCH-01",
+					"label": "Layer boundaries still hold",
+					"severity": "blocking",
+					"rule": "changed-source-must-pass-layering"
+				}
+			]
+		},
+		{
+			"name": "testing",
+			"checks": [
+				{
+					"id": "R-TEST-01",
+					"label": "Source changes have matching tests",
+					"severity": "warning",
+					"rule": "source-without-tests"
+				}
+			]
+		},
+		{
+			"name": "quality",
+			"checks": [
+				{
+					"id": "R-QUAL-01",
+					"label": "Changed files stay within size limits",
+					"severity": "blocking",
+					"rule": "changed-files-size-limit"
+				},
+				{
+					"id": "R-QUAL-02",
+					"label": "No forbidden patterns in changed files",
+					"severity": "blocking",
+					"rule": "changed-files-forbidden-patterns"
+				}
+			]
+		},
+		{
+			"name": "documentation",
+			"checks": [
+				{
+					"id": "R-DOC-01",
+					"label": "Source or runtime changes are documented",
+					"severity": "warning",
+					"rule": "source-without-docs"
+				},
+				{
+					"id": "R-DOC-02",
+					"label": "Workflow or rule changes update operator docs",
+					"severity": "warning",
+					"rule": "workflow-without-docs"
+				}
+			]
+		}
+	]
+}

@@ -16,7 +16,7 @@ export function loadCommandSurface(
 ): CommandSurfaceRegistry & { commands: CommandDefinition[] } {
 	const registry = readJson<CommandSurfaceRegistry>(commandSurfacePath(root));
 	const commands = registry.includes.flatMap(
-		(relativePath) =>
+		(relativePath: string) =>
 			readJson<CommandSurfaceFragment>(path.join(root, relativePath)).commands,
 	);
 	return { ...registry, commands };
@@ -42,8 +42,11 @@ function normalizeCommand(
 		"root.harness-discover-reset",
 		"root.harness-plan",
 		"root.harness-compact",
+		"root.harness-docs",
 		"root.harness-guardian",
 		"root.harness-dispatch",
+		"root.harness-quality",
+		"root.harness-self-review",
 		"root.harness-state-recover",
 		"root.harness-orchestrate",
 		"root.harness-evaluate",

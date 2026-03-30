@@ -29,6 +29,12 @@ jobs:
       - name: Full validation
         run: bun run harness:validate:full
 
+      - name: Self-review report
+        run: bun run harness:self-review --report
+
+      - name: Quality score
+        run: bun run harness:quality --score
+
       - name: Check AGENTS.md references agent-entry.md
         shell: bash
         run: |
@@ -72,6 +78,9 @@ jobs:
               echo "PASS: Documentation was updated alongside source changes."
             fi
           fi
+
+      - name: Check docs report
+        run: bun run harness:docs --report
 
       - name: Add summary comment
         if: always()

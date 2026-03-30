@@ -16,6 +16,10 @@
 			"bun run harness:lint",
 			"bun run harness:structural",
 			"bun run harness:entropy",
+			"bun run harness:docs --report",
+			"bun run harness:quality --score",
+			"bun run harness:health",
+			"bun run harness:logs --query <text>",
 			"bun run harness:validate",
 			"bun run harness:validate:full",
 			"bun run harness:discover",
@@ -24,7 +28,7 @@
 			"bun run harness:status --json",
 			"bun run harness:orchestrate",
 			"bun run harness:evaluate --task <id>",
-			"bun run harness:self-review",
+			"bun run harness:self-review --report",
 			"bun run harness:state-recover --list",
 			"bun run harness:unblock --task <id>",
 			"bun run harness:parallel-dispatch -- --apply",
@@ -120,12 +124,12 @@
 	},
 	"guardians": {
 		"preflight": {
-			"status": "idle",
-			"runAt": null,
+			"status": "passed",
+			"runAt": "2026-03-30T08:05:10.506Z",
 			"logPath": null,
-			"artifactPath": null,
-			"sourceEvent": null,
-			"summary": []
+			"artifactPath": ".harness/guardians/preflight-latest.json",
+			"sourceEvent": "manual:preflight",
+			"summary": ["PASS: Guardian preflight checks passed."]
 		},
 		"stop": {
 			"status": "idle",

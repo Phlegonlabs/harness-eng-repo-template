@@ -31,6 +31,16 @@
 		"driftThresholdPercent": 10,
 		"baselineOnTaskStart": true
 	},
+	"quality": {
+		"enabled": true,
+		"gradesPath": "docs/quality/GRADES.md",
+		"historyPath": ".harness/quality/history.jsonl"
+	},
+	"observability": {
+		"enabled": false,
+		"activeProfile": null,
+		"defaultLogLimit": 200
+	},
 	"commit_format": "conventional",
 	"required_files": [
 		"AGENTS.md",
@@ -60,6 +70,11 @@
 		"harness/command-surface-workspace.json",
 		"harness/config.json",
 		"harness/rules/dependency-layers.json",
+		"harness/rules/review-checklist.json",
+		"harness/rules/golden-principles.json",
+		"harness/rules/doc-freshness.json",
+		"harness/rules/quality-dimensions.json",
+		"harness/rules/observability-profiles.json",
 		"harness/skills/registry.json"
 	]
 }

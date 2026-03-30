@@ -114,7 +114,14 @@ export function runCommand(
 	options?: { input?: string },
 ): CommandResult {
 	const [command, ...commandArgs] = args;
-	const result = spawnSync(command, commandArgs, {
+	const adjustedArgs =
+		process.platform === "win32" &&
+		command === "bun" &&
+		commandArgs[0] === "install" &&
+		!commandArgs.includes("--backend")
+			? [...commandArgs, "--backend", "copyfile"]
+			: commandArgs;
+	const result = spawnSync(command, adjustedArgs, {
 		cwd,
 		encoding: "utf8",
 		env: {
