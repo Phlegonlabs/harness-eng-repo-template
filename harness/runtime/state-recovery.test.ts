@@ -4,7 +4,11 @@ import path from "node:path";
 import { orchestrateTask } from "./orchestration";
 import { createRepo } from "./orchestration-test-fixtures";
 import { loadState, saveState } from "./planning";
-import { listStateSnapshots, recoverStateSnapshot } from "./state-recovery";
+import {
+	listStateSnapshots,
+	recommendStateRecovery,
+	recoverStateSnapshot,
+} from "./state-recovery";
 
 const tempRoots: string[] = [];
 
@@ -44,5 +48,23 @@ describe("state recovery", () => {
 
 		expect(restored?.fileName).toBeTruthy();
 		expect(recovered).toBe(original);
+	});
+
+	it("recommends a recovery point and rollback snapshot for active work", () => {
+		const root = createRepo(["bun --version"], tempRoots);
+		orchestrateTask(root);
+		const state = loadState(root);
+		const snapshots = listStateSnapshots(root);
+
+		const recommendation = recommendStateRecovery(state, snapshots);
+
+		expect(recommendation.recommendedRecoveryPoint.kind).toBe("handoff");
+		expect(recommendation.recommendedRecoveryPoint.path).toBe(
+			state.tasks[0]?.artifacts.latestHandoffPath ?? null,
+		);
+		expect(recommendation.recommendedStateSnapshot?.fileName).toBeTruthy();
+		expect(recommendation.recommendedStateSnapshotReason).toContain(
+			"checkpoint",
+		);
 	});
 });

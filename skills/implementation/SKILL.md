@@ -7,8 +7,9 @@ Use this skill when implementing new features or making significant code changes
 1. Read `docs/architecture.md` to understand module boundaries
 2. Check `docs/decisions/` for relevant ADRs
 3. Check `docs/progress.md` for the current milestone and task
-4. If the change spans multiple domains or layers, create an execution plan: `docs/execution-plans/`
-5. Use the Research skill first if the area is unfamiliar
+4. If the task touches frontend or UI surfaces, also read `docs/design/overview.md`, `docs/design/design-system.md`, and `docs/design/components.md`
+5. If the change spans multiple domains or layers, create an execution plan: `docs/execution-plans/`
+6. Use the Research skill first if the area is unfamiliar
 
 ## Implementation Checklist
 

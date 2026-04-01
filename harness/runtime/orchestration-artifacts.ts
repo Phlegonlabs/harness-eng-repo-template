@@ -1,5 +1,6 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
+import { describeAvailableContext } from "./context";
 import { repoRelative, writeJson, writeTextFile } from "./shared";
 import type {
 	MilestoneRecord,
@@ -45,6 +46,7 @@ export function buildTaskContract(
 	task: TaskRecord,
 	milestone: MilestoneRecord,
 	now: string,
+	root: string,
 ): TaskContractArtifact {
 	const affectedAreas =
 		task.affectedFilesOrAreas.length > 0
@@ -54,6 +56,7 @@ export function buildTaskContract(
 		task.validationChecks.length > 0
 			? task.validationChecks
 			: ["No automated validation configured"];
+	const context = describeAvailableContext(root, task);
 
 	return {
 		version: "1.0.0",
@@ -73,6 +76,8 @@ export function buildTaskContract(
 			"Do not bypass harness validation or rule checks",
 			"Do not change harness/rules without an ADR and explicit approval",
 		],
+		contextRefs: context.refs,
+		advisories: context.advisories,
 		validationChecks,
 		evaluationGates: task.evaluationGates,
 		acceptanceCriteria: task.acceptanceCriteria,
@@ -87,7 +92,7 @@ export function writeTaskContract(
 	milestone: MilestoneRecord,
 	now: string,
 ): string {
-	const artifact = buildTaskContract(task, milestone, now);
+	const artifact = buildTaskContract(task, milestone, now, root);
 	const contract = [
 		`# Task Contract: ${artifact.taskId}`,
 		"",
@@ -111,6 +116,21 @@ export function writeTaskContract(
 		"## Deliverables",
 		"",
 		...artifact.deliverables.map((item) => `- ${item}`),
+		"",
+		"## Context",
+		"",
+		...(artifact.contextRefs.length > 0
+			? artifact.contextRefs.map(
+					(ref) =>
+						`- ${ref.label} | ${ref.kind} | ${ref.required ? "required" : "optional"} | ${ref.path}`,
+				)
+			: ["- No additional context references were resolved for this task."]),
+		"",
+		"## Advisories",
+		"",
+		...(artifact.advisories.length > 0
+			? artifact.advisories.map((item) => `- ${item}`)
+			: ["- No additional advisories."]),
 		"",
 		"## Validation Checks",
 		"",

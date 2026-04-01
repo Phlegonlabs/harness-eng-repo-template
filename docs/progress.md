@@ -11,7 +11,9 @@
 |--------|--------|-------|
 | `docs/product.md` | Ready | Engineer-template PRD baseline is ready to customize |
 | `docs/architecture.md` | Ready | Monorepo architecture baseline is ready to customize |
+| `docs/design/` | Optional | Populate or sync frontend design context when the project has UI constraints |
 | Discovery | Optional | Run `bun run harness:discover --reset` to enter guided discovery mode |
+| Context sync | Ready | Use `bun run harness:context:sync` to normalize external product, architecture, and design inputs into repo-owned surfaces |
 | Backlog sync | Ready | Run `bun run harness:plan` to materialize starter milestones and tasks |
 | Task loop | Ready | Use `harness:orchestrate` + `harness:evaluate` for contract-driven execution |
 
@@ -44,3 +46,6 @@
 ## Activity Log
 
 - Ready template baseline refreshed on 2026-03-30.
+- Design context surfaces and `harness:context:sync` are available for optional frontend workflows.
+- Runtime reliability and resume surfaces were extended on 2026-03-31 with evaluator retry metadata, stronger `status --json` resume pointers, and richer compact history.
+- Recovery recommendations were added on 2026-03-31 so `status --json` and `harness:state-recover` now point to a recommended resume artifact and rollback snapshot.

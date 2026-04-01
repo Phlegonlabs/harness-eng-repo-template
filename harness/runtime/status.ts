@@ -1,5 +1,6 @@
 import { loadState } from "./planning";
 import { repoRoot } from "./shared";
+import { listStateSnapshots, recommendStateRecovery } from "./state-recovery";
 import type {
 	HarnessProgressSummary,
 	HarnessState,
@@ -33,6 +34,15 @@ function toTaskSummary(task: TaskRecord): HarnessTaskSummary {
 		requiredSkills: task.requiredSkills,
 		evaluationGateCount: task.evaluationGates.length,
 	};
+}
+
+function recommendedArtifactPaths(task: TaskRecord | null): string[] {
+	if (!task) return [];
+	return [
+		task.artifacts.contractPath,
+		task.artifacts.latestEvaluationPath,
+		task.artifacts.latestHandoffPath,
+	].filter((value): value is string => Boolean(value));
 }
 
 function activeTask(state: HarnessState): TaskRecord | null {
@@ -101,6 +111,8 @@ export function buildHarnessStatus(
 ): HarnessStatusSnapshot {
 	const state = loadState(root);
 	const currentTask = activeTask(state);
+	const stateSnapshots = listStateSnapshots(root);
+	const recovery = recommendStateRecovery(state, stateSnapshots);
 	return {
 		projectName: state.projectInfo.projectName,
 		phase: normalizedPhase(state),
@@ -115,6 +127,15 @@ export function buildHarnessStatus(
 		validationStatus: "unknown",
 		progress: progress(state),
 		activeWorktrees: state.execution.activeWorktrees,
+		resume: {
+			activeTaskCheckpointAt: currentTask?.lastCheckpointAt ?? null,
+			latestStateSnapshot: stateSnapshots[0] ?? null,
+			recentStateSnapshots: stateSnapshots.slice(0, 3),
+			recommendedArtifactPaths: recommendedArtifactPaths(currentTask),
+			recommendedRecoveryPoint: recovery.recommendedRecoveryPoint,
+			recommendedStateSnapshot: recovery.recommendedStateSnapshot,
+			recommendedStateSnapshotReason: recovery.recommendedStateSnapshotReason,
+		},
 		discovery: state.discovery.readiness,
 	};
 }
@@ -134,6 +155,21 @@ function renderSummary(status: HarnessStatusSnapshot): string {
 			`  Contract: ${status.activeTask.contractPath ?? "-"}`,
 			`  Evaluation: ${status.activeTask.latestEvaluationPath ?? "-"}`,
 			`  Handoff: ${status.activeTask.latestHandoffPath ?? "-"}`,
+		);
+	}
+	if (status.resume.latestStateSnapshot) {
+		lines.push(
+			`  Resume snapshot: ${status.resume.latestStateSnapshot.path} @ ${status.resume.latestStateSnapshot.createdAt}`,
+		);
+	}
+	if (status.resume.recommendedRecoveryPoint.path) {
+		lines.push(
+			`  Resume point: ${status.resume.recommendedRecoveryPoint.kind} -> ${status.resume.recommendedRecoveryPoint.path}`,
+		);
+	}
+	if (status.resume.recommendedStateSnapshot) {
+		lines.push(
+			`  Recommended snapshot: ${status.resume.recommendedStateSnapshot.path}`,
 		);
 	}
 	if (status.blockedTasks.length > 0) {

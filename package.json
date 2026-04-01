@@ -21,6 +21,7 @@
 		"harness:validate": "bun run harness/runtime/validate.ts",
 		"harness:validate:full": "bun run harness/runtime/validate-full.ts",
 		"harness:discover": "bun run harness/runtime/discover.ts",
+		"harness:context:sync": "bun run harness/runtime/context-sync.ts",
 		"harness:plan": "bun run harness/runtime/plan.ts",
 		"harness:status": "bun run harness/runtime/status.ts",
 		"harness:compact": "bun run harness/runtime/compact.ts",

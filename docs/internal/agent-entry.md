@@ -88,7 +88,8 @@ For active tasks, `bun run harness:evaluate --task <id>` is the task-level gate 
 6. Check which layers will be touched (review `docs/internal/dependency-layers.md`)
 7. Inspect the current task contract / latest handoff artifact when resuming in-flight work
 8. Identify which workspace(s) are affected before editing
-9. Prefer `bun run harness:compact` when you need a concise resume surface instead of re-reading multiple artifacts
+9. For frontend tasks, also read `docs/design/overview.md`, `docs/design/design-system.md`, `docs/design/components.md`, and `docs/design/wireframes/`
+10. Prefer `bun run harness:compact` when you need a concise resume surface instead of re-reading multiple artifacts
 
 A fresh clone of this template is still a pre-init scaffold. Do not assume a runnable backlog exists until `harness:init` or discovery has produced docs-ready inputs and `harness:plan` has run.
 
@@ -116,10 +117,12 @@ A fresh clone of this template is still a pre-init scaffold. Do not assume a run
 
 - `docs/product.md` is the PRD canon
 - `docs/architecture.md` is the architecture canon
+- `docs/design/` is the optional frontend design canon once populated
 - `docs/progress.md` is the human-readable milestone/task surface
 - `.harness/state.json` is the machine execution canon
 - `bun run harness:init -- <name>` personalizes the ready engineer baseline for a new project
 - `bun run harness:discover --reset` is the optional guided flow for teams that want PRD/architecture interviews
+- `bun run harness:context:sync` normalizes external product, architecture, and design inputs into repository-owned surfaces
 - Generate milestones/tasks only after PRD + architecture are ready enough to execute
 - Parallel execution is milestone-level only and must use isolated worktrees
 - Skill loading follows `harness/skills/registry.json` with progressive disclosure and deterministic file-pattern routing against task-owned affected areas

@@ -270,11 +270,12 @@ describe("orchestration lifecycle", () => {
 		expect(result?.task.evaluatorStatus).toBe("failed");
 		expect(
 			artifact.checks.some(
-				(check) => check.source === "skill-exit" && check.exitCode !== 0,
+				(check: { source: string; exitCode: number }) =>
+					check.source === "skill-exit" && check.exitCode !== 0,
 			),
 		).toBe(true);
 		expect(
-			artifact.findings.some((finding) =>
+			artifact.findings.some((finding: { message: string }) =>
 				finding.message.includes("skill exit gate"),
 			),
 		).toBe(true);

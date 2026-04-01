@@ -63,8 +63,11 @@ Only `apps/*/src` and `packages/*/src` are treated as source roots in the templa
 ### Root command contract
 ```text
 bun run harness:init -- <project-name>
+bun run harness:context:sync --design-system <path>
+bun run harness:status --json
 bun run harness:guardian --mode preflight
 bun run harness:compact
+bun run harness:state-recover --list
 bun run harness:dispatch --prepare --role sidecar
 bun run build
 bun run test
@@ -86,7 +89,9 @@ Cross-workspace reuse happens through package exports such as @<project>/shared.
 ```text
 docs/product.md and docs/architecture.md are the human-readable source of truth.
 harness:plan reads them to materialize milestone and task placeholders.
-.harness/contracts, .harness/evaluations, .harness/handoffs, and .harness/compact store execution artifacts.
+docs/design/ is the optional canonical frontend design context surface.
+harness:context:sync normalizes external local sources into those canonical files.
+.harness/contracts, .harness/evaluations, .harness/handoffs, .harness/compact, .harness/snapshots, and .harness/context/context-manifest.json store execution and context-sync artifacts.
 ```
 
 ---
@@ -152,14 +157,15 @@ bun run harness:validate:full
 
 1. Run `bun run harness:init -- <project-name>` when adopting the template.
 2. Use `bun run harness:guardian --mode preflight` before task activation or milestone dispatch.
-3. Use `bun run harness:orchestrate` to open the active task contract.
-4. Run `bun run harness:evaluate --task <id> --all` before marking a task done.
-5. Confirm `bun run build`, `bun run test`, and `bun run typecheck` pass.
-6. Run `bun run harness:compact` when a concise resume or handoff surface is helpful.
-7. Run `bun run harness:self-review --report`, `bun run harness:docs --report`, and `bun run harness:quality --score` when the task touches runtime, docs, or policy surfaces.
-8. Run `bun run harness:validate` before local handoff.
-9. Run `bun run harness:validate:full` before relying on CI-equivalent harness coverage locally.
-10. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.
+3. Use `bun run harness:context:sync` when product, architecture, or design inputs originate outside the repository.
+4. Use `bun run harness:orchestrate` to open the active task contract.
+5. Run `bun run harness:evaluate --task <id> --all` before marking a task done.
+6. Confirm `bun run build`, `bun run test`, and `bun run typecheck` pass.
+7. Run `bun run harness:compact` when a concise resume or handoff surface is helpful.
+8. Run `bun run harness:self-review --report`, `bun run harness:docs --report`, and `bun run harness:quality --score` when the task touches runtime, docs, or policy surfaces.
+9. Run `bun run harness:validate` before local handoff.
+10. Run `bun run harness:validate:full` before relying on CI-equivalent harness coverage locally.
+11. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.
 
 ---
 

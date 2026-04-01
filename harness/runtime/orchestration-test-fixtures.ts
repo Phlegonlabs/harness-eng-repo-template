@@ -64,6 +64,7 @@ const supportFiles: Record<string, string> = {
 				preserveRequiredSkills: true,
 				weights: {
 					"skills/implementation/SKILL.md": 100,
+					"skills/frontend/SKILL.md": 95,
 					"skills/research/SKILL.md": 90,
 					"skills/testing/SKILL.md": 80,
 					"skills/debugging/SKILL.md": 85,
@@ -80,6 +81,16 @@ const supportFiles: Record<string, string> = {
 				"skills/implementation/SKILL.md": {
 					filePatterns: ["apps/**", "packages/**"],
 					guardrails: ["dependency-layers", "file-size-limits"],
+				},
+				"skills/frontend/SKILL.md": {
+					filePatterns: [
+						"apps/web",
+						"apps/web/**",
+						"src/ui",
+						"src/ui/**",
+						"**/src/ui/**",
+					],
+					guardrails: ["responsive-ui", "design-context"],
 				},
 				"skills/testing/SKILL.md": {
 					filePatterns: ["tests/**", "**/*.test.ts", "**/*.spec.ts"],
@@ -122,6 +133,20 @@ const supportFiles: Record<string, string> = {
 				linters: true,
 				entropy_scans: true,
 				doc_freshness_days: 30,
+			},
+			evaluation: {
+				commandTimeoutMs: 600000,
+				maxRetriesOnInfrastructureFailure: 2,
+				baseBackoffMs: 1000,
+				maxBackoffMs: 8000,
+				retryableCategories: [
+					"validation",
+					"runtime",
+					"docs",
+					"quality",
+					"custom",
+					"skill-exit",
+				],
 			},
 			contextManagement: {
 				enabled: true,

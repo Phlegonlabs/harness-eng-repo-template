@@ -26,6 +26,13 @@ export interface HarnessConfig {
 		entropy_scans: boolean;
 		doc_freshness_days: number;
 	};
+	evaluation?: {
+		commandTimeoutMs: number;
+		maxRetriesOnInfrastructureFailure: number;
+		baseBackoffMs: number;
+		maxBackoffMs: number;
+		retryableCategories: EvaluationGateCategory[];
+	};
 	contextManagement: {
 		enabled: boolean;
 		autoCompact: boolean;
@@ -160,6 +167,33 @@ export interface TaskArtifacts {
 	latestHandoffPath: string | null;
 }
 
+export interface ContextReference {
+	kind: string;
+	label: string;
+	path: string;
+	required: boolean;
+}
+
+export interface TaskContextSummary {
+	refs: ContextReference[];
+	advisories: string[];
+}
+
+export interface ContextManifestEntry {
+	kind: string;
+	source: string;
+	target: string;
+	mode: "replace" | "merge";
+	isDirectory: boolean;
+	syncedAt: string;
+}
+
+export interface ContextManifest {
+	version: string;
+	syncedAt: string | null;
+	entries: ContextManifestEntry[];
+}
+
 export interface TaskRecord {
 	id: string;
 	milestoneId: string;
@@ -270,78 +304,9 @@ export type {
 	GuardianMode,
 	GuardianRunRecord,
 	HarnessCompactArtifactSummary,
+	HarnessCompactRecentArtifact,
 	HarnessCompactSnapshot,
 } from "./lifecycle-types";
-
-export interface TaskContractArtifact {
-	version: string;
-	taskId: string;
-	milestoneId: string;
-	title: string;
-	kind: string;
-	goal: string;
-	affectedAreas: string[];
-	deliverables: string[];
-	outOfScope: string[];
-	validationChecks: string[];
-	evaluationGates: TaskEvaluationGate[];
-	acceptanceCriteria: string[];
-	createdAt: string;
-	approvedAt: string | null;
-}
-
-export interface TaskEvaluationGateResult {
-	id: string;
-	label: string;
-	command: string;
-	exitCode: number;
-	outputSnippet: string;
-	status: "passed" | "failed" | "skipped";
-	durationMs: number;
-	blocking: boolean;
-	category: EvaluationGateCategory;
-	logPath?: string | null;
-	source: EvaluationGateSource;
-	skills?: string[];
-	reason?: string;
-}
-
-export type TaskCheckResult = TaskEvaluationGateResult;
-
-export interface TaskEvaluationFinding {
-	severity: "blocker" | "warn" | "info";
-	gateId?: string;
-	message: string;
-}
-
-export interface TaskEvaluationArtifact {
-	version: string;
-	taskId: string;
-	milestoneId: string;
-	iteration: number;
-	status: "passed" | "failed" | "partial";
-	evaluatedAt: string;
-	mode: "all" | "gate-preview";
-	gateResults: TaskEvaluationGateResult[];
-	checks: TaskCheckResult[];
-	findings: TaskEvaluationFinding[];
-	blockingFailures: string[];
-	nextAction: string | null;
-}
-
-export interface TaskHandoffArtifact {
-	version: string;
-	taskId: string;
-	milestoneId: string;
-	iteration: number;
-	createdAt: string;
-	summary: string;
-	nextAction: string;
-	risks: string[];
-	commandLog: string[];
-	contractPath: string | null;
-	evaluationPath: string | null;
-}
 
 export interface ValidationContext {
 	repoRoot: string;
@@ -404,6 +369,16 @@ export type {
 } from "./policy-types";
 export type {
 	HarnessProgressSummary,
+	HarnessRecoveryPoint,
 	HarnessStatusSnapshot,
 	HarnessTaskSummary,
 } from "./status-types";
+export type {
+	TaskCheckResult,
+	TaskContractArtifact,
+	TaskEvaluationArtifact,
+	TaskEvaluationFinding,
+	TaskEvaluationGateAttempt,
+	TaskEvaluationGateResult,
+	TaskHandoffArtifact,
+} from "./task-artifact-types";

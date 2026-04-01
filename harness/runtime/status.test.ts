@@ -26,6 +26,22 @@ describe("harness status", () => {
 		expect(status.activeTask?.status).toBe("in_progress");
 		expect(status.suggestedSkills).toContain("skills/implementation/SKILL.md");
 		expect(status.progress.inProgress).toBe(1);
+		expect(status.resume.activeTaskCheckpointAt).not.toBeNull();
+		expect(status.resume.latestStateSnapshot?.path).toContain(
+			".harness/snapshots/",
+		);
+		expect(status.activeTask?.contractPath).toBeTruthy();
+		expect(status.resume.recommendedArtifactPaths).toContain(
+			status.activeTask?.contractPath ?? "",
+		);
+		expect(status.resume.recommendedRecoveryPoint.kind).toBe("handoff");
+		expect(status.activeTask?.latestHandoffPath).toBeTruthy();
+		expect(status.resume.recommendedRecoveryPoint.path).toBe(
+			status.activeTask?.latestHandoffPath ?? null,
+		);
+		expect(status.resume.recommendedStateSnapshot?.path).toContain(
+			".harness/snapshots/",
+		);
 	});
 
 	it("surfaces blocked tasks when no active task can proceed", () => {

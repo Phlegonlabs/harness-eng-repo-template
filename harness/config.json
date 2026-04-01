@@ -12,6 +12,20 @@
 		"entropy_scans": true,
 		"doc_freshness_days": 30
 	},
+	"evaluation": {
+		"commandTimeoutMs": 600000,
+		"maxRetriesOnInfrastructureFailure": 2,
+		"baseBackoffMs": 1000,
+		"maxBackoffMs": 8000,
+		"retryableCategories": [
+			"validation",
+			"runtime",
+			"docs",
+			"quality",
+			"custom",
+			"skill-exit"
+		]
+	},
 	"contextManagement": {
 		"enabled": true,
 		"autoCompact": true,

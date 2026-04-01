@@ -84,6 +84,13 @@ export function summarizeEvaluation(
 		summaryLines: [
 			`Status: ${artifact.status}`,
 			`Iteration: ${artifact.iteration}`,
+			`Recovered after retry: ${
+				artifact.gateResults.some((result) => result.recovered) ? "yes" : "no"
+			}`,
+			`Attempts: ${artifact.gateResults.reduce(
+				(total, result) => total + result.attemptCount,
+				0,
+			)}`,
 			...findings,
 		],
 	};

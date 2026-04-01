@@ -29,6 +29,9 @@ Current template usage is intentionally light:
 - Keep route and entry wiring in `src/index.ts` or future `src/runtime/` entrypoints.
 - Prefer naming features by user-facing domain, not by framework primitive.
 - Import shared behavior through package exports only. Do not deep-import from another workspace's `src/`.
+- Use `docs/design/design-system.md` for tokens, typography, spacing, and visual-language constraints when that file is populated.
+- Use `docs/design/components.md` for reusable component and variant rules when that file is populated.
+- Use `docs/design/wireframes/` for layout references, screenshots, and synced wireframe assets.
 
 ---
 

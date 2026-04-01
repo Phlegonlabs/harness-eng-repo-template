@@ -36,7 +36,7 @@
 ### Must Have (v1)
 - [ ] Ready-to-edit monorepo layout with `apps/web`, `apps/api`, and `packages/shared`
 - [ ] Root validation, guardian, compact, and task orchestration that work immediately after initialization
-- [ ] Task contracts, structured evaluation gates, evaluator results, handoff artifacts, and compact snapshots for long-running work
+- [ ] Task contracts, structured evaluation gates, evaluator results, handoff artifacts, compact snapshots, and state recovery surfaces for long-running work
 - [ ] Repository-owned docs and rules that agents can follow without extra chat context
 - [ ] Machine-readable self-review, docs freshness, and quality scoring surfaces
 
@@ -45,6 +45,7 @@
 - [ ] Milestone and task planning generated from repository docs
 - [ ] Provider-neutral dispatch packet artifacts for sidecar and review workflows
 - [ ] Opt-in observability profiles for runtime health and log queries
+- [ ] Canonical `docs/design/` surfaces plus sync tooling for optional frontend design and wireframe context
 
 ### Could Have (later)
 - [ ] Optional deployment presets per application workspace

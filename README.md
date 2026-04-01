@@ -15,6 +15,8 @@ An agent-first Bun + Turbo monorepo template for teams that want a repository to
 - Structured evaluation gates, machine-readable self-review, docs checks, and quality scoring
 - Machine-readable engineering rules under `harness/rules/`
 - Self-contained agent entry docs in `AGENTS.md`, `CODEX.md`, and `CLAUDE.md`
+- Optional canonical design-context surfaces under `docs/design/` for design systems, components, and wireframes
+- A repo-owned `harness:context:sync` command for normalizing external product, architecture, and design inputs
 - A clean pre-init baseline that becomes project-specific through `harness:init`
 - CI-ready validation through `bun run harness:validate:full`
 
@@ -37,6 +39,7 @@ The canonical repo surfaces are:
 - `AGENTS.md`: primary operating contract for agents
 - `docs/product.md`: product canon
 - `docs/architecture.md`: architecture canon
+- `docs/design/`: optional frontend design canon
 - `docs/progress.md`: human-readable execution view
 - `.harness/state.json`: machine-readable execution state
 
@@ -63,8 +66,9 @@ After initialization:
 
 1. Update [`docs/product.md`](docs/product.md)
 2. Update [`docs/architecture.md`](docs/architecture.md)
-3. Run `bun run harness:plan`
-4. Use `bun run harness:orchestrate` and `bun run harness:evaluate --task <id> --all` to drive execution
+3. If your source material lives outside the repo, sync it in with `bun run harness:context:sync`
+4. Run `bun run harness:plan`
+5. Use `bun run harness:orchestrate` and `bun run harness:evaluate --task <id> --all` to drive execution
 
 ## Pre-Init vs Post-Init
 
@@ -129,10 +133,12 @@ Choose the profile that matches the project shape:
 - `bun run harness:status --json`: machine-readable state summary
 - `bun run harness:compact`: write a concise repo-owned handoff snapshot
 - `bun run harness:state-recover --list`: inspect state snapshots
+- `bun run harness:state-recover --recommended`: restore the recommended rollback snapshot
 
 ### Planning and Execution
 
 - `bun run harness:discover --reset`: guided PRD/architecture interview flow
+- `bun run harness:context:sync --design-system <path>`: sync local external product, architecture, design, or wireframe inputs into canonical repo surfaces
 - `bun run harness:plan`: sync backlog from docs
 - `bun run harness:orchestrate`: prepare the next task contract
 - `bun run harness:evaluate --task <id> --all`: evaluate an active task through all configured gates
@@ -182,6 +188,7 @@ After creating a project from this template, replace these first:
 
 - `docs/product.md`
 - `docs/architecture.md`
+- `docs/design/overview.md`, `docs/design/design-system.md`, and `docs/design/components.md` when the project has UI constraints
 - `docs/progress.md` after planning begins
 - `.env.example` with project-specific environment variables
 - `.github/CODEOWNERS` if you did not set `--owner` during init
@@ -202,7 +209,7 @@ bun run harness:docs --report
 bun run harness:quality --score
 ```
 
-For long-running work, the repo stores contracts, handoffs, compact snapshots, guardian artifacts, and state recovery snapshots under `.harness/`.
+For long-running work, the repo stores contracts, handoffs, compact snapshots, guardian artifacts, and state recovery snapshots under `.harness/`, and `status --json` plus `state-recover --recommended` expose the strongest repo-owned recovery points.
 
 ## Included Rules
 

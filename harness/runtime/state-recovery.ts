@@ -7,7 +7,12 @@ import {
 	statSync,
 } from "node:fs";
 import path from "node:path";
-import type { StateSnapshotRecord } from "./types";
+import type {
+	HarnessRecoveryPoint,
+	HarnessState,
+	StateSnapshotRecord,
+	TaskRecord,
+} from "./types";
 
 const SNAPSHOT_DIR = path.join(".harness", "snapshots");
 const STATE_FILE = path.join(".harness", "state.json");
@@ -75,6 +80,107 @@ export function listStateSnapshots(root: string): StateSnapshotRecord[] {
 			];
 		})
 		.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+function focusTask(state: HarnessState): TaskRecord | null {
+	for (const status of [
+		"evaluation_pending",
+		"in_progress",
+		"blocked",
+		"pending",
+	] as const) {
+		const match = state.tasks.find((task) => task.status === status);
+		if (match) return match;
+	}
+	return null;
+}
+
+function recommendedRecoveryPoint(
+	task: TaskRecord | null,
+): HarnessRecoveryPoint {
+	if (!task) {
+		return {
+			kind: "none",
+			path: null,
+			reason: "No task-scoped recovery point is available.",
+		};
+	}
+	if (
+		(task.status === "evaluation_pending" || task.status === "blocked") &&
+		task.artifacts.latestEvaluationPath
+	) {
+		return {
+			kind: "evaluation",
+			path: task.artifacts.latestEvaluationPath,
+			reason:
+				"Latest evaluation is the strongest recovery point for validating or blocked work.",
+		};
+	}
+	if (task.artifacts.latestHandoffPath) {
+		return {
+			kind: "handoff",
+			path: task.artifacts.latestHandoffPath,
+			reason:
+				"Latest handoff is the strongest recovery point for in-progress implementation.",
+		};
+	}
+	if (task.artifacts.contractPath) {
+		return {
+			kind: "contract",
+			path: task.artifacts.contractPath,
+			reason:
+				"Task contract is the only durable task artifact currently available.",
+		};
+	}
+	return {
+		kind: "none",
+		path: null,
+		reason: "No task artifact is available for direct recovery.",
+	};
+}
+
+function recommendedStateSnapshot(
+	snapshots: StateSnapshotRecord[],
+	task: TaskRecord | null,
+): {
+	snapshot: StateSnapshotRecord | null;
+	reason: string | null;
+} {
+	if (snapshots.length === 0) {
+		return { snapshot: null, reason: null };
+	}
+	if (task?.lastCheckpointAt) {
+		const checkpointAt = task.lastCheckpointAt;
+		const aligned =
+			snapshots.find((snapshot) => snapshot.createdAt <= checkpointAt) ?? null;
+		if (aligned) {
+			return {
+				snapshot: aligned,
+				reason: "Closest pre-save snapshot before the active task checkpoint.",
+			};
+		}
+	}
+	return {
+		snapshot: snapshots[0] ?? null,
+		reason: "Most recent pre-save state snapshot available in the repository.",
+	};
+}
+
+export function recommendStateRecovery(
+	state: HarnessState,
+	snapshots: StateSnapshotRecord[],
+): {
+	recommendedRecoveryPoint: HarnessRecoveryPoint;
+	recommendedStateSnapshot: StateSnapshotRecord | null;
+	recommendedStateSnapshotReason: string | null;
+} {
+	const task = focusTask(state);
+	const snapshotRecommendation = recommendedStateSnapshot(snapshots, task);
+	return {
+		recommendedRecoveryPoint: recommendedRecoveryPoint(task),
+		recommendedStateSnapshot: snapshotRecommendation.snapshot,
+		recommendedStateSnapshotReason: snapshotRecommendation.reason,
+	};
 }
 
 export function createStateSnapshot(

@@ -28,6 +28,14 @@ The goal of this file is to minimize session startup cost while keeping the non-
 3. `docs/architecture.md`
 4. `docs/progress.md`
 
+### Frontend tasks
+1. `AGENTS.md`
+2. `CODEX.md` or `CLAUDE.md`
+3. `docs/design/overview.md`
+4. `docs/design/design-system.md`
+5. `docs/design/components.md`
+6. `docs/architecture.md`
+
 ### Large tasks
 1. `AGENTS.md`
 2. `CODEX.md` or `CLAUDE.md`
@@ -179,6 +187,7 @@ Load skills on demand. Start with the minimum set.
 |-------|----------|
 | `skills/research/SKILL.md` | unfamiliar area, unclear existing pattern |
 | `skills/implementation/SKILL.md` | feature work or significant refactors |
+| `skills/frontend/SKILL.md` | `apps/web` or `src/ui/` frontend work with design context |
 | `skills/testing/SKILL.md` | test additions or coverage work |
 | `skills/code-review/SKILL.md` | review, validation, merge readiness |
 | `skills/debugging/SKILL.md` | bug reproduction, log-driven debugging, observability checks |
@@ -194,6 +203,7 @@ If a change spans multiple files or phases, create an execution plan in `docs/ex
 |---------|---------|
 | `bun run harness:init -- <name>` | personalize the template |
 | `bun run harness:discover --reset` | guided PRD/architecture discovery |
+| `bun run harness:context:sync --design-system <path>` | sync external product, architecture, design, or wireframe inputs into canonical repo surfaces |
 | `bun run harness:plan` | sync backlog from docs |
 | `bun run harness:status --json` | structured current-state summary |
 | `bun run harness:compact` | write the concise resume and handoff snapshot |

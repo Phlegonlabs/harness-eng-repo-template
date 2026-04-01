@@ -1,4 +1,8 @@
-import type { ActiveWorktreeRecord, TaskStatus } from "./types";
+import type {
+	ActiveWorktreeRecord,
+	StateSnapshotRecord,
+	TaskStatus,
+} from "./types";
 
 export interface HarnessTaskSummary {
 	id: string;
@@ -28,6 +32,12 @@ export interface HarnessProgressSummary {
 	completedMilestones: number;
 }
 
+export interface HarnessRecoveryPoint {
+	kind: "handoff" | "evaluation" | "contract" | "state_snapshot" | "none";
+	path: string | null;
+	reason: string;
+}
+
 export interface HarnessStatusSnapshot {
 	projectName: string;
 	phase: string;
@@ -38,6 +48,15 @@ export interface HarnessStatusSnapshot {
 	validationStatus: "unknown";
 	progress: HarnessProgressSummary;
 	activeWorktrees: ActiveWorktreeRecord[];
+	resume: {
+		activeTaskCheckpointAt: string | null;
+		latestStateSnapshot: StateSnapshotRecord | null;
+		recentStateSnapshots: StateSnapshotRecord[];
+		recommendedArtifactPaths: string[];
+		recommendedRecoveryPoint: HarnessRecoveryPoint;
+		recommendedStateSnapshot: StateSnapshotRecord | null;
+		recommendedStateSnapshotReason: string | null;
+	};
 	discovery: {
 		productReady: boolean;
 		architectureReady: boolean;

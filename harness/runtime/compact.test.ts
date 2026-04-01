@@ -23,6 +23,18 @@ describe("compact snapshots", () => {
 		expect(snapshot.activeTask?.id).toBe("T101");
 		expect(snapshot.artifacts.contract.path).toContain(".harness/contracts/");
 		expect(snapshot.artifacts.handoff.summaryLines[0]).toContain("Task T101");
+		expect(snapshot.resume.latestStateSnapshot?.path).toContain(
+			".harness/snapshots/",
+		);
+		expect(snapshot.resume.recommendedRecoveryPoint.kind).toBe("handoff");
+		expect(snapshot.resume.recommendedStateSnapshot?.path).toContain(
+			".harness/snapshots/",
+		);
+		expect(snapshot.artifacts.contract.path).toBeTruthy();
+		expect(snapshot.resume.recommendedArtifactPaths).toContain(
+			snapshot.artifacts.contract.path ?? "",
+		);
+		expect(snapshot.resume.instructions.length).toBeGreaterThan(0);
 	});
 
 	it("writes both json and markdown snapshot artifacts", () => {
@@ -40,5 +52,17 @@ describe("compact snapshots", () => {
 			"# Harness Compact Snapshot",
 		);
 		expect(readFileSync(markdownPath, "utf8")).toContain("Status: passed");
+		expect(readFileSync(markdownPath, "utf8")).toContain("## Resume");
+		expect(
+			result.snapshot.resume.recentArtifacts.some(
+				(entry) => entry.kind === "evaluation",
+			),
+		).toBe(true);
+		expect(
+			result.snapshot.resume.recentArtifacts.some(
+				(entry) => entry.kind === "handoff",
+			),
+		).toBe(true);
+		expect(readFileSync(markdownPath, "utf8")).toContain("Recent task history");
 	});
 });

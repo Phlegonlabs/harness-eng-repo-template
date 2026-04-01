@@ -40,6 +40,7 @@ function normalizeCommand(
 		"root.harness-install-hooks",
 		"root.harness-discover",
 		"root.harness-discover-reset",
+		"root.harness-context-sync",
 		"root.harness-plan",
 		"root.harness-compact",
 		"root.harness-docs",

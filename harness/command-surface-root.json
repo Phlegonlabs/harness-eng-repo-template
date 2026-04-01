@@ -85,6 +85,12 @@
 			"summary": "Reset discovery and rewrite the docs back to guided-question mode."
 		},
 		{
+			"id": "root.harness-context-sync",
+			"display": "bun run harness:context:sync --design-system <path>",
+			"requires": [],
+			"summary": "Sync external product, architecture, design-system, component, or wireframe sources into canonical repository context surfaces."
+		},
+		{
 			"id": "root.harness-plan",
 			"display": "bun run harness:plan",
 			"requires": [
@@ -122,7 +128,7 @@
 			"id": "root.harness-state-recover",
 			"display": "bun run harness:state-recover --list",
 			"requires": [],
-			"summary": "List or recover state snapshots created before state mutations."
+			"summary": "List or recover state snapshots created before state mutations, including the recommended rollback snapshot."
 		},
 		{
 			"id": "root.harness-unblock",

@@ -38,6 +38,7 @@
 
 - `bun run harness:status --json`
 - `bun run harness:compact`
+- `bun run harness:context:sync --design-system <path>`
 - `bun run harness:guardian --mode preflight`
 - `bun run harness:state-recover --list`
 - `bun run harness:orchestrate`

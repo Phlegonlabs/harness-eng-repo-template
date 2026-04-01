@@ -1,13 +1,62 @@
+import path from "node:path";
 import { runCommandWithCapture } from "./command-runner";
+import { readJson } from "./shared";
 import type { ResolvedSkillSelection } from "./skill-types";
 import { normalizeTaskEvaluationGates, skillExitGate } from "./task-evaluation";
 import type {
+	HarnessConfig,
 	TaskEvaluationArtifact,
 	TaskEvaluationFinding,
 	TaskEvaluationGate,
+	TaskEvaluationGateAttempt,
 	TaskEvaluationGateResult,
 	TaskRecord,
 } from "./types";
+
+function evaluationConfig(
+	root: string,
+): NonNullable<HarnessConfig["evaluation"]> {
+	const config = readJson<HarnessConfig>(
+		path.join(root, "harness/config.json"),
+	);
+	return {
+		commandTimeoutMs: config.evaluation?.commandTimeoutMs ?? 600000,
+		maxRetriesOnInfrastructureFailure:
+			config.evaluation?.maxRetriesOnInfrastructureFailure ?? 2,
+		baseBackoffMs: config.evaluation?.baseBackoffMs ?? 1000,
+		maxBackoffMs: config.evaluation?.maxBackoffMs ?? 8000,
+		retryableCategories: config.evaluation?.retryableCategories ?? [
+			"validation",
+			"runtime",
+			"docs",
+			"quality",
+			"custom",
+			"skill-exit",
+		],
+	};
+}
+
+function toAttemptArtifacts(
+	attempts: Array<{
+		attempt: number;
+		exitCode: number;
+		status: "passed" | "failed" | "timed_out";
+		durationMs: number;
+		snippet: string[];
+		logPath: string | null;
+		infrastructureFailure: boolean;
+	}>,
+): TaskEvaluationGateAttempt[] {
+	return attempts.map((attempt) => ({
+		attempt: attempt.attempt,
+		exitCode: attempt.exitCode,
+		status: attempt.status,
+		durationMs: attempt.durationMs,
+		outputSnippet: attempt.snippet.join("\n"),
+		logPath: attempt.logPath,
+		infrastructureFailure: attempt.infrastructureFailure,
+	}));
+}
 
 function commandResult(options: {
 	root: string;
@@ -16,6 +65,8 @@ function commandResult(options: {
 }): TaskEvaluationGateResult {
 	const { root, gate, skills } = options;
 	const startedAt = Date.now();
+	const config = evaluationConfig(root);
+	const retryable = config.retryableCategories.includes(gate.category);
 	const result = runCommandWithCapture({
 		root,
 		commandLine: gate.command,
@@ -24,6 +75,12 @@ function commandResult(options: {
 				? "evaluation-skill-exit"
 				: "evaluation-check",
 		maxSnippetLines: 12,
+		timeoutMs: config.commandTimeoutMs,
+		maxRetriesOnInfrastructureFailure: retryable
+			? config.maxRetriesOnInfrastructureFailure
+			: 0,
+		baseBackoffMs: config.baseBackoffMs,
+		maxBackoffMs: config.maxBackoffMs,
 	});
 	return {
 		id: gate.id,
@@ -38,6 +95,10 @@ function commandResult(options: {
 		logPath: result.logPath,
 		source: gate.source,
 		skills,
+		attemptCount: result.attemptCount,
+		recovered: result.recovered,
+		timedOut: result.timedOut,
+		attempts: toAttemptArtifacts(result.attempts),
 	};
 }
 
@@ -54,6 +115,10 @@ function skippedGateResult(gate: TaskEvaluationGate): TaskEvaluationGateResult {
 		category: gate.category,
 		source: gate.source,
 		reason: "blocked by an earlier blocking gate failure",
+		attemptCount: 0,
+		recovered: false,
+		timedOut: false,
+		attempts: [],
 	};
 }
 
@@ -116,8 +181,8 @@ export function evaluationFindings(
 			severity: result.blocking ? ("blocker" as const) : ("warn" as const),
 			message:
 				result.source === "skill-exit"
-					? `${result.label} failed with exit code ${result.exitCode} for skill exit gate ${result.skills?.join(", ") ?? "unknown"}.`
-					: `${result.label} failed with exit code ${result.exitCode}.`,
+					? `${result.label} failed with exit code ${result.exitCode} for skill exit gate ${result.skills?.join(", ") ?? "unknown"} after ${result.attemptCount} attempt(s).`
+					: `${result.label} failed with exit code ${result.exitCode}${result.timedOut ? " after timing out" : ""} after ${result.attemptCount} attempt(s).`,
 		}));
 }
 

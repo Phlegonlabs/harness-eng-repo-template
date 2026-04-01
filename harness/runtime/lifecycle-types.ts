@@ -1,7 +1,9 @@
 import type {
 	ActiveWorktreeRecord,
 	HarnessProgressSummary,
+	HarnessRecoveryPoint,
 	HarnessTaskSummary,
+	StateSnapshotRecord,
 } from "./types";
 
 export type GuardianMode = "preflight" | "stop" | "drift";
@@ -71,6 +73,13 @@ export interface HarnessCompactArtifactSummary {
 	summaryLines: string[];
 }
 
+export interface HarnessCompactRecentArtifact {
+	kind: "evaluation" | "handoff";
+	path: string;
+	recordedAt: string | null;
+	summaryLines: string[];
+}
+
 export interface HarnessCompactSnapshot {
 	version: string;
 	generatedAt: string;
@@ -84,6 +93,17 @@ export interface HarnessCompactSnapshot {
 	activeTask: HarnessTaskSummary | null;
 	blockedTasks: HarnessTaskSummary[];
 	activeWorktrees: ActiveWorktreeRecord[];
+	resume: {
+		activeTaskCheckpointAt: string | null;
+		latestStateSnapshot: StateSnapshotRecord | null;
+		recentStateSnapshots: StateSnapshotRecord[];
+		recommendedArtifactPaths: string[];
+		recommendedRecoveryPoint: HarnessRecoveryPoint;
+		recommendedStateSnapshot: StateSnapshotRecord | null;
+		recommendedStateSnapshotReason: string | null;
+		instructions: string[];
+		recentArtifacts: HarnessCompactRecentArtifact[];
+	};
 	guardian: GuardianRunRecord | null;
 	entropy: EntropyDeltaRecord | null;
 	dispatch: {

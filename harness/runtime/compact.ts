@@ -1,5 +1,6 @@
 import { readdirSync, rmSync } from "node:fs";
 import path from "node:path";
+import { buildCompactResume } from "./compact-resume";
 import {
 	latestGuardianRecord,
 	latestTask,
@@ -73,11 +74,12 @@ export function buildCompactSnapshot(
 	const root = options?.root ?? repoRoot();
 	const state = options?.state ?? loadState(root);
 	const status = buildHarnessStatus(root);
+	const sourceEvent =
+		options?.sourceEvent ?? state.compact.latestSourceEvent ?? "manual";
 	return {
 		version: "1.0.0",
 		generatedAt: new Date().toISOString(),
-		sourceEvent:
-			options?.sourceEvent ?? state.compact.latestSourceEvent ?? "manual",
+		sourceEvent,
 		projectName: status.projectName,
 		phase: status.phase,
 		nextAction: status.nextAction,
@@ -87,6 +89,13 @@ export function buildCompactSnapshot(
 		activeTask: status.activeTask,
 		blockedTasks: status.blockedTasks,
 		activeWorktrees: status.activeWorktrees,
+		resume: buildCompactResume({
+			root,
+			status,
+			state,
+			taskId: targetTaskId(root, state),
+			sourceEvent,
+		}),
 		guardian: latestGuardianRecord(state),
 		entropy: state.entropy.latestDelta,
 		dispatch: {
@@ -139,6 +148,69 @@ export function renderCompactSnapshot(
 		}
 	} else {
 		lines.push("- No skills currently loaded.");
+	}
+
+	lines.push("", "## Resume", "");
+	lines.push(
+		`- Active checkpoint: ${snapshot.resume.activeTaskCheckpointAt ?? "-"}`,
+	);
+	lines.push(
+		`- Latest state snapshot: ${snapshot.resume.latestStateSnapshot?.path ?? "-"}`,
+	);
+	if (snapshot.resume.latestStateSnapshot) {
+		lines.push(
+			`- Snapshot captured: ${snapshot.resume.latestStateSnapshot.createdAt}`,
+		);
+	}
+	lines.push(
+		`- Recommended recovery point: ${
+			snapshot.resume.recommendedRecoveryPoint.path
+				? `${snapshot.resume.recommendedRecoveryPoint.kind} -> ${snapshot.resume.recommendedRecoveryPoint.path}`
+				: "-"
+		}`,
+	);
+	lines.push(
+		`- Recovery rationale: ${snapshot.resume.recommendedRecoveryPoint.reason}`,
+	);
+	lines.push(
+		`- Recommended rollback snapshot: ${
+			snapshot.resume.recommendedStateSnapshot?.path ?? "-"
+		}`,
+	);
+	if (snapshot.resume.recommendedStateSnapshotReason) {
+		lines.push(
+			`- Rollback rationale: ${snapshot.resume.recommendedStateSnapshotReason}`,
+		);
+	}
+	if (snapshot.resume.recommendedArtifactPaths.length > 0) {
+		lines.push(
+			`- Resume artifacts: ${snapshot.resume.recommendedArtifactPaths.join(", ")}`,
+		);
+	} else {
+		lines.push("- Resume artifacts: none");
+	}
+	if (snapshot.resume.recentStateSnapshots.length > 1) {
+		lines.push("- Recent snapshots:");
+		for (const snapshotRecord of snapshot.resume.recentStateSnapshots) {
+			lines.push(`  - ${snapshotRecord.path} @ ${snapshotRecord.createdAt}`);
+		}
+	}
+	if (snapshot.resume.instructions.length > 0) {
+		lines.push("- Resume sequence:");
+		for (const instruction of snapshot.resume.instructions) {
+			lines.push(`  - ${instruction}`);
+		}
+	}
+	if (snapshot.resume.recentArtifacts.length > 0) {
+		lines.push("- Recent task history:");
+		for (const artifact of snapshot.resume.recentArtifacts) {
+			lines.push(
+				`  - ${artifact.kind}: ${artifact.path} @ ${artifact.recordedAt ?? "-"}`,
+			);
+			for (const line of artifact.summaryLines.slice(0, 2)) {
+				lines.push(`    - ${line}`);
+			}
+		}
 	}
 
 	lines.push("", "## Guardian", "");
