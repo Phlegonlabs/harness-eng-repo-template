@@ -171,6 +171,11 @@ const supportFiles: Record<string, string> = {
 				enabled: true,
 				gradesPath: "docs/quality/GRADES.md",
 				historyPath: ".harness/quality/history.jsonl",
+				gates: {
+					failUnderScore: 0,
+					minGrade: "F",
+					minDimensionScores: {},
+				},
 			},
 			observability: {
 				enabled: false,
@@ -289,6 +294,9 @@ export function baseState(): HarnessState {
 			queuedSidecars: [],
 			latestPacketPath: null,
 			latestResultPath: null,
+		},
+		validation: {
+			recentRuns: [],
 		},
 	};
 }

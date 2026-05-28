@@ -28,7 +28,7 @@
 			"id": "root.harness-structural",
 			"display": "bun run harness:structural",
 			"requires": [],
-			"summary": "Run structural tests for required files, docs, and runtime behavior."
+			"summary": "Run structural smoke tests for required files, docs, and runtime behavior; use --full-runtime for command-flow regression."
 		},
 		{
 			"id": "root.harness-entropy",
@@ -46,7 +46,7 @@
 			"id": "root.harness-quality",
 			"display": "bun run harness:quality --score",
 			"requires": [],
-			"summary": "Compute the current repository quality score and write a quality report artifact."
+			"summary": "Compute the current repository quality score, write a quality report artifact, and optionally enforce score thresholds."
 		},
 		{
 			"id": "root.harness-health",
@@ -70,7 +70,7 @@
 			"id": "root.harness-validate-full",
 			"display": "bun run harness:validate:full",
 			"requires": [],
-			"summary": "Run the full validation suite, including harness runtime regression tests."
+			"summary": "Run the full validation suite as a strict superset of the fast local checks, including harness runtime regression tests."
 		},
 		{
 			"id": "root.harness-discover",
@@ -144,13 +144,13 @@
 				"clean_main_worktree",
 				"eligible_milestone"
 			],
-			"summary": "Allocate milestone worktrees when the backlog and git state allow it."
+			"summary": "Allocate milestone worktrees when the backlog, git state, and resolved milestone scopes allow it."
 		},
 		{
 			"id": "root.harness-merge-milestone",
 			"display": "bun run harness:merge-milestone -- M1",
 			"requires": ["active_worktree", "clean_main_worktree", "milestone_done"],
-			"summary": "Merge a completed milestone branch back into the main worktree."
+			"summary": "Merge a completed validated milestone branch back into the main worktree and record a merge audit artifact."
 		}
 	]
 }

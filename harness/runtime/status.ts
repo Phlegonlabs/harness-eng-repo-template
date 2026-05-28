@@ -8,6 +8,7 @@ import type {
 	HarnessTaskSummary,
 	TaskRecord,
 } from "./types";
+import { aggregateValidationStatus } from "./validation-state";
 
 const MAX_TASK_ITERATIONS = 5;
 
@@ -124,7 +125,7 @@ export function buildHarnessStatus(
 			? [...new Set([...state.skills.loaded, ...currentTask.requiredSkills])]
 			: [...state.skills.loaded],
 		nextAction: nextAction(state, currentTask),
-		validationStatus: "unknown",
+		validationStatus: aggregateValidationStatus(state),
 		progress: progress(state),
 		activeWorktrees: state.execution.activeWorktrees,
 		resume: {

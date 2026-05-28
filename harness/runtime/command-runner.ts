@@ -108,6 +108,7 @@ export function runCommandWithCapture(options: {
 	maxRetriesOnInfrastructureFailure?: number;
 	baseBackoffMs?: number;
 	maxBackoffMs?: number;
+	env?: NodeJS.ProcessEnv;
 }): CommandCaptureResult {
 	const {
 		root,
@@ -118,6 +119,7 @@ export function runCommandWithCapture(options: {
 		maxRetriesOnInfrastructureFailure = 0,
 		baseBackoffMs = 0,
 		maxBackoffMs = baseBackoffMs,
+		env,
 	} = options;
 	const [command, ...args] = tokenize(commandLine);
 	if (!command) {
@@ -154,6 +156,7 @@ export function runCommandWithCapture(options: {
 			const stdout = execFileSync(command, args, {
 				cwd: root,
 				encoding: "utf8",
+				env: env ? { ...process.env, ...env } : process.env,
 				stdio: ["ignore", "pipe", "pipe"],
 				timeout: timeoutMs,
 			});

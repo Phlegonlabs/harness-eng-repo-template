@@ -46,6 +46,9 @@
 
 ## Activity Log
 
+- Harness alignment safeguards were tightened on 2026-05-28 with stricter lifecycle docs, safer parallel dispatch scope checks, merge audit artifacts, validation-state aggregation, and opt-in quality gates.
+- The durable runtime policy is captured in `docs/decisions/004-harness-alignment-safeguards.md`.
+- See `docs/execution-plans/harness-engineering-alignment.md` for the active harness alignment execution plan and verification checklist.
 - Template readiness refresh started on 2026-05-28 after `bun run harness:validate` reported stale docs and `bun run harness:structural` exposed guardian timeout and command-flow diagnostic gaps.
 - Guardian runtime tests were hardened on 2026-05-28 with a longer test timeout, clearer command failure output, and tighter Windows cleanup for persistent dev-process tests.
 - Template readiness validation passed on 2026-05-28 with workspace gates, `harness:validate`, `harness:validate:full`, and guardian preflight green.

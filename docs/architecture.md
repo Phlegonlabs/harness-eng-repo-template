@@ -91,7 +91,7 @@ docs/product.md and docs/architecture.md are the human-readable source of truth.
 docs/design/ is the optional canonical frontend design context surface.
 harness:context:sync normalizes external local sources into those canonical files.
 harness:plan reads the planning docs to materialize milestone and task placeholders when a repository is being adopted.
-.harness/contracts, .harness/evaluations, .harness/handoffs, .harness/compact, .harness/snapshots, and .harness/context/context-manifest.json store execution and context-sync artifacts.
+.harness/contracts, .harness/evaluations, .harness/handoffs, .harness/validations, .harness/merges, .harness/compact, .harness/snapshots, and .harness/context/context-manifest.json store execution and context-sync artifacts.
 ```
 
 ---

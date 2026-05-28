@@ -124,7 +124,7 @@
 	"guardians": {
 		"preflight": {
 			"status": "passed",
-			"runAt": "2026-04-02T12:36:25.335Z",
+			"runAt": "2026-05-28T12:56:23.793Z",
 			"logPath": null,
 			"artifactPath": ".harness/guardians/preflight-latest.json",
 			"sourceEvent": "manual:preflight",
@@ -155,5 +155,28 @@
 		"queuedSidecars": [],
 		"latestPacketPath": null,
 		"latestResultPath": null
+	},
+	"validation": {
+		"recentRuns": [
+			{
+				"source": "guardian_preflight",
+				"status": "passed",
+				"runAt": "2026-05-28T12:56:23.793Z",
+				"artifactPath": ".harness/guardians/preflight-latest.json",
+				"summary": ["PASS: Guardian preflight checks passed."]
+			},
+			{
+				"source": "validate",
+				"status": "warn",
+				"runAt": "2026-05-28T12:56:23.626Z",
+				"artifactPath": ".harness/validations/validate-latest.json",
+				"summary": [
+					"  ✓ 7. Entropy Scans passed",
+					"",
+					"════════════════════════════════════════════",
+					"PASS: All validation checks passed."
+				]
+			}
+		]
 	}
 }

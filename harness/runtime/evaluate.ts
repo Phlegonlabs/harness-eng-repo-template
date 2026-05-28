@@ -2,9 +2,10 @@ import path from "node:path";
 import { runGuardian } from "./guardian";
 import { refreshLifecycleArtifacts } from "./lifecycle";
 import { evaluateTask } from "./orchestration";
-import { loadState } from "./planning";
+import { loadState, saveState } from "./planning";
 import { readJson, repoRoot } from "./shared";
 import type { TaskEvaluationArtifact } from "./types";
+import { appendValidationRun } from "./validation-state";
 
 const taskArgIndex = process.argv.indexOf("--task");
 const taskId =
@@ -74,6 +75,24 @@ const latestArtifact =
 				path.join(root, result.task.artifacts.latestEvaluationPath),
 			)
 		: null;
+if (!previewMode && latestArtifact) {
+	const state = loadState(root);
+	appendValidationRun(state, {
+		source: "evaluate",
+		status:
+			latestArtifact.status === "failed"
+				? "failed"
+				: latestArtifact.status === "partial"
+					? "warn"
+					: "passed",
+		runAt: latestArtifact.evaluatedAt,
+		artifactPath: result.task.artifacts.latestEvaluationPath,
+		summary: latestArtifact.findings
+			.slice(0, 4)
+			.map((finding) => finding.message),
+	});
+	saveState(root, state);
+}
 
 if (quietSuccess && result.task.evaluatorStatus === "passed") {
 	console.log(`PASS: ${result.task.id} evaluation passed.`);

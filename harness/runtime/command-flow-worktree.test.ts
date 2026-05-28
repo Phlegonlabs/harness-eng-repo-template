@@ -1,4 +1,7 @@
 import { describe, expect, it, setDefaultTimeout } from "bun:test";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { saveState } from "./planning";
 import { repoRoot } from "./shared";
 import {
 	cloneRepo,
@@ -28,6 +31,15 @@ describeCommandFlow("command flow — worktree", () => {
 		).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "harness:plan"]).code).toBe(0);
 		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
+		const stateBeforeDispatch = readState(tempRoot);
+		const milestone = stateBeforeDispatch.milestones.find(
+			(entry) => entry.id === "M1",
+		);
+		expect(milestone).toBeTruthy();
+		if (milestone) {
+			milestone.affectedAreas = ["apps/api"];
+		}
+		saveState(tempRoot, stateBeforeDispatch);
 		commitAll(tempRoot, "chore(template): initialize sample project");
 
 		expect(
@@ -73,5 +85,8 @@ describeCommandFlow("command flow — worktree", () => {
 				(entry) => entry.milestoneId === "M1",
 			),
 		).toBe(false);
+		expect(
+			existsSync(path.join(tempRoot, ".harness/merges/m1-latest.json")),
+		).toBe(true);
 	});
 });

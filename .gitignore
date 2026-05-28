@@ -58,8 +58,10 @@ temp/
 .harness/compact/
 .harness/docs/
 .harness/guardians/
+.harness/merges/
 .harness/quality/
 .harness/reviews/
+.harness/validations/
 .harness/dispatch/
 .harness/dispatch-results/
 .harness/snapshots/

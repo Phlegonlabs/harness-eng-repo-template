@@ -56,6 +56,11 @@ export interface HarnessConfig {
 		enabled: boolean;
 		gradesPath: string;
 		historyPath: string;
+		gates?: {
+			failUnderScore?: number;
+			minGrade?: string;
+			minDimensionScores?: Record<string, number>;
+		};
 	};
 	observability?: {
 		enabled: boolean;
@@ -221,6 +226,23 @@ export interface ActiveWorktreeRecord {
 	status: string;
 }
 
+export type ValidationStatus = "unknown" | "passed" | "warn" | "failed";
+export type ValidationRunSource =
+	| "validate"
+	| "validate_full"
+	| "guardian_preflight"
+	| "guardian_stop"
+	| "guardian_drift"
+	| "evaluate";
+
+export interface ValidationRunRecord {
+	source: ValidationRunSource;
+	status: Exclude<ValidationStatus, "unknown">;
+	runAt: string;
+	artifactPath: string | null;
+	summary: string[];
+}
+
 export interface StateSnapshotRecord {
 	fileName: string;
 	path: string;
@@ -292,6 +314,9 @@ export interface HarnessState {
 		queuedSidecars: string[];
 		latestPacketPath: string | null;
 		latestResultPath: string | null;
+	};
+	validation: {
+		recentRuns: ValidationRunRecord[];
 	};
 }
 

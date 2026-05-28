@@ -10,6 +10,7 @@ import { readJson, repoRelative, repoRoot, writeJson } from "./shared";
 import type { GuardianMode, GuardianRunRecord, HarnessConfig } from "./types";
 import { validationContext } from "./validation";
 import { runValidationEntry } from "./validation-entry";
+import { appendValidationRun } from "./validation-state";
 import { fastValidationSteps } from "./validation-steps";
 
 function config(root: string): HarnessConfig {
@@ -161,6 +162,23 @@ export function runGuardian(options?: {
 	if (persistState) {
 		const state = loadState(root);
 		state.guardians[mode] = record;
+		appendValidationRun(state, {
+			source:
+				mode === "preflight"
+					? "guardian_preflight"
+					: mode === "stop"
+						? "guardian_stop"
+						: "guardian_drift",
+			status:
+				record.status === "failed"
+					? "failed"
+					: record.status === "warn"
+						? "warn"
+						: "passed",
+			runAt: record.runAt ?? new Date().toISOString(),
+			artifactPath: record.artifactPath,
+			summary: record.summary,
+		});
 		saveState(root, state);
 	}
 

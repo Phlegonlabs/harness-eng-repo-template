@@ -2,6 +2,7 @@ import type {
 	ActiveWorktreeRecord,
 	StateSnapshotRecord,
 	TaskStatus,
+	ValidationStatus,
 } from "./types";
 
 export interface HarnessTaskSummary {
@@ -45,7 +46,7 @@ export interface HarnessStatusSnapshot {
 	blockedTasks: HarnessTaskSummary[];
 	suggestedSkills: string[];
 	nextAction: string;
-	validationStatus: "unknown";
+	validationStatus: ValidationStatus;
 	progress: HarnessProgressSummary;
 	activeWorktrees: ActiveWorktreeRecord[];
 	resume: {

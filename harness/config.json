@@ -48,7 +48,14 @@
 	"quality": {
 		"enabled": true,
 		"gradesPath": "docs/quality/GRADES.md",
-		"historyPath": ".harness/quality/history.jsonl"
+		"historyPath": ".harness/quality/history.jsonl",
+		"gates": {
+			"failUnderScore": 75,
+			"minGrade": "B",
+			"minDimensionScores": {
+				"architectural_compliance": 100
+			}
+		}
 	},
 	"observability": {
 		"enabled": false,

@@ -16,12 +16,66 @@ export interface DispatchResult {
 	blocked: Array<{ milestoneId: string; reasons: string[] }>;
 }
 
+interface EligibilityRecord {
+	milestone: MilestoneRecord;
+	areas: string[];
+	blockers: string[];
+}
+
+function normalizeArea(area: string): string {
+	return area.replace(/\\/g, "/").replace(/\/+$/, "").trim();
+}
+
+function milestoneAreas(
+	milestone: MilestoneRecord,
+	state: HarnessState,
+): string[] {
+	const explicitAreas = milestone.affectedAreas
+		.map(normalizeArea)
+		.filter(Boolean);
+	if (explicitAreas.length > 0) {
+		return [...new Set(explicitAreas)];
+	}
+	return [
+		...new Set(
+			state.tasks
+				.filter((task) => task.milestoneId === milestone.id)
+				.flatMap((task) => task.affectedFilesOrAreas)
+				.map(normalizeArea)
+				.filter(Boolean),
+		),
+	];
+}
+
+function areasOverlap(left: string, right: string): boolean {
+	return (
+		left === right ||
+		left.startsWith(`${right}/`) ||
+		right.startsWith(`${left}/`)
+	);
+}
+
 function overlappingAreas(a: string[], b: string[]): string[] {
-	return a.filter((area) => b.includes(area));
+	return [
+		...new Set(
+			a.flatMap((left) =>
+				b
+					.filter((right) => areasOverlap(left, right))
+					.map((right) => {
+						const normalizedLeft = normalizeArea(left);
+						const normalizedRight = normalizeArea(right);
+						return normalizedLeft.length <= normalizedRight.length
+							? normalizedLeft
+							: normalizedRight;
+					}),
+			),
+		),
+	];
 }
 
 function milestoneBlockers(
 	milestone: MilestoneRecord,
+	areas: string[],
 	state: HarnessState,
 	activeIds: Set<string>,
 	activeMilestones: MilestoneRecord[],
@@ -45,8 +99,11 @@ function milestoneBlockers(
 	if (unmetDependencies.length > 0) {
 		blockers.push(`unmet dependencies: ${unmetDependencies.join(", ")}`);
 	}
+	if (areas.length === 0) {
+		blockers.push("affected areas are missing");
+	}
 	const conflictingAreas = activeMilestones.flatMap((activeMilestone) =>
-		overlappingAreas(milestone.affectedAreas, activeMilestone.affectedAreas),
+		overlappingAreas(areas, statefulMilestoneAreas(activeMilestone, state)),
 	);
 	if (conflictingAreas.length > 0) {
 		blockers.push(
@@ -54,6 +111,48 @@ function milestoneBlockers(
 		);
 	}
 	return blockers;
+}
+
+function statefulMilestoneAreas(
+	milestone: MilestoneRecord,
+	state: HarnessState,
+): string[] {
+	const areas = milestoneAreas(milestone, state);
+	if (areas.length > 0 && milestone.affectedAreas.length === 0) {
+		milestone.affectedAreas = areas;
+	}
+	return areas;
+}
+
+function selectDispatchableMilestones(
+	eligible: EligibilityRecord[],
+	limit: number,
+): {
+	selected: EligibilityRecord[];
+	extraBlocked: Array<{ milestoneId: string; reasons: string[] }>;
+} {
+	const selected: EligibilityRecord[] = [];
+	const extraBlocked: Array<{ milestoneId: string; reasons: string[] }> = [];
+	for (const entry of eligible) {
+		if (selected.length >= limit) {
+			break;
+		}
+		const conflictingSelection = selected.find(
+			(candidate) => overlappingAreas(entry.areas, candidate.areas).length > 0,
+		);
+		if (!conflictingSelection) {
+			selected.push(entry);
+			continue;
+		}
+		const conflicts = overlappingAreas(entry.areas, conflictingSelection.areas);
+		extraBlocked.push({
+			milestoneId: entry.milestone.id,
+			reasons: [
+				`dispatch batch conflict with ${conflictingSelection.milestone.id}: ${conflicts.join(", ")}`,
+			],
+		});
+	}
+	return { selected, extraBlocked };
 }
 
 function syncWorktreeSurfaces(root: string, state: HarnessState): void {
@@ -90,20 +189,42 @@ export function dispatchMilestones(options: {
 		activeIds.has(milestone.id),
 	);
 
-	const eligibility = state.milestones.map((milestone) => ({
-		milestone,
-		blockers: milestoneBlockers(milestone, state, activeIds, activeMilestones),
-	}));
-	const eligible = eligibility.filter((entry) => entry.blockers.length === 0);
+	const eligibility = state.milestones.map((milestone) => {
+		const areas = statefulMilestoneAreas(milestone, state);
+		return {
+			milestone,
+			areas,
+			blockers: milestoneBlockers(
+				milestone,
+				areas,
+				state,
+				activeIds,
+				activeMilestones,
+			),
+		};
+	});
+	const individuallyEligible = eligibility.filter(
+		(entry) => entry.blockers.length === 0,
+	);
 	const blocked = eligibility
 		.filter((entry) => entry.blockers.length > 0)
 		.map((entry) => ({
 			milestoneId: entry.milestone.id,
 			reasons: entry.blockers,
 		}));
+	const slotsAvailable = Math.max(
+		0,
+		state.execution.maxParallelMilestones -
+			state.execution.activeMilestones.length,
+	);
+	const { selected, extraBlocked } = selectDispatchableMilestones(
+		individuallyEligible,
+		Math.min(max, slotsAvailable),
+	);
+	const eligible = selected;
 
 	if (!apply) {
-		return { dispatched: [], blocked };
+		return { dispatched: [], blocked: [...blocked, ...extraBlocked] };
 	}
 
 	if (state.milestones.length === 0 || state.tasks.length === 0) {
@@ -115,22 +236,12 @@ export function dispatchMilestones(options: {
 	}
 
 	if (eligible.length === 0) {
-		return { dispatched: [], blocked };
-	}
-
-	const slotsAvailable = Math.max(
-		0,
-		state.execution.maxParallelMilestones -
-			state.execution.activeMilestones.length,
-	);
-	const toDispatch = eligible.slice(0, Math.min(max, slotsAvailable));
-	if (toDispatch.length === 0) {
-		return { dispatched: [], blocked };
+		return { dispatched: [], blocked: [...blocked, ...extraBlocked] };
 	}
 
 	const dispatched: string[] = [];
 	mkdirSync(path.join(root, ".worktrees"), { recursive: true });
-	for (const { milestone } of toDispatch) {
+	for (const { milestone, areas } of eligible) {
 		const branch = `milestone/${milestone.id.toLowerCase()}-${slugify(milestone.title)}`;
 		const worktreePath = path.join(
 			root,
@@ -166,6 +277,7 @@ export function dispatchMilestones(options: {
 		}
 
 		milestone.status = "active";
+		milestone.affectedAreas = areas;
 		milestone.worktreeName = `.worktrees/${milestone.id.toLowerCase()}`;
 		state.execution.activeMilestones.push(milestone.id);
 		state.execution.activeWorktrees.push({
@@ -179,7 +291,7 @@ export function dispatchMilestones(options: {
 
 	saveState(root, state);
 	syncWorktreeSurfaces(root, state);
-	return { dispatched, blocked };
+	return { dispatched, blocked: [...blocked, ...extraBlocked] };
 }
 
 /* CLI entry point */
@@ -213,24 +325,42 @@ if (import.meta.main) {
 		const activeMilestones = state.milestones.filter((m) =>
 			activeIds.has(m.id),
 		);
-		const eligibility = state.milestones.map((milestone) => ({
-			milestone,
-			blockers: milestoneBlockers(
+		const eligibility = state.milestones.map((milestone) => {
+			const areas = statefulMilestoneAreas(milestone, state);
+			return {
 				milestone,
-				state,
-				activeIds,
-				activeMilestones,
-			),
-		}));
-		const eligible = eligibility.filter((e) => e.blockers.length === 0);
-		console.log(`Eligible milestones: ${eligible.length}`);
-		for (const { milestone } of eligible) {
+				areas,
+				blockers: milestoneBlockers(
+					milestone,
+					areas,
+					state,
+					activeIds,
+					activeMilestones,
+				),
+			};
+		});
+		const slotsAvailable = Math.max(
+			0,
+			state.execution.maxParallelMilestones -
+				state.execution.activeMilestones.length,
+		);
+		const { selected, extraBlocked } = selectDispatchableMilestones(
+			eligibility.filter((entry) => entry.blockers.length === 0),
+			Math.min(max, slotsAvailable),
+		);
+		console.log(`Eligible milestones: ${selected.length}`);
+		for (const { milestone } of selected) {
 			console.log(`  ${milestone.id}: ${milestone.title}`);
 		}
 		for (const { milestone, blockers } of eligibility.filter(
-			(e) => e.blockers.length > 0,
+			(entry) => entry.blockers.length > 0,
 		)) {
 			console.log(`  BLOCKED ${milestone.id}: ${blockers.join("; ")}`);
+		}
+		for (const extra of extraBlocked) {
+			console.log(
+				`  BLOCKED ${extra.milestoneId}: ${extra.reasons.join("; ")}`,
+			);
 		}
 		process.exit(0);
 	}

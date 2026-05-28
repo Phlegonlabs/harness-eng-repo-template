@@ -14,9 +14,14 @@ function runStep(name: string, step: () => number): number {
 	return result;
 }
 
+interface StructuralTestOptions {
+	includeCommandFlow?: boolean;
+}
+
 export function runStructuralTests(
 	root: string = repoRoot(),
 	context: ValidationContext = validationContext(root),
+	options: StructuralTestOptions = {},
 ): number {
 	let errors = 0;
 
@@ -25,9 +30,17 @@ export function runStructuralTests(
 		runArchitectureTest(context),
 	);
 	errors += runStep("Document Links", () => runDocLinksTest(context));
-	errors += runStep("Harness Runtime", () =>
-		runPassthrough("bun", ["test", "harness/runtime"], root),
-	);
+	if (!options.includeCommandFlow) {
+		console.log("── Harness Runtime ──────────────────────────────────");
+		console.log(
+			"SKIP: Command-flow integration tests skipped. Run harness:structural --full-runtime or harness:validate:full for full runtime regression.",
+		);
+		console.log("");
+	} else {
+		errors += runStep("Harness Runtime", () =>
+			runPassthrough("bun", ["test", "harness/runtime"], root),
+		);
+	}
 
 	console.log("════════════════════════════════════════════");
 	if (errors > 0) {
@@ -39,5 +52,9 @@ export function runStructuralTests(
 }
 
 if (import.meta.main) {
-	process.exit(runStructuralTests(repoRoot()));
+	process.exit(
+		runStructuralTests(repoRoot(), validationContext(repoRoot()), {
+			includeCommandFlow: process.argv.includes("--full-runtime"),
+		}),
+	);
 }

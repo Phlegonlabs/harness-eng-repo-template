@@ -6,7 +6,9 @@ import {
 	createRepoWithTasks,
 	makeTask,
 } from "./orchestration-test-fixtures";
+import { saveState } from "./planning";
 import { buildHarnessStatus } from "./status";
+import { readState } from "./test-support";
 
 const tempRoots: string[] = [];
 
@@ -73,5 +75,35 @@ describe("harness status", () => {
 		expect(status.phase).toBe("PLANNING");
 		expect(status.activeTask).toBeNull();
 		expect(status.nextAction).toContain("harness:plan");
+	});
+
+	it("aggregates recent validation evidence instead of returning unknown", () => {
+		const root = createRepo(["bun --version"], tempRoots);
+		const statusBefore = buildHarnessStatus(root);
+
+		expect(statusBefore.validationStatus).toBe("unknown");
+
+		const state = readState(root);
+		state.validation.recentRuns = [
+			{
+				source: "validate",
+				status: "passed",
+				runAt: "2026-05-28T10:00:00.000Z",
+				artifactPath: ".harness/validations/validate-latest.json",
+				summary: ["PASS"],
+			},
+			{
+				source: "evaluate",
+				status: "failed",
+				runAt: "2026-05-28T11:00:00.000Z",
+				artifactPath: ".harness/evaluations/T101/latest.json",
+				summary: ["FAIL"],
+			},
+		];
+		saveState(root, state);
+
+		const statusAfter = buildHarnessStatus(root);
+
+		expect(statusAfter.validationStatus).toBe("failed");
 	});
 });

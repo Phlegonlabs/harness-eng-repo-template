@@ -166,6 +166,9 @@ export function stateTemplate(projectName: string): HarnessState {
 			latestPacketPath: null,
 			latestResultPath: null,
 		},
+		validation: {
+			recentRuns: [],
+		},
 	};
 }
 
@@ -199,6 +202,7 @@ export function loadState(root: string): HarnessState {
 			latestPacketPath: null,
 			latestResultPath: null,
 		};
+		fallback.validation = fallback.validation ?? { recentRuns: [] };
 		return fallback;
 	}
 	const normalized = state as HarnessState;
@@ -223,6 +227,7 @@ export function loadState(root: string): HarnessState {
 		latestPacketPath: null,
 		latestResultPath: null,
 	};
+	normalized.validation = normalized.validation ?? { recentRuns: [] };
 	return normalized;
 }
 

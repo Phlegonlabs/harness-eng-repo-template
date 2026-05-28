@@ -15,14 +15,14 @@ This contract applies equally to Codex and Claude sessions.
 | `bun run harness:install-hooks` | root / one_shot | git_repository | expected_block | exit_zero | Install repository git hooks into .git/hooks. |
 | `bun run harness:doctor` | root / one_shot | - | n/a | exit_zero | Run repository health checks and report missing setup. |
 | `bun run harness:lint` | root / one_shot | - | n/a | exit_zero | Run the harness-specific lint suite. |
-| `bun run harness:structural` | root / one_shot | - | n/a | exit_zero | Run structural tests for required files, docs, and runtime behavior. |
+| `bun run harness:structural` | root / one_shot | - | n/a | exit_zero | Run structural smoke tests for required files, docs, and runtime behavior; use --full-runtime for command-flow regression. |
 | `bun run harness:entropy` | root / one_shot | - | n/a | exit_zero | Run drift, orphan, and consistency scans. |
 | `bun run harness:docs --report` | root / one_shot | - | n/a | exit_zero | Run documentation freshness and link checks and write a docs report. |
-| `bun run harness:quality --score` | root / one_shot | - | n/a | exit_zero | Compute the current repository quality score and write a quality report artifact. |
+| `bun run harness:quality --score` | root / one_shot | - | n/a | exit_zero | Compute the current repository quality score, write a quality report artifact, and optionally enforce score thresholds. |
 | `bun run harness:health` | root / one_shot | - | n/a | exit_zero | Run the active observability profile health check, if one is configured. |
 | `bun run harness:logs --query <text>` | root / one_shot | - | n/a | exit_zero | Search configured observability log files for matching lines. |
 | `bun run harness:validate` | root / one_shot | - | n/a | exit_zero | Run the fast local validation suite. |
-| `bun run harness:validate:full` | root / one_shot | - | n/a | exit_zero | Run the full validation suite, including harness runtime regression tests. |
+| `bun run harness:validate:full` | root / one_shot | - | n/a | exit_zero | Run the full validation suite as a strict superset of the fast local checks, including harness runtime regression tests. |
 | `bun run harness:discover` | root / one_shot | - | n/a | exit_zero | Report discovery status and current question packet. |
 | `bun run harness:discover --reset` | root / one_shot | - | n/a | exit_zero | Reset discovery and rewrite the docs back to guided-question mode. |
 | `bun run harness:context:sync --design-system <path>` | root / one_shot | - | n/a | exit_zero | Sync external product, architecture, design-system, component, or wireframe sources into canonical repository context surfaces. |
@@ -33,8 +33,8 @@ This contract applies equally to Codex and Claude sessions.
 | `bun run harness:self-review --report` | root / one_shot | - | n/a | exit_zero | Run the machine-readable self-review checklist over the current diff and write a review report. |
 | `bun run harness:state-recover --list` | root / one_shot | - | n/a | exit_zero | List or recover state snapshots created before state mutations, including the recommended rollback snapshot. |
 | `bun run harness:unblock --task <id>` | root / one_shot | blocked_task | expected_block | exit_zero | Unblock a stuck task and reset its stall counter. |
-| `bun run harness:parallel-dispatch -- --apply` | root / one_shot | planned_backlog, clean_main_worktree, eligible_milestone | expected_block | exit_zero | Allocate milestone worktrees when the backlog and git state allow it. |
-| `bun run harness:merge-milestone -- M1` | root / one_shot | active_worktree, clean_main_worktree, milestone_done | expected_block | exit_zero | Merge a completed milestone branch back into the main worktree. |
+| `bun run harness:parallel-dispatch -- --apply` | root / one_shot | planned_backlog, clean_main_worktree, eligible_milestone | expected_block | exit_zero | Allocate milestone worktrees when the backlog, git state, and resolved milestone scopes allow it. |
+| `bun run harness:merge-milestone -- M1` | root / one_shot | active_worktree, clean_main_worktree, milestone_done | expected_block | exit_zero | Merge a completed validated milestone branch back into the main worktree and record a merge audit artifact. |
 | `bun run harness:compact` | root / one_shot | - | n/a | exit_zero | Write a concise repository-owned compact snapshot from state and task artifacts. |
 | `bun run harness:guardian --mode preflight` | root / one_shot | - | n/a | exit_zero | Run repo-owned guardrails for preflight, stop, or drift checks. |
 | `bun run harness:dispatch --prepare --role sidecar` | root / one_shot | - | n/a | exit_zero | Prepare or complete a provider-neutral dispatch packet/result artifact. |

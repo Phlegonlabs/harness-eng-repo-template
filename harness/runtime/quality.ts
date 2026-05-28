@@ -16,6 +16,110 @@ import {
 	collectForbiddenPatternViolations,
 } from "./validation-reports";
 
+interface QualityGateOptions {
+	failUnderScore?: number;
+	minGrade?: string;
+	minDimensionScores: Record<string, number>;
+}
+
+function parseDimensionThreshold(args: string[]): Record<string, number> {
+	return Object.fromEntries(
+		args
+			.filter((arg) => arg.startsWith("--require-dimension="))
+			.map((arg) => arg.slice("--require-dimension=".length))
+			.map((value) => value.split(":"))
+			.filter(
+				(parts): parts is [string, string] =>
+					parts.length === 2 && parts[0].trim().length > 0,
+			)
+			.map(([name, score]) => [name.trim(), Number(score)]),
+	);
+}
+
+export function resolveQualityGateOptions(
+	args: string[],
+	config: {
+		failUnderScore?: number;
+		minGrade?: string;
+		minDimensionScores?: Record<string, number>;
+	} = {},
+): QualityGateOptions {
+	const cliOptions: QualityGateOptions = {
+		failUnderScore: args
+			.find((arg) => arg.startsWith("--fail-under="))
+			?.slice("--fail-under=".length)
+			? Number(
+					args
+						.find((arg) => arg.startsWith("--fail-under="))
+						?.slice("--fail-under=".length),
+				)
+			: undefined,
+		minGrade: args
+			.find((arg) => arg.startsWith("--min-grade="))
+			?.slice("--min-grade=".length),
+		minDimensionScores: parseDimensionThreshold(args),
+	};
+	const enforceConfig = args.includes("--enforce-config");
+	if (!enforceConfig) {
+		return {
+			failUnderScore: cliOptions.failUnderScore,
+			minGrade: cliOptions.minGrade,
+			minDimensionScores: cliOptions.minDimensionScores,
+		};
+	}
+	return {
+		failUnderScore: cliOptions.failUnderScore ?? config.failUnderScore,
+		minGrade: cliOptions.minGrade ?? config.minGrade,
+		minDimensionScores: {
+			...(config.minDimensionScores ?? {}),
+			...cliOptions.minDimensionScores,
+		},
+	};
+}
+
+export function evaluateQualityGateFailures(
+	report: QualityReport,
+	gateOptions: QualityGateOptions,
+	grading: Record<string, { min: number; label: string }>,
+): string[] {
+	const failures: string[] = [];
+	if (
+		typeof gateOptions.failUnderScore === "number" &&
+		report.overallScore < gateOptions.failUnderScore
+	) {
+		failures.push(
+			`Overall score ${report.overallScore.toFixed(1)} is below the required ${gateOptions.failUnderScore.toFixed(1)}.`,
+		);
+	}
+	if (gateOptions.minGrade) {
+		const requiredGrade = grading[gateOptions.minGrade];
+		if (!requiredGrade) {
+			failures.push(`Unknown grade threshold: ${gateOptions.minGrade}.`);
+		} else if (report.overallScore < requiredGrade.min) {
+			failures.push(
+				`Overall grade ${report.overallGrade} does not meet the required ${gateOptions.minGrade}.`,
+			);
+		}
+	}
+	for (const [dimensionName, minimumScore] of Object.entries(
+		gateOptions.minDimensionScores,
+	)) {
+		const dimension = report.dimensions.find(
+			(entry) => entry.name === dimensionName,
+		);
+		if (!dimension) {
+			failures.push(`Unknown quality dimension threshold: ${dimensionName}.`);
+			continue;
+		}
+		if (dimension.score < minimumScore) {
+			failures.push(
+				`${dimension.label} score ${dimension.score.toFixed(1)} is below the required ${minimumScore.toFixed(1)}.`,
+			);
+		}
+	}
+	return failures;
+}
+
 function captureLayerLint(root: string): boolean {
 	const context = validationContext(root);
 	const original = console.log;
@@ -99,10 +203,10 @@ async function scoreDimension(
 	}
 
 	if (definition.name === "test_health") {
-		const structural = runCommandWithCapture({
+		const tests = runCommandWithCapture({
 			root,
-			commandLine: "bun run harness:structural",
-			logCategory: "quality-structural",
+			commandLine: "bun run test",
+			logCategory: "quality-tests",
 			maxSnippetLines: 8,
 		});
 		const sourceFiles = trackedFiles(root).filter((file) =>
@@ -116,10 +220,10 @@ async function scoreDimension(
 		return {
 			name: definition.name,
 			label: definition.label,
-			score: structural.exitCode === 0 ? ratio : Math.min(ratio, 55),
+			score: tests.exitCode === 0 ? ratio : Math.min(ratio, 55),
 			weight: definition.weight,
-			detail: `${testFiles} test file(s), ${sourceFiles} source file(s), structural ${
-				structural.exitCode === 0 ? "passed" : "failed"
+			detail: `${testFiles} test file(s), ${sourceFiles} source file(s), workspace tests ${
+				tests.exitCode === 0 ? "passed" : "failed"
 			}`,
 		};
 	}
@@ -234,6 +338,7 @@ export async function buildQualityReport(
 
 async function main(): Promise<void> {
 	const root = repoRoot();
+	const context = validationContext(root);
 	const report = await buildQualityReport(root);
 	const reportPath = writeReportArtifact(
 		root,
@@ -243,9 +348,23 @@ async function main(): Promise<void> {
 	);
 	const jsonMode = process.argv.includes("--json");
 	const updateMode = process.argv.includes("--update");
+	const gateOptions = resolveQualityGateOptions(
+		process.argv.slice(2),
+		context.config.quality?.gates,
+	);
+	const gateFailures = evaluateQualityGateFailures(
+		report,
+		gateOptions,
+		context.qualityDimensions?.grading ?? {
+			A: { min: 90, label: "Excellent" },
+			B: { min: 75, label: "Good" },
+			C: { min: 60, label: "Needs attention" },
+			D: { min: 40, label: "At risk" },
+			F: { min: 0, label: "Critical" },
+		},
+	);
 
 	if (updateMode) {
-		const context = validationContext(root);
 		const gradesPath =
 			context.config.quality?.gradesPath ?? "docs/quality/GRADES.md";
 		const historyPath =
@@ -259,7 +378,10 @@ async function main(): Promise<void> {
 	}
 
 	if (jsonMode) {
-		console.log(JSON.stringify({ ...report, reportPath }, null, 2));
+		console.log(
+			JSON.stringify({ ...report, reportPath, gateFailures }, null, 2),
+		);
+		process.exit(gateFailures.length > 0 ? 1 : 0);
 		return;
 	}
 
@@ -273,8 +395,26 @@ async function main(): Promise<void> {
 			`- ${dimension.label}: ${dimension.score.toFixed(1)} — ${dimension.detail}`,
 		);
 	}
+	if (
+		gateOptions.failUnderScore !== undefined ||
+		gateOptions.minGrade ||
+		Object.keys(gateOptions.minDimensionScores).length > 0
+	) {
+		console.log("");
+		if (gateFailures.length === 0) {
+			console.log("Gate: PASS");
+		} else {
+			console.log("Gate: FAIL");
+			for (const failure of gateFailures) {
+				console.log(`- ${failure}`);
+			}
+		}
+	}
 	console.log("");
 	console.log(`Report artifact: ${reportPath}`);
+	process.exit(gateFailures.length > 0 ? 1 : 0);
 }
 
-void main();
+if (import.meta.main) {
+	void main();
+}

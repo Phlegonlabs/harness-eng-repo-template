@@ -55,12 +55,33 @@ export function fullValidationSteps(
 		{ label: "1. Health Check", run: () => runDoctor(root), hard: true },
 		{ label: "2. Linters", run: () => runLintSuite(context), hard: true },
 		{
-			label: "3. Structural Tests",
-			run: () => runStructuralTests(root, context),
+			label: "3. Required Files",
+			run: () => runRequiredFilesTest(context),
 			hard: true,
 		},
 		{
-			label: "4. Entropy Scans",
+			label: "4. Architecture Compliance",
+			run: () => runArchitectureTest(context),
+			hard: true,
+		},
+		{
+			label: "5. Template Identity",
+			run: () => runTemplateIdentityTest(context),
+			hard: true,
+		},
+		{
+			label: "6. Document Links",
+			run: () => runDocLinksTest(context),
+			hard: true,
+		},
+		{
+			label: "7. Structural Tests",
+			run: () =>
+				runStructuralTests(root, context, { includeCommandFlow: true }),
+			hard: true,
+		},
+		{
+			label: "8. Entropy Scans",
 			run: () => runEntropyScans(context),
 			hard: false,
 		},
