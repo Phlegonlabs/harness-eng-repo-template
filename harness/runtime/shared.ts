@@ -107,7 +107,7 @@ export function clearGlobToRegexCache(): void {
 function tryFormatFile(target: string): void {
 	try {
 		execFileSync("bunx", ["@biomejs/biome", "format", "--write", target], {
-			cwd: repoRoot(),
+			cwd: owningRepoRoot(target) ?? repoRoot(),
 			stdio: "ignore",
 		});
 	} catch {

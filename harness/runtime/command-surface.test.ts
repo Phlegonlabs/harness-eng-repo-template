@@ -6,6 +6,10 @@ import { repoRoot } from "./shared";
 
 const root = repoRoot();
 
+function normalizeLineEndings(value: string): string {
+	return value.replace(/\r\n/g, "\n");
+}
+
 function scriptName(display: string): string | null {
 	const match = display.match(/bun run ([^ ]+)/);
 	return match?.[1] ?? null;
@@ -48,6 +52,8 @@ describe("command surface registry", () => {
 			path.join(root, "docs/internal/command-surface.md"),
 			"utf8",
 		);
-		expect(committed.trimEnd()).toBe(renderCommandSurfaceDoc(root).trimEnd());
+		expect(normalizeLineEndings(committed).trimEnd()).toBe(
+			normalizeLineEndings(renderCommandSurfaceDoc(root)).trimEnd(),
+		);
 	});
 });

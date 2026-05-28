@@ -161,6 +161,42 @@
 			{
 				"source": "validate",
 				"status": "passed",
+				"runAt": "2026-05-28T16:52:58.667Z",
+				"artifactPath": ".harness/validations/validate-latest.json",
+				"summary": [
+					"  ✓ 7. Entropy Scans passed",
+					"",
+					"════════════════════════════════════════════",
+					"PASS: All validation checks passed."
+				]
+			},
+			{
+				"source": "validate_full",
+				"status": "passed",
+				"runAt": "2026-05-28T16:52:54.903Z",
+				"artifactPath": ".harness/validations/validate-full-latest.json",
+				"summary": [
+					"  ✓ 8. Entropy Scans passed",
+					"",
+					"════════════════════════════════════════════",
+					"PASS: All validation checks passed."
+				]
+			},
+			{
+				"source": "validate_full",
+				"status": "failed",
+				"runAt": "2026-05-28T16:49:11.102Z",
+				"artifactPath": ".harness/validations/validate-full-latest.json",
+				"summary": [
+					"  ✓ 8. Entropy Scans passed",
+					"",
+					"════════════════════════════════════════════",
+					"FAIL: 1 step(s) failed."
+				]
+			},
+			{
+				"source": "validate",
+				"status": "passed",
 				"runAt": "2026-05-28T16:43:13.292Z",
 				"artifactPath": ".harness/validations/validate-latest.json",
 				"summary": [
