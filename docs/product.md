@@ -96,7 +96,7 @@
 | Time from clone to first successful validation | Template setup varies by repo | Under 15 minutes after `bun install` and `bun run harness:init` | First session |
 | Time to first project-specific code change | Often delayed by repo setup work | Same session as initialization | First day |
 | Repository guardrails active | Inconsistent in ad hoc starters | `build`, `test`, `harness:validate`, and CI `harness:validate:full` all pass in the template baseline | Before first feature branch |
-| Quality evidence availability | Often ad hoc or manual | `harness:self-review`, `harness:docs`, and `harness:quality` produce machine-readable artifacts out of the box | Before first feature branch |
+| Quality evidence availability | Often ad hoc or manual | `harness:self-review`, `harness:docs`, and `harness:quality --score` produce machine-readable artifacts out of the box | Before first feature branch |
 
 ---
 
@@ -130,4 +130,4 @@
 
 ---
 
-*Last updated: 2026-03-30 | Owner: Project leads*
+*Last updated: 2026-05-28 | Owner: Project leads*

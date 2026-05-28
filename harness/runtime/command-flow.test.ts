@@ -6,9 +6,9 @@ import {
 	answerDiscovery,
 	cloneRepo,
 	copyRepoScaffold,
+	expectCommandSuccess,
 	expectPersistentBoot,
 	firstTaskId,
-	runCommand,
 } from "./test-support";
 
 const root = repoRoot();
@@ -22,8 +22,11 @@ describeCommandFlow("command flow", () => {
 		for (const hook of ["pre-commit", "commit-msg", "pre-push"]) {
 			expect(existsSync(path.join(tempRoot, ".git/hooks", hook))).toBe(true);
 		}
-		const doctor = runCommand(tempRoot, ["bun", "run", "harness:doctor"]);
-		expect(doctor.code).toBe(0);
+		const doctor = expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:doctor",
+		]);
 		expect(doctor.stdout).toContain("Project name is still 'harness-template'");
 		for (const command of [
 			["bun", "run", "harness:lint"],
@@ -46,61 +49,62 @@ describeCommandFlow("command flow", () => {
 			["bun", "run", "format:check"],
 			["bun", "run", "harness:discover"],
 		] as const) {
-			expect(runCommand(tempRoot, command).code).toBe(0);
+			expectCommandSuccess(tempRoot, command);
 		}
 
-		const plan = runCommand(tempRoot, ["bun", "run", "harness:plan"]);
-		expect(plan.code).toBe(0);
+		expectCommandSuccess(tempRoot, ["bun", "run", "harness:plan"]);
 
-		const orchestrate = runCommand(tempRoot, [
+		const orchestrate = expectCommandSuccess(tempRoot, [
 			"bun",
 			"run",
 			"harness:orchestrate",
 		]);
-		expect(orchestrate.code).toBe(0);
 		expect(orchestrate.stdout).toContain("Orchestrator Status");
 
-		const evaluate = runCommand(tempRoot, ["bun", "run", "harness:evaluate"]);
-		expect(evaluate.code).toBe(0);
+		const evaluate = expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:evaluate",
+		]);
 		expect(evaluate.stdout).toContain("Evaluator Status");
 	});
 
 	it("initializes cleanly from a downloaded scaffold without git metadata", () => {
 		const tempRoot = copyRepoScaffold(root);
-		const install = runCommand(tempRoot, ["bun", "install"]);
-		expect(install.code).toBe(0);
+		const install = expectCommandSuccess(tempRoot, ["bun", "install"]);
 		expect(install.stderr).not.toContain("fatal: not a git repository");
 
-		const init = runCommand(tempRoot, [
+		const init = expectCommandSuccess(tempRoot, [
 			"bun",
 			"run",
 			"harness:init",
 			"--",
 			"downloaded-project",
 		]);
-		expect(init.code).toBe(0);
 		expect(init.stderr).not.toContain("fatal: not a git repository");
 		expect(init.stdout).toContain("Initialized empty Git repository");
 
-		const validate = runCommand(tempRoot, ["bun", "run", "harness:validate"]);
-		expect(validate.code).toBe(0);
+		const validate = expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:validate",
+		]);
 		expect(validate.stdout).not.toContain("ORPHAN:");
 	});
 
 	it("initializes without an owner and still validates the ready baseline", () => {
 		const tempRoot = cloneRepo(root);
-		expect(
-			runCommand(tempRoot, [
-				"bun",
-				"run",
-				"harness:init",
-				"--",
-				"ready-project",
-			]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:init",
+			"--",
+			"ready-project",
+		]);
 
 		const status = JSON.parse(
-			runCommand(tempRoot, ["bun", "run", "harness:status", "--json"]).stdout,
+			expectCommandSuccess(tempRoot, ["bun", "run", "harness:status", "--json"])
+				.stdout,
 		) as { phase: string; nextAction: string };
 
 		expect(status.phase).toBe("READY");
@@ -111,24 +115,25 @@ describeCommandFlow("command flow", () => {
 		expect(
 			readFileSync(path.join(tempRoot, "README.md"), "utf8"),
 		).not.toContain("@your-org/engineering");
-		const validate = runCommand(tempRoot, ["bun", "run", "harness:validate"]);
-		expect(validate.code).toBe(0);
+		const validate = expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:validate",
+		]);
 		expect(validate.stdout).not.toContain("ORPHAN:");
 	});
 
 	it("supports the full post-init root and workspace command surface", async () => {
 		const tempRoot = cloneRepo(root);
-		expect(
-			runCommand(tempRoot, [
-				"bun",
-				"run",
-				"harness:init",
-				"--",
-				"delivery-project",
-				"--owner",
-				"@acme/engineering",
-			]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:init",
+			"--",
+			"delivery-project",
+			"--owner",
+			"@acme/engineering",
+		]);
 		expect(
 			readFileSync(path.join(tempRoot, ".github/CODEOWNERS"), "utf8"),
 		).toContain("@acme/engineering");
@@ -147,54 +152,44 @@ describeCommandFlow("command flow", () => {
 				"utf8",
 			),
 		).toContain("@delivery-project/shared");
-		expect(
-			runCommand(tempRoot, ["bun", "run", "harness:install-hooks"]).code,
-		).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "format"]).code).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "format:check"]).code).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "harness:plan"]).code).toBe(0);
-		expect(
-			runCommand(tempRoot, ["bun", "run", "harness:status", "--json"]).code,
-		).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "format:check"]).code).toBe(0);
-		expect(
-			runCommand(tempRoot, ["bun", "run", "harness:orchestrate"]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, ["bun", "run", "harness:install-hooks"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "format"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "format:check"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "check"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "harness:plan"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "harness:status", "--json"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "check"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "format:check"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "harness:orchestrate"]);
 		expect(
 			existsSync(path.join(tempRoot, ".harness/compact/latest.json")),
 		).toBe(true);
-		expect(
-			runCommand(tempRoot, [
-				"bun",
-				"run",
-				"harness:evaluate",
-				"--task",
-				firstTaskId(tempRoot),
-			]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:evaluate",
+			"--task",
+			firstTaskId(tempRoot),
+		]);
 		expect(existsSync(path.join(tempRoot, ".harness/compact/latest.md"))).toBe(
 			true,
 		);
-		expect(
-			runCommand(tempRoot, [
-				"bun",
-				"run",
-				"harness:dispatch",
-				"--prepare",
-				"--role",
-				"sidecar",
-			]).code,
-		).toBe(0);
-		expect(
-			runCommand(tempRoot, ["bun", "run", "harness:state-recover", "--list"])
-				.code,
-		).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
-		expect(
-			runCommand(tempRoot, ["bun", "run", "harness:validate:full"]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:dispatch",
+			"--prepare",
+			"--role",
+			"sidecar",
+		]);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:state-recover",
+			"--list",
+		]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "check"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "harness:validate:full"]);
 
 		for (const workspace of [
 			"apps/api",
@@ -202,12 +197,10 @@ describeCommandFlow("command flow", () => {
 			"packages/shared",
 		] as const) {
 			const workspaceRoot = path.join(tempRoot, workspace);
-			expect(runCommand(workspaceRoot, ["bun", "run", "build"]).code).toBe(0);
-			expect(runCommand(workspaceRoot, ["bun", "run", "lint"]).code).toBe(0);
-			expect(runCommand(workspaceRoot, ["bun", "run", "typecheck"]).code).toBe(
-				0,
-			);
-			expect(runCommand(workspaceRoot, ["bun", "run", "test"]).code).toBe(0);
+			expectCommandSuccess(workspaceRoot, ["bun", "run", "build"]);
+			expectCommandSuccess(workspaceRoot, ["bun", "run", "lint"]);
+			expectCommandSuccess(workspaceRoot, ["bun", "run", "typecheck"]);
+			expectCommandSuccess(workspaceRoot, ["bun", "run", "test"]);
 		}
 
 		await expectPersistentBoot(tempRoot, ["bun", "run", "dev"]);
@@ -225,26 +218,27 @@ describeCommandFlow("command flow", () => {
 
 	it("supports the discovery path before planning", () => {
 		const tempRoot = cloneRepo(root);
-		expect(
-			runCommand(tempRoot, ["bun", "run", "harness:discover", "--reset"]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:discover",
+			"--reset",
+		]);
 		expect(answerDiscovery(tempRoot, "sample-project").code).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "harness:plan"]).code).toBe(0);
+		expectCommandSuccess(tempRoot, ["bun", "run", "harness:plan"]);
 	});
 
 	it("writes profile-specific layer rules during init", () => {
 		const tempRoot = cloneRepo(root);
-		expect(
-			runCommand(tempRoot, [
-				"bun",
-				"run",
-				"harness:init",
-				"--",
-				"sample-cli",
-				"--profile",
-				"cli",
-			]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:init",
+			"--",
+			"sample-cli",
+			"--profile",
+			"cli",
+		]);
 
 		const config = JSON.parse(
 			readFileSync(path.join(tempRoot, "harness/config.json"), "utf8"),

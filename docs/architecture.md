@@ -88,9 +88,9 @@ Cross-workspace reuse happens through package exports such as @<project>/shared.
 ### Documentation contract
 ```text
 docs/product.md and docs/architecture.md are the human-readable source of truth.
-harness:plan reads them to materialize milestone and task placeholders.
 docs/design/ is the optional canonical frontend design context surface.
 harness:context:sync normalizes external local sources into those canonical files.
+harness:plan reads the planning docs to materialize milestone and task placeholders when a repository is being adopted.
 .harness/contracts, .harness/evaluations, .harness/handoffs, .harness/compact, .harness/snapshots, and .harness/context/context-manifest.json store execution and context-sync artifacts.
 ```
 
@@ -167,6 +167,8 @@ bun run harness:validate:full
 10. Run `bun run harness:validate:full` before relying on CI-equivalent harness coverage locally.
 11. Use `bun run harness:discover --reset` only when the team wants a guided PRD and architecture interview flow.
 
+For the committed template baseline, do not run root `harness:plan` into durable state unless the repository is being adopted for a specific project.
+
 ---
 
 ## Architecture Readiness Checklist
@@ -179,4 +181,4 @@ bun run harness:validate:full
 
 ---
 
-*Last updated: 2026-03-30 | Owner: Project leads*
+*Last updated: 2026-05-28 | Owner: Project leads*

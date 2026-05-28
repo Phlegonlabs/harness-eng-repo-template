@@ -27,7 +27,7 @@ function cleanupProcessesForPath(targetPath: string): void {
 			[
 				"$targets = Get-CimInstance Win32_Process | Where-Object {",
 				`  $_.CommandLine -and $_.CommandLine -like '*${escapedPath}*' -and`,
-				"  @('bun.exe','node.exe','turbo.exe') -contains $_.Name",
+				"  @('bun.exe','bunx.exe','node.exe','turbo.exe','cmd.exe','powershell.exe','pwsh.exe') -contains $_.Name",
 				"}",
 				"$targets | ForEach-Object {",
 				"  Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue",
@@ -36,6 +36,22 @@ function cleanupProcessesForPath(targetPath: string): void {
 		],
 		{ stdio: "ignore" },
 	);
+}
+
+function formatCommandFailure(
+	cwd: string,
+	args: readonly [string, ...string[]],
+	result: CommandResult,
+): string {
+	return [
+		`Command failed: ${args.join(" ")}`,
+		`CWD: ${cwd}`,
+		`Exit code: ${result.code}`,
+		"STDOUT:",
+		result.stdout.trim() || "<empty>",
+		"STDERR:",
+		result.stderr.trim() || "<empty>",
+	].join("\n");
 }
 
 afterEach(() => {
@@ -136,6 +152,16 @@ export function runCommand(
 		stdout: result.stdout ?? "",
 		stderr: result.stderr ?? "",
 	};
+}
+
+export function expectCommandSuccess(
+	cwd: string,
+	args: readonly [string, ...string[]],
+	options?: { input?: string },
+): CommandResult {
+	const result = runCommand(cwd, args, options);
+	expect(result.code, formatCommandFailure(cwd, args, result)).toBe(0);
+	return result;
 }
 
 export async function expectPersistentBoot(

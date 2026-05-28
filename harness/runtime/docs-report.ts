@@ -1,10 +1,27 @@
 import path from "node:path";
-import { exists, gitHasCommits, lastCommitUnix, markdownLinks } from "./shared";
+import {
+	exists,
+	gitHasCommits,
+	lastCommitUnix,
+	markdownLinks,
+	run,
+} from "./shared";
 import type {
 	DocFreshnessFinding,
 	DocsReport,
 	ValidationContext,
 } from "./types";
+
+function hasUncommittedDocUpdate(root: string, relativePath: string): boolean {
+	try {
+		return (
+			run("git", ["-C", root, "status", "--porcelain", "--", relativePath])
+				.length > 0
+		);
+	} catch {
+		return false;
+	}
+}
 
 export function collectDocFreshnessFindings(
 	context: ValidationContext,
@@ -24,7 +41,9 @@ export function collectDocFreshnessFindings(
 	const now = Math.floor(Date.now() / 1000);
 	const findings: DocFreshnessFinding[] = [];
 	for (const rule of rules) {
-		const docCommit = lastCommitUnix(context.repoRoot, rule.doc);
+		const docCommit = hasUncommittedDocUpdate(context.repoRoot, rule.doc)
+			? now
+			: lastCommitUnix(context.repoRoot, rule.doc);
 		if (!docCommit) {
 			findings.push({
 				doc: rule.doc,

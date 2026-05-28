@@ -22,6 +22,10 @@ Optional path:
 
 - `bun run harness:discover --reset` re-enters guided discovery mode and rewrites the PRD/architecture from interview answers.
 
+Template baseline note:
+
+- In the committed pre-init template, keep starter milestone and task records unmaterialized. Run `harness:plan` when adopting the template for a concrete project, not as a readiness refresh step.
+
 ---
 
 ## Canonical Surfaces
@@ -177,6 +181,7 @@ The compact command owns the concise repository snapshot for resumes and handoff
 Guardian commands own repo-level preflight, stop, and drift enforcement.
 `bun run harness:validate` remains the default local gate before handoff or push.
 `bun run harness:validate:full` remains the CI-equivalent gate when harness runtime regressions must be exercised.
+Runtime command-flow tests exercise these command paths in cloned repositories so the template baseline remains installable and valid before and after `harness:init`.
 
 Related repository artifacts:
 
@@ -186,3 +191,8 @@ Related repository artifacts:
 - `docs/execution-plans/evaluation-review-integration.md`
 - `docs/execution-plans/claude-code-reliability-and-resume.md`
 - `docs/execution-plans/design-context-integration.md`
+- `docs/execution-plans/template-readiness-refresh.md`
+
+---
+
+*Last updated: 2026-05-28 | Owner: Project leads*

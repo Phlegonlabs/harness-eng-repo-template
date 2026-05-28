@@ -9,13 +9,14 @@
 
 | Surface | Status | Notes |
 |--------|--------|-------|
-| `docs/product.md` | Ready | Engineer-template PRD baseline is ready to customize |
-| `docs/architecture.md` | Ready | Monorepo architecture baseline is ready to customize |
+| `docs/product.md` | Ready | Engineer-template PRD baseline was reviewed on 2026-05-28 and remains ready to customize |
+| `docs/architecture.md` | Ready | Monorepo architecture baseline was reviewed on 2026-05-28 and remains aligned with runtime behavior |
 | `docs/design/` | Optional | Populate or sync frontend design context when the project has UI constraints |
 | Discovery | Optional | Run `bun run harness:discover --reset` to enter guided discovery mode |
 | Context sync | Ready | Use `bun run harness:context:sync` to normalize external product, architecture, and design inputs into repo-owned surfaces |
 | Backlog sync | Ready | Run `bun run harness:plan` to materialize starter milestones and tasks |
 | Task loop | Ready | Use `harness:orchestrate` + `harness:evaluate` for contract-driven execution |
+| Template readiness | Ready | 2026-05-28 refresh is complete and tracked in [template-readiness-refresh.md](execution-plans/template-readiness-refresh.md) |
 
 ---
 
@@ -45,7 +46,14 @@
 
 ## Activity Log
 
+- Template readiness refresh started on 2026-05-28 after `bun run harness:validate` reported stale docs and `bun run harness:structural` exposed guardian timeout and command-flow diagnostic gaps.
+- Guardian runtime tests were hardened on 2026-05-28 with a longer test timeout, clearer command failure output, and tighter Windows cleanup for persistent dev-process tests.
+- Template readiness validation passed on 2026-05-28 with workspace gates, `harness:validate`, `harness:validate:full`, and guardian preflight green.
 - Ready template baseline refreshed on 2026-03-30.
 - Design context surfaces and `harness:context:sync` are available for optional frontend workflows.
 - Runtime reliability and resume surfaces were extended on 2026-03-31 with evaluator retry metadata, stronger `status --json` resume pointers, and richer compact history.
 - Recovery recommendations were added on 2026-03-31 so `status --json` and `harness:state-recover` now point to a recommended resume artifact and rollback snapshot.
+
+---
+
+*Last updated: 2026-05-28 | Owner: Project leads*

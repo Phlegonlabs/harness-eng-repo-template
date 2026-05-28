@@ -22,14 +22,14 @@ describe("runCommandWithCapture", () => {
 	it("retries infrastructure-style failures and reports recovered execution", () => {
 		const root = createTempRoot();
 		const markerPath = path.join(root, "retry-marker.txt").replace(/\\/g, "/");
-		const commandLine = `node -e "const fs=require('node:fs'); const marker='${markerPath}'; if(!fs.existsSync(marker)){ fs.writeFileSync(marker,'1'); setTimeout(() => process.exit(0), 200); } else { process.stdout.write('recovered'); }"`;
+		const commandLine = `node -e "const fs=require('node:fs'); const marker='${markerPath}'; if(!fs.existsSync(marker)){ fs.writeFileSync(marker,'1'); for(;;){} } else { process.stdout.write('recovered'); }"`;
 
 		const result = runCommandWithCapture({
 			root,
 			commandLine,
 			logCategory: "command-runner-test",
 			maxSnippetLines: 5,
-			timeoutMs: 50,
+			timeoutMs: 500,
 			maxRetriesOnInfrastructureFailure: 1,
 			baseBackoffMs: 0,
 			maxBackoffMs: 0,
@@ -46,15 +46,14 @@ describe("runCommandWithCapture", () => {
 
 	it("stops after the configured retry budget on repeated infrastructure failure", () => {
 		const root = createTempRoot();
-		const commandLine =
-			"node -e \"setTimeout(() => process.stdout.write('slow'), 200)\"";
+		const commandLine = 'node -e "for(;;){}"';
 
 		const result = runCommandWithCapture({
 			root,
 			commandLine,
 			logCategory: "command-runner-timeout-test",
 			maxSnippetLines: 5,
-			timeoutMs: 50,
+			timeoutMs: 500,
 			maxRetriesOnInfrastructureFailure: 1,
 			baseBackoffMs: 0,
 			maxBackoffMs: 0,

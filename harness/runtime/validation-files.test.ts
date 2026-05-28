@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { collectDocFreshnessFindings } from "./docs-report";
 import {
 	clearTrackedFilesCache,
 	gitHasCommits,
@@ -129,6 +130,60 @@ describe("trackedFiles cache", () => {
 
 		expect(before).not.toContain("notes.md");
 		expect(after).toContain("notes.md");
+	});
+});
+
+describe("collectDocFreshnessFindings", () => {
+	it("treats an uncommitted doc edit as fresh for pre-commit validation", () => {
+		const root = createRepo({
+			"docs/progress.md": "# old progress",
+		});
+		execFileSync("git", ["init"], { cwd: root, stdio: "ignore" });
+		execFileSync("git", ["config", "user.email", "tests@example.com"], {
+			cwd: root,
+			stdio: "ignore",
+		});
+		execFileSync("git", ["config", "user.name", "Harness Tests"], {
+			cwd: root,
+			stdio: "ignore",
+		});
+		execFileSync("git", ["add", "."], { cwd: root, stdio: "ignore" });
+		execFileSync("git", ["commit", "-m", "docs: seed old progress"], {
+			cwd: root,
+			env: {
+				...process.env,
+				GIT_AUTHOR_DATE: "2026-01-01T00:00:00Z",
+				GIT_COMMITTER_DATE: "2026-01-01T00:00:00Z",
+			},
+			stdio: "ignore",
+		});
+
+		const validationContext = {
+			...context(root),
+			docFreshnessRules: {
+				rules: [
+					{
+						doc: "docs/progress.md",
+						tracks: [],
+						max_drift_days: 1,
+						severity: "error" as const,
+					},
+				],
+				cross_link_validation: {
+					enabled: true,
+					check_internal_links: true,
+				},
+			},
+		};
+
+		expect(collectDocFreshnessFindings(validationContext)).toHaveLength(1);
+
+		writeFileSync(
+			path.join(root, "docs/progress.md"),
+			"# refreshed progress\n",
+		);
+
+		expect(collectDocFreshnessFindings(validationContext)).toHaveLength(0);
 	});
 });
 

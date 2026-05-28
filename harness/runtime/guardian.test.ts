@@ -1,16 +1,17 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, setDefaultTimeout } from "bun:test";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { repoRoot } from "./shared";
-import { cloneRepo, runCommand } from "./test-support";
+import { cloneRepo, expectCommandSuccess } from "./test-support";
 
 const root = repoRoot();
+setDefaultTimeout(20000);
 
 describe("guardian command", () => {
 	it("runs preflight in a cloned repo", () => {
 		const tempRoot = cloneRepo(root);
 
-		const result = runCommand(tempRoot, [
+		const result = expectCommandSuccess(tempRoot, [
 			"bun",
 			"run",
 			"harness:guardian",
@@ -27,7 +28,7 @@ describe("guardian command", () => {
 	it("writes guardian artifacts for stop mode", () => {
 		const tempRoot = cloneRepo(root);
 
-		const result = runCommand(tempRoot, [
+		const result = expectCommandSuccess(tempRoot, [
 			"bun",
 			"run",
 			"harness:guardian",
@@ -44,7 +45,7 @@ describe("guardian command", () => {
 	it("supports quiet-success output for stop mode", () => {
 		const tempRoot = cloneRepo(root);
 
-		const result = runCommand(tempRoot, [
+		const result = expectCommandSuccess(tempRoot, [
 			"bun",
 			"run",
 			"harness:guardian",
