@@ -161,6 +161,18 @@
 			{
 				"source": "validate",
 				"status": "passed",
+				"runAt": "2026-05-28T16:43:13.292Z",
+				"artifactPath": ".harness/validations/validate-latest.json",
+				"summary": [
+					"  ✓ 7. Entropy Scans passed",
+					"",
+					"════════════════════════════════════════════",
+					"PASS: All validation checks passed."
+				]
+			},
+			{
+				"source": "validate",
+				"status": "passed",
 				"runAt": "2026-05-28T16:38:12.563Z",
 				"artifactPath": ".harness/validations/validate-latest.json",
 				"summary": [

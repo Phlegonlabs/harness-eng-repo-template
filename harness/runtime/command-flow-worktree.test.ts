@@ -6,9 +6,9 @@ import { repoRoot } from "./shared";
 import {
 	cloneRepo,
 	commitAll,
+	expectCommandSuccess,
 	markMilestoneDone,
 	readState,
-	runCommand,
 	worktreePath,
 } from "./test-support";
 
@@ -20,17 +20,15 @@ setDefaultTimeout(90000);
 describeCommandFlow("command flow — worktree", () => {
 	it("dispatches and merges a completed milestone through a worktree", () => {
 		const tempRoot = cloneRepo(root);
-		expect(
-			runCommand(tempRoot, [
-				"bun",
-				"run",
-				"harness:init",
-				"--",
-				"sample-project",
-			]).code,
-		).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "harness:plan"]).code).toBe(0);
-		expect(runCommand(tempRoot, ["bun", "run", "check"]).code).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:init",
+			"--",
+			"sample-project",
+		]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "harness:plan"]);
+		expectCommandSuccess(tempRoot, ["bun", "run", "check"]);
 		const stateBeforeDispatch = readState(tempRoot);
 		const milestone = stateBeforeDispatch.milestones.find(
 			(entry) => entry.id === "M1",
@@ -42,15 +40,13 @@ describeCommandFlow("command flow — worktree", () => {
 		saveState(tempRoot, stateBeforeDispatch);
 		commitAll(tempRoot, "chore(template): initialize sample project");
 
-		expect(
-			runCommand(tempRoot, [
-				"bun",
-				"run",
-				"harness:parallel-dispatch",
-				"--",
-				"--apply",
-			]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:parallel-dispatch",
+			"--",
+			"--apply",
+		]);
 		commitAll(tempRoot, "harness(dispatch): record active worktrees");
 		const dispatchedState = readState(tempRoot);
 		const activeWorktree = dispatchedState.execution.activeWorktrees.find(
@@ -63,19 +59,17 @@ describeCommandFlow("command flow — worktree", () => {
 			activeWorktree?.worktree ?? "",
 		);
 		markMilestoneDone(milestoneRoot, "M1");
-		expect(runCommand(milestoneRoot, ["bun", "run", "format"]).code).toBe(0);
-		expect(runCommand(milestoneRoot, ["bun", "run", "check"]).code).toBe(0);
+		expectCommandSuccess(milestoneRoot, ["bun", "run", "format"]);
+		expectCommandSuccess(milestoneRoot, ["bun", "run", "check"]);
 		commitAll(milestoneRoot, "harness(m1): complete milestone");
 
-		expect(
-			runCommand(tempRoot, [
-				"bun",
-				"run",
-				"harness:merge-milestone",
-				"--",
-				"M1",
-			]).code,
-		).toBe(0);
+		expectCommandSuccess(tempRoot, [
+			"bun",
+			"run",
+			"harness:merge-milestone",
+			"--",
+			"M1",
+		]);
 		const mergedState = readState(tempRoot);
 		expect(
 			mergedState.milestones.find((milestone) => milestone.id === "M1")?.status,
