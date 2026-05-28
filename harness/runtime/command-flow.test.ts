@@ -27,7 +27,7 @@ describeCommandFlow("command flow", () => {
 			"run",
 			"harness:doctor",
 		]);
-		expect(doctor.stdout).toContain("Project name is still 'harness-template'");
+		expect(doctor.stdout).toContain("Template is ready.");
 		for (const command of [
 			["bun", "run", "harness:lint"],
 			["bun", "run", "harness:structural"],

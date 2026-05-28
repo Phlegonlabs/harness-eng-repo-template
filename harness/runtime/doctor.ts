@@ -141,10 +141,9 @@ export function runDoctor(root: string = repoRoot()): number {
 	writeSection("Init Status");
 	if (config.project_name === "harness-template") {
 		check(
-			"WARN",
-			"Project name is still 'harness-template'. Run bun run harness:init -- <your-project-name>",
+			"INFO",
+			"Template is ready. Run bun run harness:init -- <your-project-name> when adopting it.",
 		);
-		warnings += 1;
 	} else {
 		check("PASS", `Project name: ${config.project_name}`);
 	}

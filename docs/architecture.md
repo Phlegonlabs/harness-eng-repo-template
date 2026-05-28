@@ -149,7 +149,7 @@ bun run harness:validate:full
 |------|-----------|--------|------------|
 | Template docs drift from runtime behavior | Medium | High | Keep docs generated or updated alongside runtime changes and validate links continuously |
 | Shared package becomes a dumping ground | Medium | Medium | Enforce public exports and keep feature-specific logic in the owning app until sharing is justified |
-| Teams skip initialization and keep template naming too long | Medium | Medium | `harness:doctor` warns until `harness:init` has been run with a project-specific name |
+| Teams skip initialization and keep template naming too long | Medium | Medium | `harness:doctor` reports the template-ready pre-init state and `harness:init` personalizes the repository |
 
 ---
 
