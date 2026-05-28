@@ -228,8 +228,21 @@ export function firstTaskId(root: string): string {
 
 export function commitAll(root: string, message: string): void {
 	expect(runCommand(root, ["git", "add", "."]).code).toBe(0);
-	const commit = runCommand(root, ["git", "commit", "-m", message]);
-	expect(commit.code).toBe(0);
+	const commit = runCommand(root, [
+		"git",
+		"commit",
+		"--no-verify",
+		"-m",
+		message,
+	]);
+	expect(
+		commit.code,
+		formatCommandFailure(
+			root,
+			["git", "commit", "--no-verify", "-m", message],
+			commit,
+		),
+	).toBe(0);
 }
 
 export function answerDiscovery(
